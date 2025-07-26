@@ -25,15 +25,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertGameSchema } from "@shared/schema";
+import { insertActivitySchema, ACTIVITY_TYPES } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Star, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { z } from "zod";
 
-const formSchema = insertGameSchema.extend({
-  rating: insertGameSchema.shape.rating.optional(),
+const formSchema = insertActivitySchema.extend({
+  rating: insertActivitySchema.shape.rating.optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -53,14 +53,18 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      platform: "",
-      genre: "",
+      type: ACTIVITY_TYPES.GAME,
+      category: "",
+      subcategory: "",
       status: "wishlist",
       rating: undefined,
       progress: 0,
-      hoursPlayed: 0,
-      coverImage: "",
-      gameId: "",
+      totalHours: 0,
+      imageUrl: "",
+      externalId: "",
+      description: "",
+      tags: [],
+      metadata: null,
     },
   });
 
@@ -72,8 +76,9 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
   });
 
   const createGameMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest("POST", "/api/games", data),
+    mutationFn: (data: FormData) => apiRequest("POST", "/api/activities", data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/games"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
@@ -103,9 +108,11 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
 
   const handleGameSelect = (game: any) => {
     form.setValue("title", game.name);
-    form.setValue("genre", game.genres?.[0]?.name || "");
-    form.setValue("coverImage", game.background_image || "");
-    form.setValue("gameId", game.id.toString());
+    form.setValue("category", game.platforms?.[0]?.platform?.name || "");
+    form.setValue("subcategory", game.genres?.[0]?.name || "");
+    form.setValue("imageUrl", game.background_image || "");
+    form.setValue("externalId", game.id.toString());
+    form.setValue("description", game.short_screenshots?.[0]?.image || "");
     setSearchQuery(game.name);
   };
 
@@ -171,7 +178,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
 
             <FormField
               control={form.control}
-              name="platform"
+              name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-300">Platform</FormLabel>
@@ -208,9 +215,10 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                     </FormControl>
                     <SelectContent className="bg-dark-bg border-slate-600">
                       <SelectItem value="wishlist">Wishlist</SelectItem>
-                      <SelectItem value="playing">Currently Playing</SelectItem>
+                      <SelectItem value="in_progress">Currently Playing</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="dropped">Dropped</SelectItem>
+                      <SelectItem value="on_hold">On Hold</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

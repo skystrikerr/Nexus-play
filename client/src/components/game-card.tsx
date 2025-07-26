@@ -1,24 +1,26 @@
 import { Star, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Game } from "@shared/schema";
+import type { Activity } from "@shared/schema";
 
 interface GameCardProps {
-  game: Game;
+  game: Activity;
   onClick?: () => void;
 }
 
 const statusColors = {
-  playing: "bg-primary/20 text-primary",
+  in_progress: "bg-primary/20 text-primary",
   completed: "bg-green-500/20 text-green-400",
   dropped: "bg-red-500/20 text-red-400",
   wishlist: "bg-yellow-500/20 text-yellow-400",
+  on_hold: "bg-orange-500/20 text-orange-400",
 };
 
 const statusLabels = {
-  playing: "Playing",
+  in_progress: "In Progress",
   completed: "Completed",
   dropped: "Dropped",
   wishlist: "Wishlist",
+  on_hold: "On Hold",
 };
 
 export default function GameCard({ game, onClick }: GameCardProps) {
@@ -33,9 +35,9 @@ export default function GameCard({ game, onClick }: GameCardProps) {
       onClick={onClick}
     >
       <div className="flex items-center space-x-4">
-        {game.coverImage ? (
+        {game.imageUrl ? (
           <img
-            src={game.coverImage}
+            src={game.imageUrl}
             alt={`${game.title} cover`}
             className="w-16 h-20 rounded-lg object-cover"
           />
@@ -50,7 +52,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
             <div>
               <h4 className="text-lg font-semibold text-white">{game.title}</h4>
               <p className="text-slate-400 text-sm">
-                {game.platform} {game.genre && `• ${game.genre}`}
+                {game.category} {game.subcategory && `• ${game.subcategory}`}
               </p>
               
               <div className="flex items-center space-x-4 mt-2">
@@ -80,7 +82,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
               <p className="text-white font-semibold">{game.progress}%</p>
               <p className="text-slate-400 text-xs flex items-center">
                 <Clock className="w-3 h-3 mr-1" />
-                {game.hoursPlayed}h played
+                {game.totalHours}h total
               </p>
             </div>
           </div>

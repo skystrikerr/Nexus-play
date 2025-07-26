@@ -1,12 +1,13 @@
-# Game Tracker Application
+# Activity Tracker Application
 
 ## Overview
 
-This is a full-stack web application for tracking games and gaming sessions. It's built with a React frontend using Vite, an Express.js backend, and is designed to use PostgreSQL with Drizzle ORM. The application allows users to manage their game library, track gaming sessions, view statistics, and visualize their gaming activity through a calendar interface.
+This is a full-stack web application for tracking various activities including games, study sessions, work projects, exercise, reading, and hobbies. Originally designed as a game tracker, it has been transformed into a comprehensive activity monitoring system. Built with React frontend using Vite, Express.js backend, and designed to use PostgreSQL with Drizzle ORM. The application allows users to manage their activity library, track sessions across different activity types, view comprehensive statistics, and visualize their activity through a calendar interface. Each activity can have custom images for better visual identification.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Feature requirements: Multi-activity tracking beyond games (study, work, exercise, etc.) with image support for activities.
 
 ## System Architecture
 
@@ -35,29 +36,57 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Database Schema
-The application defines two main entities:
-- **Games**: Stores game information including title, platform, genre, status, rating, progress, and hours played
-- **Gaming Sessions**: Tracks individual gaming sessions with duration, date, and notes linked to specific games
+The application defines two main entities with enhanced flexibility:
+- **Activities**: Universal activity storage supporting multiple types (games, study, work, exercise, reading, hobbies, other) with fields including:
+  - Basic info: title, type, category, subcategory, status, rating, progress, totalHours
+  - Visual: imageUrl for custom activity images
+  - Metadata: description, tags array, flexible metadata JSON field, externalId for API integration
+- **Activity Sessions**: Tracks individual activity sessions with enhanced fields:
+  - Core: activityId, date, duration, notes
+  - Enhanced: quality rating (1-5), location tracking
+  - Backward compatibility maintained for gaming sessions
 
 ### API Endpoints
-- `GET/POST /api/games` - Game library management
-- `GET/POST/PUT/DELETE /api/games/:id` - Individual game operations
-- `GET/POST /api/sessions` - Gaming session management
-- `GET /api/sessions/game/:gameId` - Sessions for specific games
-- `GET /api/sessions/date/:date` - Sessions for specific dates
-- `GET /api/stats` - Gaming statistics and analytics
+**New Activity Management:**
+- `GET/POST /api/activities` - Universal activity management with type filtering
+- `GET/POST/PUT/DELETE /api/activities/:id` - Individual activity operations
+- `GET /api/activities?type=game` - Filter activities by type (game, study, work, etc.)
+
+**Enhanced Sessions:**
+- `GET/POST /api/sessions` - Activity session management with quality and location tracking
+- `GET /api/sessions?activityId=:id` - Sessions for specific activities
+- `GET /api/sessions?date=:date` - Sessions for specific dates
+- `GET /api/sessions?gameId=:id` - Backward compatibility for gaming sessions
+
+**Comprehensive Statistics:**
+- `GET /api/stats` - Multi-activity statistics with type breakdown
+- `GET /api/stats?type=game` - Type-specific statistics
+
+**Backward Compatibility:**
+- All original `/api/games` endpoints maintained for seamless transition
+- Game-specific queries automatically filter to type='game'
 
 ### Frontend Pages
-- **Dashboard**: Overview with recent games, statistics, and calendar widget
-- **Game Library**: Full game collection with search and filtering
-- **Calendar**: Visual representation of gaming sessions over time
-- **Individual Game Views**: Detailed game information and session history
+- **Dashboard**: Overview with recent activities across all types, comprehensive statistics, and calendar widget
+- **Activity Library**: Full activity collection with search, filtering by type and status
+- **Calendar**: Visual representation of all activity sessions over time with type differentiation
+- **Individual Activity Views**: Detailed activity information and session history
+- **Activity Management**: Enhanced forms supporting all activity types with image upload/URL support
+
+### Enhanced Features Added (January 2025)
+- **Multi-Activity Support**: Expanded from games-only to support study, work, exercise, reading, hobbies, and custom activities
+- **Image Integration**: Full support for activity images via URL with preview functionality
+- **Enhanced Session Tracking**: Added quality ratings and location tracking for sessions
+- **Flexible Metadata**: JSON metadata field and tagging system for extensible activity data
+- **Comprehensive Statistics**: Type-based breakdowns showing activity distribution across categories
+- **Smart Activity Forms**: Context-aware forms that adapt labels and options based on activity type
 
 ### UI Components
-- **GameCard**: Displays game information with status, progress, and ratings
-- **AddGameModal**: Form for adding new games to the library
-- **GamingCalendar**: Calendar view showing gaming activity
-- **Sidebar**: Navigation between different sections
+- **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
+- **AddActivityModal**: Comprehensive form for adding any activity type with smart field adaptation and image support
+- **AddGameModal**: Maintained for backward compatibility, now uses activity system internally
+- **GamingCalendar**: Enhanced to show all activity types with visual differentiation
+- **Sidebar**: Navigation supporting the expanded activity ecosystem
 
 ## Data Flow
 

@@ -7,7 +7,7 @@ import Sidebar from "@/components/sidebar";
 import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Game } from "@shared/schema";
+import type { Activity } from "@shared/schema";
 
 export default function GameLibrary() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -16,7 +16,7 @@ export default function GameLibrary() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  const { data: games = [], isLoading } = useQuery<Game[]>({
+  const { data: games = [], isLoading } = useQuery<Activity[]>({
     queryKey: ["/api/games"],
   });
 

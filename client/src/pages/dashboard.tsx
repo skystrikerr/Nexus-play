@@ -8,7 +8,7 @@ import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
 import GamingCalendar from "@/components/gaming-calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Game } from "@shared/schema";
+import type { Activity } from "@shared/schema";
 
 interface Stats {
   totalGames: number;
@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  const { data: games = [], isLoading: gamesLoading } = useQuery<Game[]>({
+  const { data: games = [], isLoading: gamesLoading } = useQuery<Activity[]>({
     queryKey: ["/api/games"],
   });
 

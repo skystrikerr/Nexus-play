@@ -1,127 +1,178 @@
-import { type Game, type InsertGame, type GamingSession, type InsertSession } from "@shared/schema";
+import { type Activity, type InsertActivity, type ActivitySession, type InsertSession, type Game, type InsertGame, type GamingSession } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
-  // Games
+  // Activities (includes games and other activities)
+  getActivities(): Promise<Activity[]>;
+  getActivityById(id: string): Promise<Activity | undefined>;
+  createActivity(activity: InsertActivity): Promise<Activity>;
+  updateActivity(id: string, activity: Partial<InsertActivity>): Promise<Activity | undefined>;
+  deleteActivity(id: string): Promise<boolean>;
+  getActivitiesByType(type: string): Promise<Activity[]>;
+  
+  // Activity Sessions
+  getSessions(): Promise<ActivitySession[]>;
+  getSessionsByActivityId(activityId: string): Promise<ActivitySession[]>;
+  getSessionsByDate(date: string): Promise<ActivitySession[]>;
+  getSessionsByDateRange(startDate: string, endDate: string): Promise<ActivitySession[]>;
+  createSession(session: InsertSession): Promise<ActivitySession>;
+  updateSession(id: string, session: Partial<InsertSession>): Promise<ActivitySession | undefined>;
+  deleteSession(id: string): Promise<boolean>;
+  
+  // Backward compatibility aliases
   getGames(): Promise<Game[]>;
   getGameById(id: string): Promise<Game | undefined>;
   createGame(game: InsertGame): Promise<Game>;
   updateGame(id: string, game: Partial<InsertGame>): Promise<Game | undefined>;
   deleteGame(id: string): Promise<boolean>;
-  
-  // Gaming Sessions
-  getSessions(): Promise<GamingSession[]>;
   getSessionsByGameId(gameId: string): Promise<GamingSession[]>;
-  getSessionsByDate(date: string): Promise<GamingSession[]>;
-  getSessionsByDateRange(startDate: string, endDate: string): Promise<GamingSession[]>;
-  createSession(session: InsertSession): Promise<GamingSession>;
-  updateSession(id: string, session: Partial<InsertSession>): Promise<GamingSession | undefined>;
-  deleteSession(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
-  private games: Map<string, Game>;
-  private sessions: Map<string, GamingSession>;
+  private activities: Map<string, Activity>;
+  private sessions: Map<string, ActivitySession>;
 
   constructor() {
-    this.games = new Map();
+    this.activities = new Map();
     this.sessions = new Map();
   }
 
-  // Games
-  async getGames(): Promise<Game[]> {
-    return Array.from(this.games.values()).sort((a, b) => 
+  // Activities
+  async getActivities(): Promise<Activity[]> {
+    return Array.from(this.activities.values()).sort((a, b) => 
       new Date(b.updatedAt!).getTime() - new Date(a.updatedAt!).getTime()
     );
   }
 
-  async getGameById(id: string): Promise<Game | undefined> {
-    return this.games.get(id);
+  async getActivityById(id: string): Promise<Activity | undefined> {
+    return this.activities.get(id);
   }
 
-  async createGame(insertGame: InsertGame): Promise<Game> {
+  async getActivitiesByType(type: string): Promise<Activity[]> {
+    return Array.from(this.activities.values())
+      .filter(activity => activity.type === type)
+      .sort((a, b) => new Date(b.updatedAt!).getTime() - new Date(a.updatedAt!).getTime());
+  }
+
+  async createActivity(insertActivity: InsertActivity): Promise<Activity> {
     const id = randomUUID();
     const now = new Date();
-    const game: Game = { 
-      ...insertGame, 
+    const activity: Activity = { 
+      ...insertActivity, 
       id, 
       createdAt: now,
       updatedAt: now,
-      progress: insertGame.progress ?? 0,
-      hoursPlayed: insertGame.hoursPlayed ?? 0,
-      genre: insertGame.genre ?? null,
-      rating: insertGame.rating ?? null,
-      coverImage: insertGame.coverImage ?? null,
-      gameId: insertGame.gameId ?? null
+      progress: insertActivity.progress ?? 0,
+      totalHours: insertActivity.totalHours ?? 0,
+      category: insertActivity.category ?? null,
+      subcategory: insertActivity.subcategory ?? null,
+      rating: insertActivity.rating ?? null,
+      imageUrl: insertActivity.imageUrl ?? null,
+      externalId: insertActivity.externalId ?? null,
+      description: insertActivity.description ?? null,
+      tags: insertActivity.tags ?? null,
+      metadata: insertActivity.metadata ?? null
     };
-    this.games.set(id, game);
-    return game;
+    this.activities.set(id, activity);
+    return activity;
   }
 
-  async updateGame(id: string, updateData: Partial<InsertGame>): Promise<Game | undefined> {
-    const game = this.games.get(id);
-    if (!game) return undefined;
+  async updateActivity(id: string, updateData: Partial<InsertActivity>): Promise<Activity | undefined> {
+    const activity = this.activities.get(id);
+    if (!activity) return undefined;
     
-    const updatedGame: Game = { 
-      ...game, 
+    const updatedActivity: Activity = { 
+      ...activity, 
       ...updateData, 
       updatedAt: new Date() 
     };
-    this.games.set(id, updatedGame);
-    return updatedGame;
+    this.activities.set(id, updatedActivity);
+    return updatedActivity;
   }
 
-  async deleteGame(id: string): Promise<boolean> {
-    return this.games.delete(id);
+  async deleteActivity(id: string): Promise<boolean> {
+    return this.activities.delete(id);
   }
 
-  // Gaming Sessions
-  async getSessions(): Promise<GamingSession[]> {
+  // Activity Sessions
+  async getSessions(): Promise<ActivitySession[]> {
     return Array.from(this.sessions.values()).sort((a, b) => 
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
     );
   }
 
-  async getSessionsByGameId(gameId: string): Promise<GamingSession[]> {
+  async getSessionsByActivityId(activityId: string): Promise<ActivitySession[]> {
     return Array.from(this.sessions.values())
-      .filter(session => session.gameId === gameId)
+      .filter(session => session.activityId === activityId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  async getSessionsByDate(date: string): Promise<GamingSession[]> {
+  async getSessionsByDate(date: string): Promise<ActivitySession[]> {
     return Array.from(this.sessions.values())
       .filter(session => session.date === date);
   }
 
-  async getSessionsByDateRange(startDate: string, endDate: string): Promise<GamingSession[]> {
+  async getSessionsByDateRange(startDate: string, endDate: string): Promise<ActivitySession[]> {
     return Array.from(this.sessions.values())
       .filter(session => session.date >= startDate && session.date <= endDate)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  async createSession(insertSession: InsertSession): Promise<GamingSession> {
+  async createSession(insertSession: InsertSession): Promise<ActivitySession> {
     const id = randomUUID();
-    const session: GamingSession = { 
+    const session: ActivitySession = { 
       ...insertSession, 
       id, 
       createdAt: new Date(),
-      notes: insertSession.notes ?? null
+      notes: insertSession.notes ?? null,
+      quality: insertSession.quality ?? null,
+      location: insertSession.location ?? null
     };
     this.sessions.set(id, session);
     return session;
   }
 
-  async updateSession(id: string, updateData: Partial<InsertSession>): Promise<GamingSession | undefined> {
+  async updateSession(id: string, updateData: Partial<InsertSession>): Promise<ActivitySession | undefined> {
     const session = this.sessions.get(id);
     if (!session) return undefined;
     
-    const updatedSession: GamingSession = { ...session, ...updateData };
+    const updatedSession: ActivitySession = { ...session, ...updateData };
     this.sessions.set(id, updatedSession);
     return updatedSession;
   }
 
   async deleteSession(id: string): Promise<boolean> {
     return this.sessions.delete(id);
+  }
+
+  // Backward compatibility aliases
+  async getGames(): Promise<Game[]> {
+    const activities = await this.getActivitiesByType('game');
+    return activities as Game[];
+  }
+
+  async getGameById(id: string): Promise<Game | undefined> {
+    const activity = await this.getActivityById(id);
+    return activity as Game | undefined;
+  }
+
+  async createGame(game: InsertGame): Promise<Game> {
+    const activity = await this.createActivity(game);
+    return activity as Game;
+  }
+
+  async updateGame(id: string, game: Partial<InsertGame>): Promise<Game | undefined> {
+    const activity = await this.updateActivity(id, game);
+    return activity as Game | undefined;
+  }
+
+  async deleteGame(id: string): Promise<boolean> {
+    return this.deleteActivity(id);
+  }
+
+  async getSessionsByGameId(gameId: string): Promise<GamingSession[]> {
+    const sessions = await this.getSessionsByActivityId(gameId);
+    return sessions as GamingSession[];
   }
 }
 
