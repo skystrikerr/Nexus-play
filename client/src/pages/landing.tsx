@@ -8,7 +8,7 @@ export function Landing() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold text-white mb-6">
-            Activity Tracker
+            NexusPlay
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Track your games, study sessions, workouts, reading, and more. 

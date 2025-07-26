@@ -1,13 +1,14 @@
-# Activity Tracker Application
+# NexusPlay Application
 
 ## Overview
 
-This is a full-stack web application for tracking various activities including games, study sessions, work projects, exercise, reading, and hobbies. Originally designed as a game tracker, it has been transformed into a comprehensive activity monitoring system. Built with React frontend using Vite, Express.js backend, and designed to use PostgreSQL with Drizzle ORM. The application allows users to manage their activity library, track sessions across different activity types, view comprehensive statistics, and visualize their activity through a calendar interface. Each activity can have custom images for better visual identification.
+NexusPlay is a full-stack web application for tracking various activities including games, study sessions, work projects, exercise, reading, and hobbies. Originally designed as a game tracker, it has been transformed into a comprehensive multi-user activity monitoring system with social features. Built with React frontend using Vite, Express.js backend, and PostgreSQL with Drizzle ORM. The application allows users to manage their activity library, track sessions across different activity types, view comprehensive statistics, visualize their activity through a calendar interface, and discover what other users in the community are working on. Each activity can have custom images for better visual identification.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 Feature requirements: Multi-activity tracking beyond games (study, work, exercise, etc.) with image support for activities.
+App name: NexusPlay (changed from Activity Tracker in January 2025)
 
 ## System Architecture
 
@@ -31,7 +32,9 @@ Feature requirements: Multi-activity tracking beyond games (study, work, exercis
 - **Database**: PostgreSQL (configured via Drizzle)
 - **Connection**: Neon Database serverless connection
 - **Schema Management**: Drizzle migrations in `./migrations` directory
-- **Current Implementation**: Memory-based storage for development with database interface ready
+- **Current Implementation**: PostgreSQL database with user authentication via Replit Auth
+- **Authentication**: Multi-user support with Replit OpenID Connect authentication
+- **User Management**: Public/private profiles, user directory, social activity viewing
 
 ## Key Components
 
@@ -80,6 +83,10 @@ The application defines two main entities with enhanced flexibility:
 - **Flexible Metadata**: JSON metadata field and tagging system for extensible activity data
 - **Comprehensive Statistics**: Type-based breakdowns showing activity distribution across categories
 - **Smart Activity Forms**: Context-aware forms that adapt labels and options based on activity type
+- **User Authentication**: Implemented Replit Auth with secure multi-user support
+- **Social Features**: User profiles, community directory, ability to view others' public activities
+- **Timer System**: Built-in activity timers with session completion tracking
+- **Database Migration**: Moved from memory storage to PostgreSQL with proper user isolation
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
@@ -140,4 +147,4 @@ The application defines two main entities with enhanced flexibility:
 - **Type Checking**: TypeScript compiler for validation
 - **Database Migrations**: Drizzle push command for schema updates
 
-The application is structured as a monorepo with shared TypeScript types between client and server, enabling type-safe full-stack development. The current implementation uses in-memory storage but is architected to easily switch to PostgreSQL when the database is provisioned.
+The application is structured as a monorepo with shared TypeScript types between client and server, enabling type-safe full-stack development. It now uses PostgreSQL database with full user authentication, social features, and proper data isolation between users. The app has been renamed to NexusPlay to reflect its evolution into a comprehensive social activity tracking platform.

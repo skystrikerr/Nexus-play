@@ -35,7 +35,7 @@ export default function Sidebar() {
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <Gamepad2 className="text-white text-lg" />
           </div>
-          <h1 className="text-xl font-bold text-white">ActivityTracker</h1>
+          <h1 className="text-xl font-bold text-white">NexusPlay</h1>
         </div>
         
         <nav className="space-y-2">
