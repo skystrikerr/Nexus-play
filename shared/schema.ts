@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, real, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -22,8 +22,33 @@ export const ACTIVITY_STATUSES = {
   ON_HOLD: 'on_hold'
 } as const;
 
+// Session storage table for authentication
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for authentication
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  bio: text("bio"),
+  isPublic: integer("is_public").default(1), // 1 for public, 0 for private profile
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const activities = pgTable("activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
   type: text("type").notNull(), // game, study, work, exercise, reading, hobby, other
   category: text("category"), // platform for games, subject for study, etc.
@@ -37,12 +62,14 @@ export const activities = pgTable("activities", {
   description: text("description"),
   tags: text("tags").array(), // flexible tagging system
   metadata: jsonb("metadata"), // flexible data for different activity types
+  isPublic: integer("is_public").default(1), // 1 for public visibility, 0 for private
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const activitySessions = pgTable("activity_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
   activityId: varchar("activity_id").notNull().references(() => activities.id),
   date: text("date").notNull(), // YYYY-MM-DD format
   duration: real("duration").notNull(), // hours
@@ -52,8 +79,14 @@ export const activitySessions = pgTable("activity_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const upsertUserSchema = createInsertSchema(users).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
@@ -80,6 +113,7 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
 
 export const insertSessionSchema = createInsertSchema(activitySessions).omit({
   id: true,
+  userId: true,
   createdAt: true,
 }).extend({
   quality: z.number().min(1).max(5).optional(),
@@ -90,6 +124,8 @@ export const games = activities;
 export const gamingSessions = activitySessions;
 export const insertGameSchema = insertActivitySchema;
 
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
+export type User = typeof users.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;

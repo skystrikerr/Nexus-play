@@ -3,21 +3,35 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { Landing } from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import GameLibrary from "@/pages/game-library";
 import Calendar from "@/pages/calendar";
 import Statistics from "@/pages/statistics";
 import Wishlist from "@/pages/wishlist";
+import { Users } from "@/pages/users";
+import { UserProfile } from "@/pages/user-profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/library" component={GameLibrary} />
-      <Route path="/calendar" component={Calendar} />
-      <Route path="/stats" component={Statistics} />
-      <Route path="/wishlist" component={Wishlist} />
+      {isLoading || !isAuthenticated ? (
+        <Route path="/" component={Landing} />
+      ) : (
+        <>
+          <Route path="/" component={Dashboard} />
+          <Route path="/library" component={GameLibrary} />
+          <Route path="/calendar" component={Calendar} />
+          <Route path="/stats" component={Statistics} />
+          <Route path="/wishlist" component={Wishlist} />
+          <Route path="/users" component={Users} />
+          <Route path="/users/:id" component={UserProfile} />
+        </>
+      )}
       <Route component={NotFound} />
     </Switch>
   );

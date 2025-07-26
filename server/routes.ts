@@ -1,20 +1,77 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Activities routes (general)
-  app.get("/api/activities", async (req, res) => {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Public user routes
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getPublicUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const user = await storage.getUserByIdPublic(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found or private" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.get("/api/users/:id/activities", async (req, res) => {
+    try {
+      const activities = await storage.getPublicActivities(req.params.id);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user activities" });
+    }
+  });
+
+  app.get("/api/users/:id/sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getPublicSessions(req.params.id);
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user sessions" });
+    }
+  });
+
+  // Activities routes (protected)
+  app.get("/api/activities", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
       const { type } = req.query;
       let activities;
       
       if (type && typeof type === 'string') {
-        activities = await storage.getActivitiesByType(type);
+        activities = await storage.getActivitiesByType(type, userId);
       } else {
-        activities = await storage.getActivities();
+        activities = await storage.getActivities(userId);
       }
       
       res.json(activities);
@@ -23,9 +80,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/activities/:id", async (req, res) => {
+  app.get("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const activity = await storage.getActivityById(req.params.id);
+      const userId = req.user.claims.sub;
+      const activity = await storage.getActivityById(req.params.id, userId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
       }
@@ -35,10 +93,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/activities", async (req, res) => {
+  app.post("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const activityData = insertActivitySchema.parse(req.body);
-      const activity = await storage.createActivity(activityData);
+      const activity = await storage.createActivity(activityData, userId);
       res.status(201).json(activity);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -48,10 +107,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/activities/:id", async (req, res) => {
+  app.put("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const activityData = insertActivitySchema.partial().parse(req.body);
-      const activity = await storage.updateActivity(req.params.id, activityData);
+      const activity = await storage.updateActivity(req.params.id, activityData, userId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
       }
@@ -64,9 +124,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/activities/:id", async (req, res) => {
+  app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteActivity(req.params.id);
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteActivity(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Activity not found" });
       }
@@ -77,18 +138,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Games routes (backward compatibility)
-  app.get("/api/games", async (req, res) => {
+  app.get("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      const games = await storage.getGames();
+      const userId = req.user.claims.sub;
+      const games = await storage.getGames(userId);
       res.json(games);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch games" });
     }
   });
 
-  app.get("/api/games/:id", async (req, res) => {
+  app.get("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const game = await storage.getGameById(req.params.id);
+      const userId = req.user.claims.sub;
+      const game = await storage.getGameById(req.params.id, userId);
       if (!game) {
         return res.status(404).json({ message: "Game not found" });
       }
@@ -98,10 +161,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/games", async (req, res) => {
+  app.post("/api/games", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const gameData = insertGameSchema.parse(req.body);
-      const game = await storage.createGame(gameData);
+      const game = await storage.createGame(gameData, userId);
       res.status(201).json(game);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -111,10 +175,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/games/:id", async (req, res) => {
+  app.put("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const gameData = insertGameSchema.partial().parse(req.body);
-      const game = await storage.updateGame(req.params.id, gameData);
+      const game = await storage.updateGame(req.params.id, gameData, userId);
       if (!game) {
         return res.status(404).json({ message: "Game not found" });
       }
@@ -127,9 +192,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/games/:id", async (req, res) => {
+  app.delete("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteGame(req.params.id);
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteGame(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Game not found" });
       }
@@ -140,21 +206,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity sessions routes
-  app.get("/api/sessions", async (req, res) => {
+  app.get("/api/sessions", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const { activityId, gameId, date, startDate, endDate } = req.query;
       
       let sessions;
       if (activityId) {
-        sessions = await storage.getSessionsByActivityId(activityId as string);
+        sessions = await storage.getSessionsByActivityId(activityId as string, userId);
       } else if (gameId) {
-        sessions = await storage.getSessionsByGameId(gameId as string);
+        sessions = await storage.getSessionsByGameId(gameId as string, userId);
       } else if (date) {
-        sessions = await storage.getSessionsByDate(date as string);
+        sessions = await storage.getSessionsByDate(date as string, userId);
       } else if (startDate && endDate) {
-        sessions = await storage.getSessionsByDateRange(startDate as string, endDate as string);
+        sessions = await storage.getSessionsByDateRange(startDate as string, endDate as string, userId);
       } else {
-        sessions = await storage.getSessions();
+        sessions = await storage.getSessions(userId);
       }
       
       res.json(sessions);
@@ -163,10 +230,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/sessions", async (req, res) => {
+  app.post("/api/sessions", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const sessionData = insertSessionSchema.parse(req.body);
-      const session = await storage.createSession(sessionData);
+      const session = await storage.createSession(sessionData, userId);
       res.status(201).json(session);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -176,10 +244,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/sessions/:id", async (req, res) => {
+  app.put("/api/sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const sessionData = insertSessionSchema.partial().parse(req.body);
-      const session = await storage.updateSession(req.params.id, sessionData);
+      const session = await storage.updateSession(req.params.id, sessionData, userId);
       if (!session) {
         return res.status(404).json({ message: "Session not found" });
       }
@@ -192,9 +261,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/sessions/:id", async (req, res) => {
+  app.delete("/api/sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteSession(req.params.id);
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteSession(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Session not found" });
       }
@@ -228,18 +298,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Statistics endpoint
-  app.get("/api/stats", async (req, res) => {
+  app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const { type } = req.query;
       let activities;
       
       if (type && typeof type === 'string') {
-        activities = await storage.getActivitiesByType(type);
+        activities = await storage.getActivitiesByType(type, userId);
       } else {
-        activities = await storage.getActivities();
+        activities = await storage.getActivities(userId);
       }
       
-      const sessions = await storage.getSessions();
+      const sessions = await storage.getSessions(userId);
       
       // General statistics
       const totalActivities = activities.length;
