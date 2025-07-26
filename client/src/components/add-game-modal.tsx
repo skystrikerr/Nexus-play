@@ -103,17 +103,20 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
       ...data,
       rating: selectedRating || undefined,
     };
+    console.log("Submitting activity data:", submitData); // Debug log
     createGameMutation.mutate(submitData);
   };
 
   const handleGameSelect = (game: any) => {
+    console.log("Selected game:", game); // Debug log
     form.setValue("title", game.name);
-    form.setValue("category", game.platforms?.[0]?.platform?.name || "");
+    form.setValue("category", game.platforms?.[0]?.platform?.name || "PC");
     form.setValue("subcategory", game.genres?.[0]?.name || "");
     form.setValue("imageUrl", game.background_image || "");
     form.setValue("externalId", game.id.toString());
-    form.setValue("description", game.short_screenshots?.[0]?.image || "");
+    form.setValue("description", game.description_raw || game.short_description || "");
     setSearchQuery(game.name);
+    console.log("Form imageUrl value:", form.getValues("imageUrl")); // Debug log
   };
 
   return (
@@ -182,7 +185,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-300">Platform</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-dark-bg border-slate-600 text-white">
                         <SelectValue placeholder="Select Platform" />
@@ -222,6 +225,36 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-300">Game Image URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Image URL (auto-filled from search)"
+                      className="bg-dark-bg border-slate-600 text-white"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  {field.value && (
+                    <div className="mt-2">
+                      <img 
+                        src={field.value} 
+                        alt="Game preview" 
+                        className="w-16 h-20 rounded object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </FormItem>
               )}
             />

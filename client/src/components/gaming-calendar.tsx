@@ -95,8 +95,8 @@ export default function GamingCalendar({ games }: GamingCalendarProps) {
         
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {["S", "M", "T", "W", "T", "F", "S"].map((day) => (
-            <div key={day} className="text-center text-xs text-slate-400 py-2 font-medium">
+          {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+            <div key={`weekday-${index}`} className="text-center text-xs text-slate-400 py-2 font-medium">
               {day}
             </div>
           ))}
@@ -105,7 +105,7 @@ export default function GamingCalendar({ games }: GamingCalendarProps) {
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day, index) => {
             if (day === null) {
-              return <div key={index} className="aspect-square" />;
+              return <div key={`empty-${index}`} className="aspect-square" />;
             }
 
             const daySessions = getSessionsForDate(day);
@@ -115,7 +115,7 @@ export default function GamingCalendar({ games }: GamingCalendarProps) {
 
             return (
               <div
-                key={day}
+                key={`day-${day}`}
                 className={`aspect-square flex items-center justify-center text-sm relative ${
                   isToday 
                     ? "bg-primary text-white rounded-lg font-medium" 
