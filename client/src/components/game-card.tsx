@@ -1,5 +1,6 @@
 import { Star, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ActivityTimer from "./activity-timer";
 import type { Activity } from "@shared/schema";
 
 interface GameCardProps {
@@ -77,13 +78,16 @@ export default function GameCard({ game, onClick }: GameCardProps) {
               </div>
             </div>
             
-            <div className="text-right">
-              <p className="text-slate-400 text-sm">Progress</p>
-              <p className="text-white font-semibold">{game.progress}%</p>
-              <p className="text-slate-400 text-xs flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
-                {game.totalHours}h total
-              </p>
+            <div className="flex flex-col items-end space-y-2">
+              <ActivityTimer activity={game} variant="small" />
+              <div className="text-right">
+                <p className="text-slate-400 text-sm">Progress</p>
+                <p className="text-white font-semibold">{game.progress}%</p>
+                <p className="text-slate-400 text-xs flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {game.totalHours}h total
+                </p>
+              </div>
             </div>
           </div>
           
