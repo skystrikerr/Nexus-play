@@ -14,7 +14,7 @@ export default function Sidebar() {
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
-    { name: "Game Library", href: "/library", icon: Library },
+    { name: "Activity Library", href: "/library", icon: Library },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Statistics", href: "/stats", icon: BarChart3 },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
@@ -27,7 +27,7 @@ export default function Sidebar() {
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <Gamepad2 className="text-white text-lg" />
           </div>
-          <h1 className="text-xl font-bold text-white">GameTracker</h1>
+          <h1 className="text-xl font-bold text-white">ActivityTracker</h1>
         </div>
         
         <nav className="space-y-2">
@@ -35,9 +35,9 @@ export default function Sidebar() {
             const isActive = location === item.href;
             return (
               <Link key={item.name} href={item.href}>
-                <a
+                <div
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
                     isActive
                       ? "bg-primary/20 text-primary"
                       : "text-slate-300 hover:text-white hover:bg-slate-700"
@@ -45,7 +45,7 @@ export default function Sidebar() {
                 >
                   <item.icon className="w-5 h-5" />
                   <span>{item.name}</span>
-                </a>
+                </div>
               </Link>
             );
           })}

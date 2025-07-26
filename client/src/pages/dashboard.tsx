@@ -11,10 +11,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
 interface Stats {
-  totalGames: number;
-  completedGames: number;
+  totalActivities: number;
+  completedActivities: number;
+  inProgressActivities: number;
   totalHours: number;
   monthlyHours: number;
+  byType: Record<string, { count: number; completed: number; hours: number }>;
+  // Backward compatibility
+  totalGames: number;
+  completedGames: number;
 }
 
 export default function Dashboard() {
@@ -42,19 +47,25 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: "Total Games",
-      value: stats?.totalGames || 0,
-      icon: "🎮",
+      title: "Total Activities",
+      value: stats?.totalActivities || 0,
+      icon: "📊",
       color: "bg-primary/20 text-primary",
     },
     {
       title: "Completed",
-      value: stats?.completedGames || 0,
+      value: stats?.completedActivities || 0,
       icon: "🏆",
       color: "bg-green-500/20 text-green-400",
     },
     {
-      title: "Hours Played",
+      title: "In Progress",
+      value: stats?.inProgressActivities || 0,
+      icon: "⚡",
+      color: "bg-blue-500/20 text-blue-400",
+    },
+    {
+      title: "Total Hours",
       value: stats?.totalHours || 0,
       icon: "⏰",
       color: "bg-yellow-500/20 text-yellow-500",
@@ -63,7 +74,7 @@ export default function Dashboard() {
       title: "This Month",
       value: `${stats?.monthlyHours || 0}h`,
       icon: "📅",
-      color: "bg-blue-500/20 text-blue-500",
+      color: "bg-purple-500/20 text-purple-400",
     },
   ];
 
