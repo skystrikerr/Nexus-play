@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -23,13 +23,16 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertActivitySchema, ACTIVITY_TYPES } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Star, X } from "lucide-react";
+import { Star, X, Search, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { searchGames, mapRawgToActivity, type RawgGame } from "@/lib/rawg-api";
 import type { z } from "zod";
 
 const formSchema = insertActivitySchema.extend({
@@ -46,6 +49,9 @@ interface AddGameModalProps {
 export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRating, setSelectedRating] = useState<number>(0);
+  const [searchResults, setSearchResults] = useState<RawgGame[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showManualForm, setShowManualForm] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -68,12 +74,48 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
     },
   });
 
-  // Search games from external API
-  const { data: searchResults } = useQuery<{results: any[]}>({
-    queryKey: ["/api/search-games", searchQuery],
-    enabled: searchQuery.length > 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Search games using RAWG API
+  const handleSearch = useCallback(async (query: string) => {
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchGames(query);
+      setSearchResults(results.results);
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // Debounced search
+  const debouncedSearch = useCallback(
+    debounce((query: string) => handleSearch(query), 500),
+    [handleSearch]
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    debouncedSearch(value);
+  };
+
+  // Simple debounce function
+  function debounce(func: Function, wait: number) {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   const createGameMutation = useMutation({
     mutationFn: (data: FormData) => apiRequest("POST", "/api/activities", data),
@@ -107,77 +149,163 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
     createGameMutation.mutate(submitData);
   };
 
-  const handleGameSelect = (game: any) => {
-    console.log("Selected game:", game); // Debug log
-    form.setValue("title", game.name);
-    form.setValue("category", game.platforms?.[0]?.platform?.name || "PC");
-    form.setValue("subcategory", game.genres?.[0]?.name || "");
-    form.setValue("imageUrl", game.background_image || "");
-    form.setValue("externalId", game.id.toString());
-    form.setValue("description", game.description_raw || game.short_description || "");
-    setSearchQuery(game.name);
-    console.log("Form imageUrl value:", form.getValues("imageUrl")); // Debug log
+  const handleGameSelect = (game: RawgGame) => {
+    const activityData = mapRawgToActivity(game);
+    
+    // Fill form with game data
+    form.setValue("title", activityData.title);
+    form.setValue("category", activityData.category);
+    form.setValue("imageUrl", activityData.imageUrl || "");
+    form.setValue("description", activityData.description || "");
+    form.setValue("rating", activityData.rating);
+    form.setValue("metadata", activityData.metadata);
+    
+    setSelectedRating(activityData.rating);
+    setShowManualForm(true);
+    setSearchResults([]);
+    setSearchQuery("");
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setSelectedRating(0);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowManualForm(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-surface border-slate-700 text-white max-w-md">
+    <Dialog open={open} onOpenChange={(open) => {
+      onOpenChange(open);
+      if (!open) resetForm();
+    }}>
+      <DialogContent className="bg-dark-surface border-slate-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Add New Game</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+            <Search className="w-5 h-5" />
+            Add New Game
+          </DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-300">Game Title</FormLabel>
-                  <FormControl>
-                    <div className="relative">
+        {!showManualForm ? (
+          // Game Search Interface
+          <div className="space-y-4">
+            <div className="relative">
+              <Input
+                placeholder="Search for a game..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="bg-dark-bg border-slate-600 text-white pl-10"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+
+            {searchResults && searchResults.length > 0 && (
+              <div className="grid gap-3 max-h-96 overflow-y-auto">
+                {searchResults.slice(0, 8).map((game: RawgGame) => (
+                  <Card key={game.id} className="bg-dark-bg border-slate-600 hover:border-slate-500 transition-colors cursor-pointer">
+                    <CardContent className="p-4" onClick={() => handleGameSelect(game)}>
+                      <div className="flex items-center gap-4">
+                        {game.background_image ? (
+                          <img
+                            src={game.background_image}
+                            alt={game.name}
+                            className="w-16 h-20 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-20 rounded-lg bg-slate-700 flex items-center justify-center">
+                            <span className="text-slate-400 text-xs">No Image</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-semibold truncate">{game.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            {game.rating > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                                <span className="text-yellow-400 text-sm">{game.rating.toFixed(1)}</span>
+                              </div>
+                            )}
+                            {game.released && (
+                              <span className="text-slate-400 text-sm">{new Date(game.released).getFullYear()}</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {game.genres?.slice(0, 3).map((genre) => (
+                              <Badge key={genre.id} variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                                {genre.name}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {game.platforms?.slice(0, 3).map((platform) => (
+                              <Badge key={platform.platform.id} variant="outline" className="text-xs border-slate-600 text-slate-400">
+                                {platform.platform.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-slate-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {searchQuery.length > 2 && !isSearching && searchResults.length === 0 && (
+              <div className="text-center py-8 text-slate-400">
+                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No games found for "{searchQuery}"</p>
+                <p className="text-sm mt-2">Try a different search term or add manually</p>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4 border-t border-slate-700">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                onClick={() => setShowManualForm(true)}
+              >
+                Add Manually
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Manual Form Interface
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-300">Game Title</FormLabel>
+                    <FormControl>
                       <Input
                         {...field}
-                        placeholder="Search for a game..."
+                        placeholder="Enter game title..."
                         className="bg-dark-bg border-slate-600 text-white"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          field.onChange(e.target.value);
-                        }}
                       />
-                      {searchResults?.results && searchQuery.length > 2 && (
-                        <div className="absolute top-full left-0 right-0 bg-dark-bg border border-slate-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-10">
-                          {searchResults.results.slice(0, 5).map((game: any) => (
-                            <button
-                              key={game.id}
-                              type="button"
-                              className="w-full text-left px-3 py-2 hover:bg-slate-700 flex items-center space-x-3"
-                              onClick={() => handleGameSelect(game)}
-                            >
-                              {game.background_image && (
-                                <img
-                                  src={game.background_image}
-                                  alt={game.name}
-                                  className="w-8 h-8 rounded object-cover"
-                                />
-                              )}
-                              <div>
-                                <div className="text-white text-sm">{game.name}</div>
-                                <div className="text-slate-400 text-xs">
-                                  {game.genres?.map((g: any) => g.name).join(", ")}
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
             <FormField
               control={form.control}
@@ -278,25 +406,34 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               </div>
             </div>
 
-            <div className="flex space-x-3 pt-4">
-              <Button
-                type="submit"
-                className="flex-1 bg-primary hover:bg-primary/80"
-                disabled={createGameMutation.isPending}
-              >
-                {createGameMutation.isPending ? "Adding..." : "Add Game"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  onClick={() => setShowManualForm(false)}
+                >
+                  ← Back to Search
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-primary hover:bg-primary/80"
+                  disabled={createGameMutation.isPending}
+                >
+                  {createGameMutation.isPending ? "Adding..." : "Add Game"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
