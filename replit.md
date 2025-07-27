@@ -9,6 +9,7 @@ NexusPlay is a full-stack web application for tracking various activities includ
 Preferred communication style: Simple, everyday language.
 Feature requirements: Multi-activity tracking beyond games (study, work, exercise, etc.) with image support for activities.
 App name: NexusPlay (changed from Activity Tracker in January 2025)
+API Integration: RAWG gaming database for automatic game data and cover art (January 2025)
 
 ## System Architecture
 
@@ -87,6 +88,8 @@ The application defines two main entities with enhanced flexibility:
 - **Social Features**: User profiles, community directory, ability to view others' public activities
 - **Timer System**: Built-in activity timers with session completion tracking
 - **Database Migration**: Moved from memory storage to PostgreSQL with proper user isolation
+- **RAWG API Integration**: Automatic game data and cover art fetching from 500,000+ game database
+- **Smart Game Search**: Real-time search with rich game details, ratings, and automatic form filling
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
