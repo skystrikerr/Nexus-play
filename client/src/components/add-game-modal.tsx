@@ -131,12 +131,25 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
       form.reset();
       setSelectedRating(0);
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add game. Please try again.",
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      console.error("Failed to add game:", error);
+      if (error.message?.includes("Unauthorized")) {
+        toast({
+          title: "Login Required",
+          description: "Please log in to add games to your library.",
+          variant: "destructive",
+        });
+        // Redirect to login after showing error
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 2000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add game. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -179,7 +192,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
       onOpenChange(open);
       if (!open) resetForm();
     }}>
-      <DialogContent className="bg-dark-surface border-slate-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-slate-900 border-slate-600 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <Search className="w-5 h-5" />
@@ -195,7 +208,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                 placeholder="Search for a game..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="bg-dark-bg border-slate-600 text-white pl-10"
+                className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 pl-10 focus:border-blue-500"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               {isSearching && (
@@ -208,7 +221,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
             {searchResults && searchResults.length > 0 && (
               <div className="grid gap-3 max-h-96 overflow-y-auto">
                 {searchResults.slice(0, 8).map((game: RawgGame) => (
-                  <Card key={game.id} className="bg-dark-bg border-slate-600 hover:border-slate-500 transition-colors cursor-pointer">
+                  <Card key={game.id} className="bg-slate-800 border-slate-600 hover:border-blue-500 hover:bg-slate-750 transition-all cursor-pointer">
                     <CardContent className="p-4" onClick={() => handleGameSelect(game)}>
                       <div className="flex items-center gap-4">
                         {game.background_image ? (
@@ -228,29 +241,29 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                             {game.rating > 0 && (
                               <div className="flex items-center gap-1">
                                 <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                <span className="text-yellow-400 text-sm">{game.rating.toFixed(1)}</span>
+                                <span className="text-yellow-400 text-sm font-medium">{game.rating.toFixed(1)}</span>
                               </div>
                             )}
                             {game.released && (
-                              <span className="text-slate-400 text-sm">{new Date(game.released).getFullYear()}</span>
+                              <span className="text-slate-300 text-sm">{new Date(game.released).getFullYear()}</span>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-1 mt-2">
                             {game.genres?.slice(0, 3).map((genre) => (
-                              <Badge key={genre.id} variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                              <Badge key={genre.id} variant="secondary" className="text-xs bg-slate-700 text-slate-200 border-0">
                                 {genre.name}
                               </Badge>
                             ))}
                           </div>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {game.platforms?.slice(0, 3).map((platform) => (
-                              <Badge key={platform.platform.id} variant="outline" className="text-xs border-slate-600 text-slate-400">
+                              <Badge key={platform.platform.id} variant="outline" className="text-xs border-slate-500 text-slate-300">
                                 {platform.platform.name}
                               </Badge>
                             ))}
                           </div>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400" />
+                        <ExternalLink className="w-4 h-4 text-slate-300" />
                       </div>
                     </CardContent>
                   </Card>
@@ -259,18 +272,18 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
             )}
 
             {searchQuery.length > 2 && !isSearching && searchResults.length === 0 && (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-slate-300">
                 <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No games found for "{searchQuery}"</p>
-                <p className="text-sm mt-2">Try a different search term or add manually</p>
+                <p className="text-white">No games found for "{searchQuery}"</p>
+                <p className="text-sm mt-2 text-slate-400">Try a different search term or add manually</p>
               </div>
             )}
 
-            <div className="flex gap-2 pt-4 border-t border-slate-700">
+            <div className="flex gap-2 pt-4 border-t border-slate-600">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="flex-1 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-400"
                 onClick={() => setShowManualForm(true)}
               >
                 Add Manually
@@ -278,7 +291,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               <Button
                 type="button"
                 variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-slate-500 text-white hover:bg-slate-700 hover:border-slate-400"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
@@ -294,12 +307,12 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Game Title</FormLabel>
+                    <FormLabel className="text-white font-medium">Game Title</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         placeholder="Enter game title..."
-                        className="bg-dark-bg border-slate-600 text-white"
+                        className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500"
                       />
                     </FormControl>
                     <FormMessage />
@@ -312,14 +325,14 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-300">Platform</FormLabel>
+                  <FormLabel className="text-white font-medium">Platform</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
-                      <SelectTrigger className="bg-dark-bg border-slate-600 text-white">
+                      <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-blue-500">
                         <SelectValue placeholder="Select Platform" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-dark-bg border-slate-600">
+                    <SelectContent className="bg-slate-800 border-slate-600">
                       <SelectItem value="PC">PC</SelectItem>
                       <SelectItem value="PlayStation 5">PlayStation 5</SelectItem>
                       <SelectItem value="Xbox Series X">Xbox Series X</SelectItem>
@@ -337,14 +350,14 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-300">Status</FormLabel>
+                  <FormLabel className="text-white font-medium">Status</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-dark-bg border-slate-600 text-white">
+                      <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-blue-500">
                         <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-dark-bg border-slate-600">
+                    <SelectContent className="bg-slate-800 border-slate-600">
                       <SelectItem value="wishlist">Wishlist</SelectItem>
                       <SelectItem value="in_progress">Currently Playing</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
@@ -362,12 +375,12 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-300">Game Image URL</FormLabel>
+                  <FormLabel className="text-white font-medium">Game Image URL</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="Image URL (auto-filled from search)"
-                      className="bg-dark-bg border-slate-600 text-white"
+                      className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500"
                     />
                   </FormControl>
                   <FormMessage />
@@ -388,7 +401,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
             />
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Rating</label>
+              <label className="block text-sm font-medium text-white mb-2">Rating</label>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -396,7 +409,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                     type="button"
                     className={cn(
                       "text-2xl transition-colors",
-                      selectedRating >= star ? "text-yellow-400" : "text-slate-600 hover:text-yellow-400"
+                      selectedRating >= star ? "text-yellow-400" : "text-slate-500 hover:text-yellow-400"
                     )}
                     onClick={() => setSelectedRating(star)}
                   >
@@ -410,14 +423,14 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className="border-slate-500 text-white hover:bg-slate-700 hover:border-slate-400"
                   onClick={() => setShowManualForm(false)}
                 >
                   ← Back to Search
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-primary hover:bg-primary/80"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={createGameMutation.isPending}
                 >
                   {createGameMutation.isPending ? "Adding..." : "Add Game"}
@@ -425,7 +438,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className="border-slate-500 text-white hover:bg-slate-700 hover:border-slate-400"
                   onClick={() => onOpenChange(false)}
                 >
                   Cancel

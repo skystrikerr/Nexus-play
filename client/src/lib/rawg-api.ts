@@ -21,20 +21,35 @@ export interface GameSearchResult {
 }
 
 export async function searchGames(query: string): Promise<GameSearchResult> {
-  if (!query.trim()) {
+  if (!query.trim() || query.length < 2) {
     return { count: 0, results: [] };
   }
 
   try {
-    const response = await fetch(
-      `${RAWG_BASE_URL}/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=10&ordering=-rating`
-    );
+    // Try different search approaches for better results
+    const searchUrl = `${RAWG_BASE_URL}/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=12&ordering=-rating,-added`;
+    
+    const response = await fetch(searchUrl);
 
     if (!response.ok) {
+      console.warn(`RAWG API responded with status: ${response.status}`);
+      // Still try to return the response if it's not a complete failure
+      if (response.status === 429) {
+        console.warn("Rate limited by RAWG API");
+      }
+      if (response.status < 500) {
+        try {
+          const data = await response.json();
+          return data || { count: 0, results: [] };
+        } catch {
+          return { count: 0, results: [] };
+        }
+      }
       throw new Error(`RAWG API error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data || { count: 0, results: [] };
   } catch (error) {
     console.error("Error searching games:", error);
     return { count: 0, results: [] };
