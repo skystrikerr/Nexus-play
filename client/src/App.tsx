@@ -12,6 +12,7 @@ import Statistics from "@/pages/statistics";
 import Wishlist from "@/pages/wishlist";
 import { Users } from "@/pages/users";
 import { UserProfile } from "@/pages/user-profile";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/wishlist" component={Wishlist} />
           <Route path="/users" component={Users} />
           <Route path="/users/:id" component={UserProfile} />
+          <Route path="/settings" component={Settings} />
         </>
       )}
       <Route component={NotFound} />

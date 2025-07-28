@@ -1,6 +1,27 @@
-import { Star, Clock, TrendingUp } from "lucide-react";
+import { Star, Clock, TrendingUp, MoreVertical, Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ActivityTimer from "./activity-timer";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import type { Activity } from "@shared/schema";
 
 interface GameCardProps {
@@ -25,17 +46,94 @@ const statusLabels = {
 };
 
 export default function GameCard({ game, onClick }: GameCardProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const progressColor = 
     game.status === "completed" ? "bg-green-500" :
     game.status === "dropped" ? "bg-red-500" : 
     "bg-primary";
 
+  const deleteGameMutation = useMutation({
+    mutationFn: () => apiRequest("DELETE", `/api/activities/${game.id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      toast({
+        title: "Game Deleted",
+        description: "The game has been removed from your library.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete game. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent card click when clicking dropdown or delete actions
+    if ((e.target as HTMLElement).closest('[data-dropdown-trigger]')) {
+      return;
+    }
+    onClick?.();
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    deleteGameMutation.mutate();
+    setShowDeleteDialog(false);
+  };
+
   return (
-    <div 
-      className="bg-dark-surface rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer"
-      onClick={onClick}
-    >
-      <div className="flex items-center space-x-4">
+    <>
+      <div 
+        className="bg-dark-surface rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer relative group"
+        onClick={handleCardClick}
+      >
+        {/* Action Menu */}
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild data-dropdown-trigger>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-600">
+              <DropdownMenuItem 
+                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick?.();
+                }}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 cursor-pointer"
+                onClick={handleDeleteClick}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="flex items-center space-x-4">
         {game.imageUrl ? (
           <img
             src={game.imageUrl}
@@ -101,6 +199,31 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Game</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Are you sure you want to delete "{game.title}" from your library? This will also remove all associated sessions and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-600 text-slate-300 hover:bg-slate-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteGameMutation.isPending}
+            >
+              {deleteGameMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

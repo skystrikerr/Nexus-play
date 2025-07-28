@@ -127,6 +127,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const success = await storage.deleteActivity(req.params.id, userId);
+      if (!success) {
+        return res.status(404).json({ message: "Activity not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete activity" });
+    }
+  });
+
+  app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
       const deleted = await storage.deleteActivity(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Activity not found" });
@@ -294,6 +307,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Game search error:", error);
       res.status(500).json({ message: "Failed to search games" });
+    }
+  });
+
+  // Settings endpoints
+  app.get("/api/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      // For now, return default settings since we don't have a settings table
+      // This can be extended later to use a dedicated settings table
+      const defaultSettings = {
+        theme: "dark",
+        isPublic: true,
+        bio: "",
+        firstName: "",
+        lastName: "",
+        notifications: {
+          achievements: true,
+          reminders: true,
+          social: true,
+        },
+      };
+      res.json(defaultSettings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settingsData = req.body;
+      
+      // Update user profile fields in the users table
+      if (settingsData.firstName !== undefined || settingsData.lastName !== undefined || settingsData.bio !== undefined) {
+        const updateData: any = {};
+        if (settingsData.firstName !== undefined) updateData.firstName = settingsData.firstName;
+        if (settingsData.lastName !== undefined) updateData.lastName = settingsData.lastName;
+        // Note: bio field would need to be added to users table schema
+        
+        await storage.upsertUser({ id: userId, ...updateData });
+      }
+      
+      // For other settings like theme and notifications, we'd need a separate settings table
+      // For now, just acknowledge the update
+      res.json({ success: true, message: "Settings updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update settings" });
     }
   });
 

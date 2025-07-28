@@ -12,6 +12,7 @@ import {
   BarChart3, 
   Heart,
   Users,
+  Settings,
   LogOut
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ export default function Sidebar() {
     { name: "Statistics", href: "/stats", icon: BarChart3 },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
     { name: "Community", href: "/users", icon: Users },
+    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (

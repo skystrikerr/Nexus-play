@@ -132,7 +132,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(activities)
       .where(and(eq(activities.id, id), eq(activities.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getActivitiesByType(type: string, userId: string): Promise<Activity[]> {
@@ -228,7 +228,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(activitySessions)
       .where(and(eq(activitySessions.id, id), eq(activitySessions.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Public sessions (for viewing other users' profiles)
