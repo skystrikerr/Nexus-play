@@ -13,6 +13,7 @@ import {
   Heart,
   Users,
   Settings,
+  Target,
   LogOut
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ export default function Sidebar() {
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
+    { name: "Task Manager", href: "/tasks", icon: Target },
     { name: "Activity Library", href: "/library", icon: Library },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Statistics", href: "/stats", icon: BarChart3 },

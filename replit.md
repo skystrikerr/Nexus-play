@@ -71,7 +71,8 @@ The application defines two main entities with enhanced flexibility:
 - Game-specific queries automatically filter to type='game'
 
 ### Frontend Pages
-- **Dashboard**: Overview with recent activities across all types, comprehensive statistics, and calendar widget
+- **Dashboard**: Time management hub with urgent tasks, recent activities across all types, comprehensive statistics, and calendar widget
+- **Task Manager**: Dedicated task management page with priority filtering, due date sorting, completion tracking, and statistics
 - **Activity Library**: Full activity collection with search, filtering by type and status
 - **Calendar**: Visual representation of all activity sessions over time with type differentiation
 - **Individual Activity Views**: Detailed activity information and session history
@@ -79,6 +80,8 @@ The application defines two main entities with enhanced flexibility:
 
 ### Enhanced Features Added (January 2025)
 - **Multi-Activity Support**: Expanded from games-only to support study, work, exercise, reading, hobbies, and custom activities
+- **Task Management System**: Comprehensive task management with priority levels, due dates, estimated hours
+- **Time Management Hub**: Dashboard redesigned to serve as unified time management platform
 - **Image Integration**: Full support for activity images via URL with preview functionality
 - **Enhanced Session Tracking**: Added quality ratings and location tracking for sessions
 - **Flexible Metadata**: JSON metadata field and tagging system for extensible activity data
@@ -90,13 +93,18 @@ The application defines two main entities with enhanced flexibility:
 - **Database Migration**: Moved from memory storage to PostgreSQL with proper user isolation
 - **RAWG API Integration**: Automatic game data and cover art fetching from 500,000+ game database
 - **Smart Game Search**: Real-time search with rich game details, ratings, and automatic form filling
+- **Task Management Interface**: Dedicated task page with filtering, priority sorting, and completion tracking
+- **Urgent Task Dashboard**: Dashboard shows urgent/overdue tasks prominently
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
+- **TaskCard**: Specialized task display with priority indicators, due dates, completion status, and timer integration
 - **AddActivityModal**: Comprehensive form for adding any activity type with smart field adaptation and image support
+- **AddTaskModal**: Dedicated task creation form with priority levels, due dates, estimated hours, and categorization
 - **AddGameModal**: Maintained for backward compatibility, now uses activity system internally
 - **GamingCalendar**: Enhanced to show all activity types with visual differentiation
-- **Sidebar**: Navigation supporting the expanded activity ecosystem
+- **Sidebar**: Navigation supporting the expanded activity ecosystem including dedicated task management
+- **Tasks Page**: Full-featured task management interface with filtering, sorting, and statistics
 
 ## Data Flow
 
