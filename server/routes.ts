@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Activity sessions routes
+  // Activity sessions routes - Enhanced with activity details for calendar
   app.get("/api/sessions", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -244,7 +244,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessions = await storage.getSessions(userId);
       }
       
-      res.json(sessions);
+      // Enhance sessions with activity details for calendar view
+      const enhancedSessions = await Promise.all(
+        sessions.map(async (session) => {
+          try {
+            const activity = await storage.getActivityById(session.activityId, userId);
+            return {
+              ...session,
+              activity: activity ? {
+                title: activity.title,
+                type: activity.type,
+                category: activity.category,
+                imageUrl: activity.imageUrl
+              } : null
+            };
+          } catch (error) {
+            // If activity not found, return session without activity details
+            return session;
+          }
+        })
+      );
+      
+      res.json(enhancedSessions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch sessions" });
     }
@@ -414,6 +435,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Tasks routes (using activities with type='task')
+  app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const tasks = await storage.getActivitiesByType('task', userId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post("/api/tasks", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const taskData = {
+        ...req.body,
+        type: 'task'
+      };
+      const task = await storage.createActivity(taskData, userId);
+      res.status(201).json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.put("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const taskData = req.body;
+      const task = await storage.updateActivity(req.params.id, taskData, userId);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteActivity(req.params.id, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete task" });
     }
   });
 
