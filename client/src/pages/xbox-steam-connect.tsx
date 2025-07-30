@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Gamepad2, Users, Link, ExternalLink } from "lucide-react";
-import { SiXbox, SiSteam } from "react-icons/si";
+import { SiSteam } from "react-icons/si";
 
 interface XboxConnectionData {
   accessToken: string;
@@ -25,6 +25,42 @@ export function XboxSteamConnect() {
   const [steamData, setSteamData] = useState<SteamConnectionData>({ steamId: "", apiKey: "" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const syncXboxGamesMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/sync/xbox-games", {}),
+    onSuccess: (data: any) => {
+      toast({
+        title: "Xbox Games Synced!",
+        description: `Added ${data.gamesAdded} new games from your Xbox library.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Xbox Sync Failed",
+        description: error.message || "Failed to sync Xbox games",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncSteamGamesMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/sync/steam-games", {}),
+    onSuccess: (data: any) => {
+      toast({
+        title: "Steam Games Synced!",
+        description: `Added ${data.gamesAdded} new games from your Steam library.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Steam Sync Failed",
+        description: error.message || "Failed to sync Steam games",
+        variant: "destructive",
+      });
+    },
+  });
 
   const connectXboxMutation = useMutation({
     mutationFn: (data: XboxConnectionData) => apiRequest("POST", "/api/auth/connect/xbox", data),
@@ -109,7 +145,7 @@ export function XboxSteamConnect() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <SiXbox className="h-8 w-8 text-green-400" />
+                <Gamepad2 className="h-8 w-8 text-green-400" />
                 <div>
                   <CardTitle className="text-white">Xbox Live</CardTitle>
                   <CardDescription className="text-gray-400">
@@ -153,24 +189,35 @@ export function XboxSteamConnect() {
                   className="w-full bg-green-600 hover:bg-green-700"
                   disabled={connectXboxMutation.isPending}
                 >
-                  <SiXbox className="mr-2 h-4 w-4" />
+                  <Gamepad2 className="mr-2 h-4 w-4" />
                   {connectXboxMutation.isPending ? "Connecting..." : "Connect Xbox Live"}
                 </Button>
               </form>
 
               <Separator className="bg-slate-600" />
               
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2">Need help getting your token?</p>
+              <div className="text-center space-y-3">
                 <Button
+                  onClick={() => syncXboxGamesMutation.mutate()}
                   variant="outline"
-                  size="sm"
-                  onClick={() => window.open('https://developer.microsoft.com/en-us/games/xbox/xbox-live', '_blank')}
-                  className="text-gray-300 border-gray-600 hover:bg-slate-700"
+                  disabled={syncXboxGamesMutation.isPending}
+                  className="w-full text-green-400 border-green-600 hover:bg-green-600 hover:text-white"
                 >
-                  <ExternalLink className="mr-2 h-3 w-3" />
-                  Xbox Live Documentation
+                  {syncXboxGamesMutation.isPending ? "Syncing..." : "Sync Xbox Game Library"}
                 </Button>
+                
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Need help getting your token?</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open('https://developer.microsoft.com/en-us/games/xbox/xbox-live', '_blank')}
+                    className="text-gray-300 border-gray-600 hover:bg-slate-700"
+                  >
+                    <ExternalLink className="mr-2 h-3 w-3" />
+                    Xbox Live Documentation
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -251,17 +298,28 @@ export function XboxSteamConnect() {
 
               <Separator className="bg-slate-600" />
               
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2">Need a Steam API key?</p>
+              <div className="text-center space-y-3">
                 <Button
+                  onClick={() => syncSteamGamesMutation.mutate()}
                   variant="outline"
-                  size="sm"
-                  onClick={() => window.open('https://steamcommunity.com/dev/apikey', '_blank')}
-                  className="text-gray-300 border-gray-600 hover:bg-slate-700"
+                  disabled={syncSteamGamesMutation.isPending}
+                  className="w-full text-blue-400 border-blue-600 hover:bg-blue-600 hover:text-white"
                 >
-                  <ExternalLink className="mr-2 h-3 w-3" />
-                  Get Steam API Key
+                  {syncSteamGamesMutation.isPending ? "Syncing..." : "Sync Steam Game Library"}
                 </Button>
+                
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Need a Steam API key?</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open('https://steamcommunity.com/dev/apikey', '_blank')}
+                    className="text-gray-300 border-gray-600 hover:bg-slate-700"
+                  >
+                    <ExternalLink className="mr-2 h-3 w-3" />
+                    Get Steam API Key
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

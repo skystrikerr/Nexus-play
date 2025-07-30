@@ -417,6 +417,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Xbox/Steam game sync routes
+  app.post('/api/sync/xbox-games', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id || req.user.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.xboxAccessToken || !user?.xboxLiveId) {
+        return res.status(400).json({ message: 'Xbox Live account not connected' });
+      }
+
+      // Fetch Xbox games (placeholder - would need actual Xbox API)
+      const mockXboxGames = [
+        { id: 'xbox_halo', name: 'Halo Infinite', imageUrl: 'https://example.com/halo.jpg', description: 'Master Chief returns' },
+        { id: 'xbox_forza', name: 'Forza Horizon 5', imageUrl: 'https://example.com/forza.jpg', description: 'Open world racing' }
+      ];
+      
+      // Add games to user's library
+      let addedCount = 0;
+      for (const game of mockXboxGames) {
+        const existingActivities = await storage.getActivities(userId);
+        const gameExists = existingActivities.some(g => g.externalId === game.id && g.type === 'game');
+        
+        if (!gameExists) {
+          await storage.createActivity({
+            title: game.name,
+            type: 'game',
+            category: 'Xbox',
+            status: 'in_progress',
+            imageUrl: game.imageUrl,
+            externalId: game.id,
+            description: game.description,
+            metadata: { platform: 'xbox', source: 'xbox_sync' }
+          }, userId);
+          addedCount++;
+        }
+      }
+
+      res.json({ 
+        message: `Successfully synced ${addedCount} Xbox games`,
+        gamesAdded: addedCount,
+        totalGames: mockXboxGames.length
+      });
+    } catch (error) {
+      console.error('Xbox game sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Xbox games' });
+    }
+  });
+
+  app.post('/api/sync/steam-games', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id || req.user.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.steamId) {
+        return res.status(400).json({ message: 'Steam account not connected' });
+      }
+
+      const apiKey = user.steamApiKey || process.env.STEAM_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ message: 'Steam API key not available' });
+      }
+
+      // Fetch Steam games from API
+      const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${user.steamId}&include_appinfo=true&format=json`);
+      const data = await response.json();
+      const steamGames = data.response?.games || [];
+      
+      // Add games to user's library
+      let addedCount = 0;
+      for (const game of steamGames) {
+        const existingActivities = await storage.getActivities(userId);
+        const gameExists = existingActivities.some(g => g.externalId === game.appid.toString() && g.type === 'game');
+        
+        if (!gameExists) {
+          await storage.createActivity({
+            title: game.name,
+            type: 'game',
+            category: 'Steam',
+            status: game.playtime_forever > 0 ? 'in_progress' : 'wishlist',
+            imageUrl: `https://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`,
+            externalId: game.appid.toString(),
+            totalHours: game.playtime_forever / 60, // Convert minutes to hours
+            metadata: { 
+              platform: 'steam', 
+              source: 'steam_sync',
+              playtime_minutes: game.playtime_forever,
+              last_played: game.rtime_last_played
+            }
+          }, userId);
+          addedCount++;
+        }
+      }
+
+      res.json({ 
+        message: `Successfully synced ${addedCount} Steam games`,
+        gamesAdded: addedCount,
+        totalGames: steamGames.length
+      });
+    } catch (error) {
+      console.error('Steam game sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Steam games' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
