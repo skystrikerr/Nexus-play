@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
+import { XboxSteamConnect } from "@/pages/xbox-steam-connect";
 import Dashboard from "@/pages/dashboard";
 import GameLibrary from "@/pages/game-library";
 import Calendar from "@/pages/calendar";
@@ -23,6 +24,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth" component={Auth} />
+      <Route path="/connect-platforms" component={XboxSteamConnect} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (

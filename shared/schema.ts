@@ -44,6 +44,10 @@ export const users = pgTable("users", {
   bio: text("bio"),
   provider: varchar("provider").default("local"), // 'local', 'google', 'replit'
   providerId: varchar("provider_id"), // external provider ID
+  xboxLiveId: varchar("xbox_live_id"), // Xbox Live gamertag/ID
+  steamId: varchar("steam_id"), // Steam user ID
+  xboxAccessToken: varchar("xbox_access_token"), // Xbox access token
+  steamApiKey: varchar("steam_api_key"), // Steam API key
   isPublic: integer("is_public").default(1), // 1 for public, 0 for private profile
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

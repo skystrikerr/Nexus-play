@@ -17,8 +17,11 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserBySteamId(steamId: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserXboxInfo(userId: string, xboxInfo: { xboxLiveId: string; xboxAccessToken: string }): Promise<User | undefined>;
+  updateUserSteamInfo(userId: string, steamInfo: { steamId: string; steamApiKey?: string }): Promise<User | undefined>;
   
   // Public user operations
   getPublicUsers(): Promise<User[]>;
@@ -66,6 +69,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserBySteamId(steamId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.steamId, steamId));
     return user;
   }
 
@@ -267,6 +275,32 @@ export class DatabaseStorage implements IStorage {
         eq(activities.isPublic, 1)
       ))
       .orderBy(desc(activitySessions.createdAt));
+  }
+
+  async updateUserXboxInfo(userId: string, xboxInfo: { xboxLiveId: string; xboxAccessToken: string }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        xboxLiveId: xboxInfo.xboxLiveId,
+        xboxAccessToken: xboxInfo.xboxAccessToken,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserSteamInfo(userId: string, steamInfo: { steamId: string; steamApiKey?: string }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        steamId: steamInfo.steamId,
+        steamApiKey: steamInfo.steamApiKey,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 
   // Backward compatibility aliases

@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff, Mail, User, Lock } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
+import { SiSteam } from "react-icons/si";
 
 interface LoginData {
   email: string;
@@ -85,6 +86,10 @@ export function Auth() {
     window.location.href = "/api/login";
   };
 
+  const handleSteamLogin = () => {
+    window.location.href = "/api/auth/steam";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -114,6 +119,15 @@ export function Auth() {
               >
                 <FaGoogle className="mr-2 h-4 w-4" />
                 Continue with Google
+              </Button>
+              
+              <Button
+                onClick={handleSteamLogin}
+                variant="outline"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+              >
+                <SiSteam className="mr-2 h-4 w-4" />
+                Continue with Steam
               </Button>
               
               <Button
