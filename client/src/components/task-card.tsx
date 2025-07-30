@@ -36,7 +36,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import ActivityTimer from "./activity-timer";
+// import ActivityTimer from "./activity-timer";
 import type { Activity } from "@shared/schema";
 
 interface TaskCardProps {
@@ -178,7 +178,7 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
         </div>
 
         <div className="flex items-center gap-2">
-          <ActivityTimer activity={task} variant="mini" />
+          {/* <ActivityTimer activity={task} variant="mini" /> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild data-dropdown-trigger>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400">
@@ -283,7 +283,7 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
               </div>
             </div>
 
-            <ActivityTimer activity={task} variant="small" />
+            {/* <ActivityTimer activity={task} variant="small" /> */}
           </div>
 
           {/* Description */}

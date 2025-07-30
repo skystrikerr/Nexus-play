@@ -30,7 +30,7 @@ export default function ActivityTimer({ activity, variant = "small" }: ActivityT
 
   const createSessionMutation = useMutation({
     mutationFn: (data: InsertSession) => 
-      apiRequest("/api/sessions", "POST", data),
+      apiRequest("POST", "/api/sessions", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
