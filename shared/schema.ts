@@ -37,10 +37,13 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  password: varchar("password"), // for local auth
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   bio: text("bio"),
+  provider: varchar("provider").default("local"), // 'local', 'google', 'replit'
+  providerId: varchar("provider_id"), // external provider ID
   isPublic: integer("is_public").default(1), // 1 for public, 0 for private profile
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
