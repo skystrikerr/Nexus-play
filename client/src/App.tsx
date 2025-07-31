@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useMobile, useCapacitor } from "@/hooks/useMobile";
+import MobileLayout from "@/components/mobile-layout";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
 import { XboxSteamConnect } from "@/pages/xbox-steam-connect";
@@ -22,8 +25,9 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const isMobile = useMobile();
 
-  return (
+  const AppContent = () => (
     <Switch>
       <Route path="/auth" component={Auth} />
       <Route path="/connect-platforms" component={XboxSteamConnect} />
@@ -46,9 +50,32 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
+
+  // For authenticated users, wrap with mobile layout
+  if (isAuthenticated && !isLoading) {
+    return (
+      <MobileLayout>
+        <AppContent />
+      </MobileLayout>
+    );
+  }
+
+  // For non-authenticated users, show without layout
+  return <AppContent />;
 }
 
 function App() {
+  const isCapacitor = useCapacitor();
+
+  // Initialize Capacitor when running in native app
+  React.useEffect(() => {
+    if (isCapacitor) {
+      import('./utils/capacitor').then(({ initializeCapacitor }) => {
+        initializeCapacitor();
+      });
+    }
+  }, [isCapacitor]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="nexusplay-ui-theme">

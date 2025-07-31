@@ -98,6 +98,9 @@ The application defines two main entities with enhanced flexibility:
 - **Multi-Authentication Support**: Added Google login, basic email/password registration, and Steam authentication
 - **Gaming Platform Integration**: Full Xbox Live and Steam account connection with game library synchronization
 - **Cross-Platform Game Tracking**: Automatic syncing of Xbox and Steam game libraries with playtime data
+- **Mobile Application Support**: Full Android app support via Capacitor with native features and mobile-optimized UI
+- **Analytics Visualization**: Comprehensive analytics page with color-coded graphs for different activity types
+- **Password Management**: Complete password reset and change functionality with secure validation
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
