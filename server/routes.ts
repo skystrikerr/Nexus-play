@@ -12,14 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      let userId: string;
-      
-      if (req.user.provider === 'replit') {
-        userId = req.user.claims.sub;
-      } else {
-        userId = req.user.id;
-      }
-      
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -71,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Activities routes (protected)
   app.get("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { type } = req.query;
       let activities;
       
@@ -89,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const activity = await storage.getActivityById(req.params.id, userId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
@@ -102,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const activityData = insertActivitySchema.parse(req.body);
       const activity = await storage.createActivity(activityData, userId);
       res.status(201).json(activity);
@@ -116,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const activityData = insertActivitySchema.partial().parse(req.body);
       const activity = await storage.updateActivity(req.params.id, activityData, userId);
       if (!activity) {
@@ -133,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const success = await storage.deleteActivity(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Activity not found" });
@@ -146,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const deleted = await storage.deleteActivity(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Activity not found" });
@@ -160,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games routes (backward compatibility)
   app.get("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const games = await storage.getGames(userId);
       res.json(games);
     } catch (error) {
@@ -170,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const game = await storage.getGameById(req.params.id, userId);
       if (!game) {
         return res.status(404).json({ message: "Game not found" });
@@ -183,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const gameData = insertGameSchema.parse(req.body);
       const game = await storage.createGame(gameData, userId);
       res.status(201).json(game);
@@ -197,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const gameData = insertGameSchema.partial().parse(req.body);
       const game = await storage.updateGame(req.params.id, gameData, userId);
       if (!game) {
@@ -214,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/games/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const deleted = await storage.deleteGame(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Game not found" });
@@ -228,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Activity sessions routes - Enhanced with activity details for calendar
   app.get("/api/sessions", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { activityId, gameId, date, startDate, endDate } = req.query;
       
       let sessions;
@@ -273,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/sessions", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const sessionData = insertSessionSchema.parse(req.body);
       const session = await storage.createSession(sessionData, userId);
       res.status(201).json(session);
@@ -287,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const sessionData = insertSessionSchema.partial().parse(req.body);
       const session = await storage.updateSession(req.params.id, sessionData, userId);
       if (!session) {
@@ -304,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const deleted = await storage.deleteSession(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Session not found" });
@@ -363,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const settingsData = req.body;
       
       // Update user profile fields in the users table
@@ -387,7 +380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Statistics endpoint
   app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { type } = req.query;
       let activities;
       
@@ -441,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tasks routes (using activities with type='task')
   app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const tasks = await storage.getActivitiesByType('task', userId);
       res.json(tasks);
     } catch (error) {
@@ -451,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const taskData = {
         ...req.body,
         type: 'task'
@@ -465,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const taskData = req.body;
       const task = await storage.updateActivity(req.params.id, taskData, userId);
       if (!task) {
@@ -479,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/tasks/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const deleted = await storage.deleteActivity(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ message: "Task not found" });
