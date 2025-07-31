@@ -82,10 +82,6 @@ export function Auth() {
     window.location.href = "/api/auth/google";
   };
 
-  const handleReplitLogin = () => {
-    window.location.href = "/api/login";
-  };
-
   const handleSteamLogin = () => {
     window.location.href = "/api/auth/steam";
   };
@@ -128,14 +124,6 @@ export function Auth() {
               >
                 <SiSteam className="mr-2 h-4 w-4" />
                 Continue with Steam
-              </Button>
-              
-              <Button
-                onClick={handleReplitLogin}
-                variant="outline"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white border-orange-600"
-              >
-                Continue with Replit
               </Button>
             </div>
 
