@@ -587,6 +587,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Xbox Live game sync routes
+  app.post("/api/sync/xbox-games", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.xboxLiveId) {
+        return res.status(400).json({ message: "Xbox Live account not connected" });
+      }
+
+      // For now, we'll use a simple approach to get Xbox games
+      // This would require an API key for OpenXBL or Xbox API service
+      const response = await fetch(`https://xbl.io/api/v2/achievements/player/${user.xboxLiveId}`, {
+        headers: {
+          'X-Authorization': process.env.OPENXBL_API_KEY || '',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        return res.status(400).json({ message: "Failed to fetch Xbox games" });
+      }
+
+      const xboxData = await response.json();
+      let gamesAdded = 0;
+
+      // Process Xbox games and add them to the user's library
+      if (xboxData.achievements) {
+        for (const gameData of xboxData.achievements) {
+          const existingActivity = await storage.getActivityByExternalId(gameData.titleId.toString(), userId);
+          
+          if (!existingActivity) {
+            await storage.createActivity({
+              title: gameData.name,
+              type: 'game',
+              category: 'Xbox',
+              status: 'in_progress',
+              imageUrl: gameData.displayImage || null,
+              externalId: gameData.titleId.toString(),
+              metadata: {
+                platform: 'Xbox',
+                achievements: gameData.currentAchievements || 0,
+                totalAchievements: gameData.possibleAchievements || 0,
+                gamerscore: gameData.currentGamerscore || 0
+              }
+            }, userId);
+            gamesAdded++;
+          }
+        }
+      }
+
+      res.json({ gamesAdded, message: `Successfully synced ${gamesAdded} Xbox games` });
+    } catch (error) {
+      console.error('Xbox sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Xbox games' });
+    }
+  });
+
+  // Steam game sync routes  
+  app.post("/api/sync/steam-games", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.steamId) {
+        return res.status(400).json({ message: "Steam account not connected" });
+      }
+
+      // Use Steam Web API to get owned games
+      const steamApiKey = user.steamApiKey || process.env.STEAM_API_KEY;
+      if (!steamApiKey) {
+        return res.status(400).json({ message: "Steam API key required" });
+      }
+
+      const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${steamApiKey}&steamid=${user.steamId}&format=json&include_appinfo=true&include_played_free_games=true`);
+      
+      if (!response.ok) {
+        return res.status(400).json({ message: "Failed to fetch Steam games" });
+      }
+
+      const steamData = await response.json();
+      let gamesAdded = 0;
+
+      if (steamData.response?.games) {
+        for (const game of steamData.response.games) {
+          const existingActivity = await storage.getActivityByExternalId(game.appid.toString(), userId);
+          
+          if (!existingActivity) {
+            await storage.createActivity({
+              title: game.name,
+              type: 'game',
+              category: 'Steam',
+              status: game.playtime_forever > 0 ? 'in_progress' : 'wishlist',
+              imageUrl: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+              externalId: game.appid.toString(),
+              totalHours: Math.round(game.playtime_forever / 60 * 100) / 100, // Convert minutes to hours
+              metadata: {
+                platform: 'Steam',
+                playtime_2weeks: game.playtime_2weeks || 0,
+                playtime_forever: game.playtime_forever || 0,
+                last_played: game.rtime_last_played || null
+              }
+            }, userId);
+            gamesAdded++;
+          }
+        }
+      }
+
+      res.json({ gamesAdded, message: `Successfully synced ${gamesAdded} Steam games` });
+    } catch (error) {
+      console.error('Steam sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Steam games' });
+    }
+  });
+
+  // Get Xbox achievements for a specific game
+  app.get("/api/xbox/achievements/:gameId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.xboxLiveId) {
+        return res.status(400).json({ message: "Xbox Live account not connected" });
+      }
+
+      const response = await fetch(`https://xbl.io/api/v2/achievements/player/${user.xboxLiveId}/title/${req.params.gameId}`, {
+        headers: {
+          'X-Authorization': process.env.OPENXBL_API_KEY || '',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        return res.status(400).json({ message: "Failed to fetch achievements" });
+      }
+
+      const achievements = await response.json();
+      res.json(achievements);
+    } catch (error) {
+      console.error('Xbox achievements error:', error);
+      res.status(500).json({ message: 'Failed to fetch Xbox achievements' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
