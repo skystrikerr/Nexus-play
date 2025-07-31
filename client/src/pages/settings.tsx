@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -58,6 +59,7 @@ export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Load user settings
@@ -68,7 +70,7 @@ export default function Settings() {
 
   const form = useForm<UserSettings>({
     defaultValues: {
-      theme: "dark",
+      theme: theme,
       isPublic: true,
       bio: "",
       firstName: "",
@@ -81,10 +83,32 @@ export default function Settings() {
     },
   });
 
+  // Update form when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      form.reset({
+        theme: settings.theme || theme,
+        isPublic: settings.isPublic,
+        bio: settings.bio || "",
+        firstName: settings.firstName || "",
+        lastName: settings.lastName || "",
+        notifications: settings.notifications || {
+          achievements: true,
+          reminders: true,
+          social: true,
+        },
+      });
+    }
+  }, [settings, theme, form]);
+
   const updateSettingsMutation = useMutation({
     mutationFn: (data: Partial<UserSettings>) => 
       apiRequest("PUT", "/api/settings", data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Update local theme if it was changed
+      if (variables.theme) {
+        setTheme(variables.theme);
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
@@ -105,20 +129,11 @@ export default function Settings() {
     updateSettingsMutation.mutate(data);
   };
 
-  const applyTheme = (theme: string) => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (theme === "light") {
-      document.documentElement.classList.remove("dark");
-    } else {
-      // System theme
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    }
-    localStorage.setItem("theme", theme);
+  // Handle theme change immediately
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    form.setValue("theme", newTheme);
+    setTheme(newTheme);
+    updateSettingsMutation.mutate({ theme: newTheme });
   };
 
   const tabs = [
@@ -265,7 +280,7 @@ export default function Settings() {
                           <Select 
                             onValueChange={(value) => {
                               field.onChange(value);
-                              applyTheme(value);
+                              handleThemeChange(value as "light" | "dark" | "system");
                             }} 
                             defaultValue={field.value}
                           >
