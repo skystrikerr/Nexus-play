@@ -331,6 +331,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics endpoints
+  app.get("/api/analytics", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { timeRange = '30' } = req.query;
+      const days = parseInt(timeRange as string);
+      
+      // Get analytics data for the specified time range
+      const analytics = await storage.getAnalyticsData(userId, days);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
   // Settings endpoints
   app.get("/api/settings", isAuthenticated, async (req: any, res) => {
     try {

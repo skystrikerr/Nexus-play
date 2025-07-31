@@ -10,7 +10,7 @@ import {
   type ActivitySession,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, gte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -335,6 +335,90 @@ export class DatabaseStorage implements IStorage {
 
   async getSessionsByGameId(gameId: string, userId: string): Promise<ActivitySession[]> {
     return this.getSessionsByActivityId(gameId, userId);
+  }
+
+  // Analytics operations
+  async getAnalyticsData(userId: string, days: number): Promise<{
+    activityHours: Array<{ type: string; hours: number; sessions: number }>;
+    dailyHours: Array<{ date: string; [key: string]: number | string }>;
+    weeklyStats: Array<{ week: string; totalHours: number; activeDays: number; avgSessionLength: number }>;
+  }> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Get sessions within the time range
+    const sessions = await db
+      .select()
+      .from(activitySessions)
+      .where(and(
+        eq(activitySessions.userId, userId),
+        gte(activitySessions.date, startDate)
+      ))
+      .orderBy(desc(activitySessions.date));
+
+    // Get activities to map types
+    const activities = await this.getActivities(userId);
+    const activityMap = new Map(activities.map(a => [a.id, a]));
+
+    // Process activity hours by type
+    const activityHoursMap = new Map<string, { hours: number; sessions: number }>();
+    
+    sessions.forEach(session => {
+      const activity = activityMap.get(session.activityId);
+      const type = activity?.type || 'other';
+      const hours = session.duration || 0;
+      
+      const current = activityHoursMap.get(type) || { hours: 0, sessions: 0 };
+      activityHoursMap.set(type, {
+        hours: current.hours + hours,
+        sessions: current.sessions + 1
+      });
+    });
+
+    const activityHours = Array.from(activityHoursMap.entries()).map(([type, data]) => ({
+      type,
+      hours: data.hours,
+      sessions: data.sessions
+    }));
+
+    // Process daily hours for time series
+    const dailyHoursMap = new Map<string, Record<string, number>>();
+    
+    sessions.forEach(session => {
+      const activity = activityMap.get(session.activityId);
+      const type = activity?.type || 'other';
+      const dateStr = session.date.toISOString().split('T')[0];
+      const hours = session.duration || 0;
+      
+      if (!dailyHoursMap.has(dateStr)) {
+        dailyHoursMap.set(dateStr, {});
+      }
+      
+      const dayData = dailyHoursMap.get(dateStr)!;
+      dayData[type] = (dayData[type] || 0) + hours;
+    });
+
+    const dailyHours = Array.from(dailyHoursMap.entries())
+      .map(([date, data]) => ({ date, ...data }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Calculate weekly stats (simplified for now)
+    const totalHours = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const totalSessions = sessions.length;
+    const uniqueDays = new Set(sessions.map(s => s.date.toISOString().split('T')[0])).size;
+    
+    const weeklyStats = [{
+      week: `Last ${days} days`,
+      totalHours,
+      activeDays: uniqueDays,
+      avgSessionLength: totalSessions > 0 ? totalHours / totalSessions : 0
+    }];
+
+    return {
+      activityHours,
+      dailyHours,
+      weeklyStats
+    };
   }
 }
 
