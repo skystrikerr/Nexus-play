@@ -106,34 +106,11 @@ export function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Social Login Options */}
-            <div className="space-y-3">
-              <Button
-                onClick={handleGoogleLogin}
-                variant="outline"
-                className="w-full bg-white hover:bg-gray-100 text-gray-900 border-gray-300"
-              >
-                <FaGoogle className="mr-2 h-4 w-4" />
-                Continue with Google
-              </Button>
-              
-              <Button
-                onClick={handleSteamLogin}
-                variant="outline"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-              >
-                <SiSteam className="mr-2 h-4 w-4" />
-                Continue with Steam
-              </Button>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="bg-slate-600" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800 px-2 text-gray-400">Or</span>
-              </div>
+            {/* Note: Google and Steam login require additional OAuth setup */}
+            <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-3 mb-4">
+              <p className="text-blue-300 text-sm text-center">
+                For now, please use email registration below. Social login requires additional setup.
+              </p>
             </div>
 
             {/* Email/Password Forms */}
