@@ -166,8 +166,36 @@ export async function setupAuth(app: Express) {
 
 
 
-  passport.serializeUser((user: any, cb) => cb(null, user));
-  passport.deserializeUser((user: any, cb) => cb(null, user));
+  // Passport serialization - store only user ID in session
+  passport.serializeUser((user: any, done) => {
+    console.log('Serializing user:', user.id);
+    done(null, user.id);
+  });
+
+  // Passport deserialization - fetch user from database
+  passport.deserializeUser(async (id: string, done) => {
+    try {
+      console.log('Deserializing user:', id);
+      const user = await storage.getUser(id);
+      if (user) {
+        const sessionUser = { 
+          id: user.id, 
+          email: user.email, 
+          firstName: user.firstName,
+          lastName: user.lastName,
+          provider: user.provider
+        };
+        console.log('User deserialized successfully:', sessionUser.email);
+        done(null, sessionUser);
+      } else {
+        console.log('User not found during deserialization:', id);
+        done(null, false);
+      }
+    } catch (error) {
+      console.error('Error during deserialization:', error);
+      done(error, null);
+    }
+  });
 
   // Auth Routes
   
@@ -336,11 +364,17 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  if (!req.isAuthenticated()) {
+  console.log('isAuthenticated check - isAuthenticated():', req.isAuthenticated());
+  console.log('isAuthenticated check - session ID:', req.sessionID);
+  console.log('isAuthenticated check - user:', req.user);
+  
+  if (!req.isAuthenticated() || !req.user) {
+    console.log('Authentication failed - no session or user');
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  return next();
+  
+  console.log('Authentication successful for user:', (req.user as any)?.email);
+  next();
 };
 
 // Xbox Live token verification
