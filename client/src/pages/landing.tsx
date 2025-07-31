@@ -111,14 +111,7 @@ export function Landing() {
 
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-6">Ready to start tracking?</h2>
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white px-8 py-4 text-lg"
-            onClick={() => window.location.href = "/api/login"}
-          >
-            Sign In to Continue
-          </Button>
+          <p className="text-gray-300 mb-6">Join thousands of users managing their time effectively</p>
         </div>
       </div>
     </div>
