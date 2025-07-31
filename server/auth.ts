@@ -49,20 +49,25 @@ export async function setupAuth(app: Express) {
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
+        console.log('LocalStrategy attempting login for:', email);
         const user = await storage.getUserByEmail(email);
         if (!user || user.provider !== 'local') {
+          console.log('User not found or not local provider:', user?.provider);
           return done(null, false, { message: 'Invalid email or password' });
         }
         
         if (!user.password) {
+          console.log('User has no password');
           return done(null, false, { message: 'Invalid email or password' });
         }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
+          console.log('Password invalid for user:', email);
           return done(null, false, { message: 'Invalid email or password' });
         }
 
+        console.log('Login successful for user:', email);
         return done(null, { 
           id: user.id, 
           email: user.email, 
@@ -71,6 +76,7 @@ export async function setupAuth(app: Express) {
           provider: 'local'
         });
       } catch (error) {
+        console.error('LocalStrategy error:', error);
         return done(error);
       }
     }
@@ -211,12 +217,28 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  app.post('/api/auth/login', 
-    passport.authenticate('local', { failureMessage: true }),
-    (req, res) => {
-      res.json({ message: 'Login successful', user: req.user });
-    }
-  );
+  app.post('/api/auth/login', (req, res, next) => {
+    console.log('Login request body:', req.body);
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        console.error('Login error:', err);
+        return res.status(500).json({ message: 'Login failed' });
+      }
+      if (!user) {
+        console.log('Login failed - no user:', info);
+        return res.status(401).json({ message: info?.message || 'Invalid credentials' });
+      }
+      
+      req.login(user, (err) => {
+        if (err) {
+          console.error('Session login error:', err);
+          return res.status(500).json({ message: 'Session failed' });
+        }
+        console.log('Login successful for user:', user.email);
+        res.json({ message: 'Login successful', user });
+      });
+    })(req, res, next);
+  });
 
   // Google auth routes
   app.get('/api/auth/google',
