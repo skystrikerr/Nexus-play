@@ -26,9 +26,13 @@ interface RegisterData {
 
 export function Auth() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [loginData, setLoginData] = useState<LoginData>({ email: "", password: "" });
   const [registerData, setRegisterData] = useState<RegisterData>({ 
     email: "", password: "", firstName: "", lastName: "" 
+  });
+  const [resetData, setResetData] = useState({ 
+    email: "", newPassword: "", confirmPassword: "" 
   });
   const { toast } = useToast();
 
@@ -60,6 +64,26 @@ export function Auth() {
     },
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: { email: string; newPassword: string; confirmPassword: string }) => 
+      apiRequest("POST", "/api/auth/reset-password", data),
+    onSuccess: () => {
+      toast({
+        title: "Password Reset Successful",
+        description: "Your password has been reset. You can now log in with your new password.",
+      });
+      setShowPasswordReset(false);
+      setResetData({ email: "", newPassword: "", confirmPassword: "" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Reset Failed",
+        description: error.message || "Failed to reset password",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     loginMutation.mutate(loginData);
@@ -84,6 +108,27 @@ export function Auth() {
 
   const handleSteamLogin = () => {
     window.location.href = "/api/auth/steam";
+  };
+
+  const handlePasswordReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (resetData.newPassword !== resetData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "New password and confirmation don't match",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (resetData.newPassword.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+    resetPasswordMutation.mutate(resetData);
   };
 
   return (
@@ -135,6 +180,86 @@ export function Auth() {
                 <span className="bg-slate-800 px-2 text-gray-400">Or</span>
               </div>
             </div>
+
+            {/* Password Reset Option */}
+            <div className="text-center">
+              <Button
+                variant="link"
+                onClick={() => setShowPasswordReset(!showPasswordReset)}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                Forgot your password?
+              </Button>
+            </div>
+
+            {/* Password Reset Form */}
+            {showPasswordReset && (
+              <Card className="bg-slate-700/50 border-slate-600 p-4">
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-semibold text-white">Reset Password</h3>
+                    <p className="text-sm text-gray-400">Enter your email and new password</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-white">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={resetData.email}
+                      onChange={(e) => setResetData({ ...resetData, email: e.target.value })}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-new-password" className="text-white">New Password</Label>
+                    <Input
+                      id="reset-new-password"
+                      type="password"
+                      placeholder="New password (min 6 characters)"
+                      value={resetData.newPassword}
+                      onChange={(e) => setResetData({ ...resetData, newPassword: e.target.value })}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-confirm-password" className="text-white">Confirm New Password</Label>
+                    <Input
+                      id="reset-confirm-password"
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={resetData.confirmPassword}
+                      onChange={(e) => setResetData({ ...resetData, confirmPassword: e.target.value })}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowPasswordReset(false)}
+                      className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={resetPasswordMutation.isPending}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    >
+                      {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            )}
 
             {/* Email/Password Forms */}
             <Tabs defaultValue="login" className="w-full">

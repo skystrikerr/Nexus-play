@@ -39,8 +39,10 @@ import {
   Shield, 
   Monitor,
   Sun,
-  Moon
+  Moon,
+  Key
 } from "lucide-react";
+import { ChangePasswordModal } from "@/components/change-password-modal";
 
 interface UserSettings {
   theme: "light" | "dark" | "system";
@@ -61,6 +63,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("profile");
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   // Load user settings
   const { data: settings, isLoading } = useQuery({
@@ -444,6 +447,26 @@ export default function Settings() {
                       )}
                     />
                     
+                    {/* Password Management - only for local accounts */}
+                    {user?.provider === 'local' && (
+                      <div className="p-4 bg-slate-800 rounded-lg border border-slate-600">
+                        <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                          <Key className="w-4 h-4" />
+                          Password Management
+                        </h4>
+                        <p className="text-sm text-slate-400 mb-4">
+                          Change your account password for better security
+                        </p>
+                        <Button 
+                          onClick={() => setShowChangePassword(true)}
+                          variant="outline" 
+                          className="border-slate-600 text-white hover:bg-slate-700"
+                        >
+                          Change Password
+                        </Button>
+                      </div>
+                    )}
+
                     <div className="p-4 bg-slate-800 rounded-lg border border-slate-600">
                       <h4 className="text-white font-medium mb-2">Data Export</h4>
                       <p className="text-sm text-slate-400 mb-4">
@@ -471,6 +494,12 @@ export default function Settings() {
           </Form>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        open={showChangePassword} 
+        onOpenChange={setShowChangePassword} 
+      />
     </div>
   );
 }

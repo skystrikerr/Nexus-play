@@ -173,10 +173,13 @@ export async function setupAuth(app: Express) {
   });
 
   // Passport deserialization - fetch user from database
-  passport.deserializeUser(async (id: string, done) => {
+  passport.deserializeUser(async (id: string | any, done) => {
     try {
-      console.log('Deserializing user:', id);
-      const user = await storage.getUser(id);
+      // Handle case where full user object was serialized instead of just ID
+      const userId = typeof id === 'string' ? id : id.id;
+      console.log('Deserializing user ID:', userId);
+      
+      const user = await storage.getUser(userId);
       if (user) {
         const sessionUser = { 
           id: user.id, 
@@ -188,7 +191,7 @@ export async function setupAuth(app: Express) {
         console.log('User deserialized successfully:', sessionUser.email);
         done(null, sessionUser);
       } else {
-        console.log('User not found during deserialization:', id);
+        console.log('User not found during deserialization:', userId);
         done(null, false);
       }
     } catch (error) {
@@ -354,6 +357,76 @@ export async function setupAuth(app: Express) {
   });
 
 
+
+  // Change password route
+  app.post('/api/auth/change-password', isAuthenticated, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = (req.user as any).id;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current password and new password are required' });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+      }
+      
+      // Get user and verify current password
+      const user = await storage.getUser(userId);
+      if (!user || !user.password || user.provider !== 'local') {
+        return res.status(400).json({ message: 'Cannot change password for this account type' });
+      }
+      
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+      
+      // Hash new password and update
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(userId, { password: hashedNewPassword });
+      
+      res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ message: 'Failed to change password' });
+    }
+  });
+
+  // Reset password (for logged out users) 
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { email, newPassword, confirmPassword } = req.body;
+      
+      if (!email || !newPassword || !confirmPassword) {
+        return res.status(400).json({ message: 'Email, new password, and confirmation are required' });
+      }
+      
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'Passwords do not match' });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.provider !== 'local') {
+        return res.status(400).json({ message: 'No local account found with this email' });
+      }
+      
+      // Hash new password and update
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(user.id, { password: hashedNewPassword });
+      
+      res.json({ message: 'Password reset successfully. You can now log in with your new password.' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
 
   // Logout route
   app.post('/api/auth/logout', (req, res) => {
