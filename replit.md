@@ -171,5 +171,5 @@ The application is structured as a monorepo with shared TypeScript types between
 ## Deployment Status (January 2025)
 - **Status**: Successfully deployed to Replit
 - **Access**: Available as Progressive Web App (PWA) for mobile use
-- **Authentication**: Local email/password working, Google/Steam OAuth configured but requires callback URL updates
+- **Authentication**: Simplified to local email/password only (Google and Steam login removed per user request)
 - **Mobile Ready**: Optimized for Android with home screen installation capability

@@ -9,8 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff, Mail, User, Lock } from "lucide-react";
-import { FaGoogle } from "react-icons/fa";
-import { SiSteam } from "react-icons/si";
+
 
 interface LoginData {
   email: string;
@@ -102,13 +101,7 @@ export function Auth() {
     registerMutation.mutate(registerData);
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
-  };
 
-  const handleSteamLogin = () => {
-    window.location.href = "/api/auth/steam";
-  };
 
   const handlePasswordReset = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,35 +144,7 @@ export function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Social Login Options */}
-            <div className="space-y-3">
-              <Button
-                onClick={handleGoogleLogin}
-                variant="outline"
-                className="w-full bg-white hover:bg-gray-100 text-gray-900 border-gray-300"
-              >
-                <FaGoogle className="mr-2 h-4 w-4" />
-                Continue with Google
-              </Button>
-              
-              <Button
-                onClick={handleSteamLogin}
-                variant="outline"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-              >
-                <SiSteam className="mr-2 h-4 w-4" />
-                Continue with Steam
-              </Button>
-            </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="bg-slate-600" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800 px-2 text-gray-400">Or</span>
-              </div>
-            </div>
 
             {/* Password Reset Option */}
             <div className="text-center">
