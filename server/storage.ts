@@ -2,12 +2,15 @@ import {
   users,
   activities,
   activitySessions,
+  reviews,
   type User,
   type UpsertUser,
   type InsertActivity,
   type Activity,
   type InsertSession,
   type ActivitySession,
+  type InsertReview,
+  type Review,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, gte } from "drizzle-orm";
@@ -50,6 +53,21 @@ export interface IStorage {
   
   // Public sessions (for viewing other users' profiles)
   getPublicSessions(userId: string): Promise<ActivitySession[]>;
+  
+  // Reviews (user-scoped)
+  getReviews(userId: string): Promise<Review[]>;
+  getReviewById(id: string, userId: string): Promise<Review | undefined>;
+  getReviewByActivityId(activityId: string, userId: string): Promise<Review | undefined>;
+  createReview(review: InsertReview, userId: string): Promise<Review>;
+  updateReview(id: string, review: Partial<InsertReview>, userId: string): Promise<Review | undefined>;
+  deleteReview(id: string, userId: string): Promise<boolean>;
+  
+  // Public reviews (for viewing other users' reviews)
+  getPublicReviews(userId: string): Promise<Review[]>;
+  getPublicReviewsByActivity(activityId: string): Promise<Review[]>;
+  
+  // Completion tracking
+  markActivityCompleted(activityId: string, userId: string, completedAt?: Date): Promise<Activity | undefined>;
   
   // Backward compatibility aliases
   getGames(userId: string): Promise<Activity[]>;
@@ -310,6 +328,86 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Reviews (user-scoped)
+  async getReviews(userId: string): Promise<Review[]> {
+    return await db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getReviewById(id: string, userId: string): Promise<Review | undefined> {
+    const [review] = await db
+      .select()
+      .from(reviews)
+      .where(and(eq(reviews.id, id), eq(reviews.userId, userId)));
+    return review;
+  }
+
+  async getReviewByActivityId(activityId: string, userId: string): Promise<Review | undefined> {
+    const [review] = await db
+      .select()
+      .from(reviews)
+      .where(and(eq(reviews.activityId, activityId), eq(reviews.userId, userId)));
+    return review;
+  }
+
+  async createReview(review: InsertReview, userId: string): Promise<Review> {
+    const [newReview] = await db
+      .insert(reviews)
+      .values({ ...review, userId })
+      .returning();
+    return newReview;
+  }
+
+  async updateReview(id: string, review: Partial<InsertReview>, userId: string): Promise<Review | undefined> {
+    const [updatedReview] = await db
+      .update(reviews)
+      .set({ ...review, updatedAt: new Date() })
+      .where(and(eq(reviews.id, id), eq(reviews.userId, userId)))
+      .returning();
+    return updatedReview;
+  }
+
+  async deleteReview(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(reviews)
+      .where(and(eq(reviews.id, id), eq(reviews.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Public reviews (for viewing other users' reviews)
+  async getPublicReviews(userId: string): Promise<Review[]> {
+    return await db
+      .select()
+      .from(reviews)
+      .where(and(eq(reviews.userId, userId), eq(reviews.isPublic, 1)))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getPublicReviewsByActivity(activityId: string): Promise<Review[]> {
+    return await db
+      .select()
+      .from(reviews)
+      .where(and(eq(reviews.activityId, activityId), eq(reviews.isPublic, 1)))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  // Completion tracking
+  async markActivityCompleted(activityId: string, userId: string, completedAt?: Date): Promise<Activity | undefined> {
+    const [updatedActivity] = await db
+      .update(activities)
+      .set({ 
+        status: 'completed',
+        progress: 100,
+        updatedAt: new Date()
+      })
+      .where(and(eq(activities.id, activityId), eq(activities.userId, userId)))
+      .returning();
+    return updatedActivity;
   }
 
   // Backward compatibility aliases

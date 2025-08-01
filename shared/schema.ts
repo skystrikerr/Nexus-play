@@ -86,6 +86,26 @@ export const activitySessions = pgTable("activity_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Reviews table for activities and tasks
+export const reviews = pgTable("reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  activityId: varchar("activity_id").notNull().references(() => activities.id),
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: text("title").notNull(), // Review title/summary
+  content: text("content").notNull(), // Review text content
+  completedAt: timestamp("completed_at"), // When the activity was completed
+  hoursSpent: real("hours_spent"), // Total hours spent on this activity
+  difficulty: integer("difficulty"), // 1-5 difficulty rating
+  recommendation: integer("recommendation").notNull(), // Would you recommend? 1-5
+  pros: text("pros").array(), // List of positive aspects
+  cons: text("cons").array(), // List of negative aspects
+  tags: text("tags").array(), // Review tags
+  isPublic: integer("is_public").default(1), // 1 for public, 0 for private
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const upsertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
   updatedAt: true,
@@ -126,6 +146,20 @@ export const insertSessionSchema = createInsertSchema(activitySessions).omit({
   quality: z.number().min(1).max(5).optional(),
 });
 
+export const insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  rating: z.number().min(1).max(5),
+  title: z.string().min(1).max(200),
+  content: z.string().min(10).max(2000),
+  difficulty: z.number().min(1).max(5).optional(),
+  recommendation: z.number().min(1).max(5),
+  hoursSpent: z.number().min(0).optional(),
+});
+
 // Backward compatibility aliases for existing code
 export const games = activities;
 export const gamingSessions = activitySessions;
@@ -137,6 +171,8 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type ActivitySession = typeof activitySessions.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviews.$inferSelect;
 
 // Backward compatibility types
 export type InsertGame = InsertActivity;

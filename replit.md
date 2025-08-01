@@ -101,6 +101,8 @@ The application defines two main entities with enhanced flexibility:
 - **Mobile Application Support**: Full Android app support via Capacitor with native features and mobile-optimized UI
 - **Analytics Visualization**: Comprehensive analytics page with color-coded graphs for different activity types
 - **Password Management**: Complete password reset and change functionality with secure validation
+- **Completion Tracking**: Mark activities and tasks as completed with celebration flow
+- **Review System**: Write detailed reviews for completed activities with ratings, pros/cons, and recommendations
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertSessionSchema, insertGameSchema, ACTIVITY_TYPES } from "@shared/schema";
+import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -744,6 +744,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Xbox achievements error:', error);
       res.status(500).json({ message: 'Failed to fetch Xbox achievements' });
+    }
+  });
+
+  // Reviews endpoints
+  app.get("/api/reviews", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reviews = await storage.getReviews(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  app.get("/api/reviews/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const review = await storage.getReviewById(req.params.id, userId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error) {
+      console.error("Error fetching review:", error);
+      res.status(500).json({ message: "Failed to fetch review" });
+    }
+  });
+
+  app.get("/api/activities/:activityId/review", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const review = await storage.getReviewByActivityId(req.params.activityId, userId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error) {
+      console.error("Error fetching activity review:", error);
+      res.status(500).json({ message: "Failed to fetch activity review" });
+    }
+  });
+
+  app.post("/api/reviews", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reviewData = insertReviewSchema.parse(req.body);
+      const review = await storage.createReview(reviewData, userId);
+      res.status(201).json(review);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  app.put("/api/reviews/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reviewData = insertReviewSchema.partial().parse(req.body);
+      const review = await storage.updateReview(req.params.id, reviewData, userId);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error) {
+      console.error("Error updating review:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update review" });
+    }
+  });
+
+  app.delete("/api/reviews/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const success = await storage.deleteReview(req.params.id, userId);
+      if (!success) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+
+  // Activity completion endpoint
+  app.post("/api/activities/:id/complete", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const completedAt = req.body.completedAt ? new Date(req.body.completedAt) : new Date();
+      const activity = await storage.markActivityCompleted(req.params.id, userId, completedAt);
+      if (!activity) {
+        return res.status(404).json({ message: "Activity not found" });
+      }
+      res.json(activity);
+    } catch (error) {
+      console.error("Error marking activity as completed:", error);
+      res.status(500).json({ message: "Failed to mark activity as completed" });
     }
   });
 

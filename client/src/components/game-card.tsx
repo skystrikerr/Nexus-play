@@ -1,6 +1,7 @@
-import { Star, Clock, TrendingUp, MoreVertical, Trash2, Edit } from "lucide-react";
+import { Star, Clock, TrendingUp, MoreVertical, Trash2, Edit, CheckCircle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ActivityTimer from "./activity-timer";
+import CompletionModal from "./completion-modal";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -47,6 +48,7 @@ const statusLabels = {
 
 export default function GameCard({ game, onClick }: GameCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -121,6 +123,22 @@ export default function GameCard({ game, onClick }: GameCardProps) {
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCompletion(true);
+                }}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Mark Complete
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Write Review
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="text-red-400 hover:text-red-300 hover:bg-red-900/20 cursor-pointer"
@@ -224,6 +242,13 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Completion Modal */}
+      <CompletionModal
+        activity={game}
+        isOpen={showCompletion}
+        onClose={() => setShowCompletion(false)}
+      />
     </>
   );
 }

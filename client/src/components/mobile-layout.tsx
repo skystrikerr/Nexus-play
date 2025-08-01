@@ -18,7 +18,8 @@ import {
   Target,
   TrendingUp,
   LogOut,
-  Menu
+  Menu,
+  MessageSquare
 } from "lucide-react";
 
 interface MobileLayoutProps {
@@ -36,6 +37,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Statistics", href: "/stats", icon: BarChart3 },
     { name: "Analytics", href: "/analytics", icon: TrendingUp },
+    { name: "Reviews", href: "/reviews", icon: MessageSquare },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
     { name: "Community", href: "/users", icon: Users },
     { name: "Settings", href: "/settings", icon: Settings },
