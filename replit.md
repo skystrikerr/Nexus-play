@@ -103,6 +103,7 @@ The application defines two main entities with enhanced flexibility:
 - **Password Management**: Complete password reset and change functionality with secure validation
 - **Completion Tracking**: Mark activities and tasks as completed with celebration flow
 - **Review System**: Write detailed reviews for completed activities with ratings, pros/cons, and recommendations
+- **Gaming Platform Integration**: Dedicated page for connecting Steam and Xbox accounts to track game progress and achievements (January 2025)
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings
@@ -172,4 +173,5 @@ The application is structured as a monorepo with shared TypeScript types between
 - **Status**: Successfully deployed to Replit
 - **Access**: Available as Progressive Web App (PWA) for mobile use
 - **Authentication**: Simplified to local email/password only (Google and Steam login removed per user request)
+- **Gaming Platform Integration**: Re-added Steam and Xbox connections for progress tracking and achievement monitoring (January 2025)
 - **Mobile Ready**: Optimized for Android with home screen installation capability

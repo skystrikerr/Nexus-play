@@ -267,6 +267,57 @@ export async function setupAuth(app: Express) {
     }
   });
 
+  // Gaming platform connection routes
+  app.post('/api/gaming/connect/steam', isAuthenticated, async (req, res) => {
+    try {
+      const { steamId, apiKey } = req.body;
+      if (!steamId) {
+        return res.status(400).json({ message: 'Steam ID required' });
+      }
+
+      const userId = (req.user as any).id;
+      
+      // Update user with Steam info
+      await storage.updateUser(userId, {
+        steamId,
+        steamApiKey: apiKey || undefined
+      });
+
+      res.json({ 
+        message: 'Steam account connected successfully', 
+        steamId 
+      });
+    } catch (error) {
+      console.error('Steam connection error:', error);
+      res.status(500).json({ message: 'Failed to connect Steam account' });
+    }
+  });
+
+  app.post('/api/gaming/connect/xbox', isAuthenticated, async (req, res) => {
+    try {
+      const { gamertag, accessToken } = req.body;
+      if (!gamertag || !accessToken) {
+        return res.status(400).json({ message: 'Xbox gamertag and access token required' });
+      }
+
+      const userId = (req.user as any).id;
+      
+      // Update user with Xbox info
+      await storage.updateUser(userId, {
+        xboxLiveId: gamertag,
+        xboxAccessToken: accessToken
+      });
+
+      res.json({ 
+        message: 'Xbox account connected successfully', 
+        gamertag 
+      });
+    } catch (error) {
+      console.error('Xbox connection error:', error);
+      res.status(500).json({ message: 'Failed to connect Xbox account' });
+    }
+  });
+
   // Logout route
   app.post('/api/auth/logout', (req, res) => {
     req.logout(() => {

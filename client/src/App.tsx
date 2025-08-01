@@ -10,7 +10,7 @@ import { useMobile, useCapacitor } from "@/hooks/useMobile";
 import MobileLayout from "@/components/mobile-layout";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
-
+import { GamingPlatforms } from "@/pages/gaming-platforms";
 import Dashboard from "@/pages/dashboard";
 import GameLibrary from "@/pages/game-library";
 import Calendar from "@/pages/calendar";
@@ -31,7 +31,7 @@ function Router() {
   const AppContent = () => (
     <Switch>
       <Route path="/auth" component={Auth} />
-
+      <Route path="/gaming-platforms" component={GamingPlatforms} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (

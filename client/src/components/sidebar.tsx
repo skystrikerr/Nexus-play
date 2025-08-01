@@ -15,7 +15,8 @@ import {
   Settings,
   Target,
   TrendingUp,
-  LogOut
+  LogOut,
+  Trophy
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -31,6 +32,7 @@ export default function Sidebar() {
     { name: "Analytics", href: "/analytics", icon: TrendingUp },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
     { name: "Community", href: "/users", icon: Users },
+    { name: "Gaming Platforms", href: "/gaming-platforms", icon: Trophy },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

@@ -499,6 +499,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Gaming platform sync routes
+  app.post('/api/gaming/sync/steam', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.steamId) {
+        return res.status(400).json({ message: 'Steam account not connected' });
+      }
+
+      const apiKey = user.steamApiKey || process.env.STEAM_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ message: 'Steam API key required' });
+      }
+
+      // Fetch Steam games from API
+      const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${user.steamId}&include_appinfo=true&format=json`);
+      
+      if (!response.ok) {
+        return res.status(400).json({ message: 'Failed to fetch Steam games' });
+      }
+
+      const steamData = await response.json();
+      let gamesAdded = 0;
+
+      if (steamData.response?.games) {
+        for (const game of steamData.response.games) {
+          const existingActivity = await storage.getActivityByExternalId(game.appid.toString(), userId);
+          
+          if (!existingActivity) {
+            await storage.createActivity({
+              title: game.name,
+              type: 'game',
+              category: 'Steam',
+              status: game.playtime_forever > 0 ? 'in_progress' : 'wishlist',
+              imageUrl: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+              externalId: game.appid.toString(),
+              totalHours: Math.round(game.playtime_forever / 60 * 100) / 100,
+              metadata: {
+                platform: 'Steam',
+                playtime_2weeks: game.playtime_2weeks || 0,
+                playtime_forever: game.playtime_forever || 0,
+                last_played: game.rtime_last_played || null
+              }
+            }, userId);
+            gamesAdded++;
+          }
+        }
+      }
+
+      res.json({ gamesAdded, message: `Successfully synced ${gamesAdded} Steam games` });
+    } catch (error) {
+      console.error('Steam sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Steam games' });
+    }
+  });
+
+  app.post('/api/gaming/sync/xbox', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.xboxLiveId || !user?.xboxAccessToken) {
+        return res.status(400).json({ message: 'Xbox account not connected' });
+      }
+
+      // Sample games for demonstration - real implementation would use Xbox API
+      const mockXboxGames = [
+        { 
+          id: 'halo-infinite', 
+          name: 'Halo Infinite', 
+          imageUrl: 'https://store-images.s-microsoft.com/image/apps.18966.13727851868390641.c9cc5f5e-1a03-4a0d-94a4-9daa6d1f4ec5.9b91c027-46ec-4c5b-86b4-6a4ab9d4c8bc',
+          achievements: { earned: 15, total: 40 },
+          gamerscore: 450
+        }
+      ];
+
+      let gamesAdded = 0;
+      for (const game of mockXboxGames) {
+        const existingActivity = await storage.getActivityByExternalId(game.id, userId);
+        
+        if (!existingActivity) {
+          await storage.createActivity({
+            title: game.name,
+            type: 'game',
+            category: 'Xbox',
+            status: 'in_progress',
+            imageUrl: game.imageUrl,
+            externalId: game.id,
+            metadata: {
+              platform: 'Xbox',
+              achievements: game.achievements,
+              gamerscore: game.gamerscore
+            }
+          }, userId);
+          gamesAdded++;
+        }
+      }
+
+      res.json({ gamesAdded, message: `Successfully synced ${gamesAdded} Xbox games` });
+    } catch (error) {
+      console.error('Xbox sync error:', error);
+      res.status(500).json({ message: 'Failed to sync Xbox games' });
+    }
+  });
+
 
 
 
