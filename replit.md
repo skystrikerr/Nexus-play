@@ -167,3 +167,9 @@ The application defines two main entities with enhanced flexibility:
 - **Database Migrations**: Drizzle push command for schema updates
 
 The application is structured as a monorepo with shared TypeScript types between client and server, enabling type-safe full-stack development. It now uses PostgreSQL database with full user authentication, social features, and proper data isolation between users. The app has been renamed to NexusPlay to reflect its evolution into a comprehensive social activity tracking platform.
+
+## Deployment Status (January 2025)
+- **Status**: Successfully deployed to Replit
+- **Access**: Available as Progressive Web App (PWA) for mobile use
+- **Authentication**: Local email/password working, Google/Steam OAuth configured but requires callback URL updates
+- **Mobile Ready**: Optimized for Android with home screen installation capability
