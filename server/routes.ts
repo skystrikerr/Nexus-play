@@ -1,6 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import Stripe from "stripe";
 import { storage } from "./storage";
+
+// Only initialize Stripe if secret key is available
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-07-30.basil",
+  });
+}
+
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { z } from "zod";
@@ -709,6 +719,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking activity as completed:", error);
       res.status(500).json({ message: "Failed to mark activity as completed" });
+    }
+  });
+
+  // Stripe subscription route for premium features
+  app.post('/api/get-or-create-subscription', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    if (!stripe) {
+      return res.status(500).json({ error: 'Payment processing is not configured' });
+    }
+
+    const user = req.user as any;
+
+    // Check if user already has a subscription
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        
+        if (subscription.latest_invoice && typeof subscription.latest_invoice !== 'string') {
+          const paymentIntent = subscription.latest_invoice.payment_intent;
+          if (paymentIntent && typeof paymentIntent !== 'string') {
+            return res.json({
+              subscriptionId: subscription.id,
+              clientSecret: paymentIntent.client_secret,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error retrieving subscription:', error);
+      }
+    }
+    
+    if (!user.email) {
+      return res.status(400).json({ error: 'No user email on file' });
+    }
+
+    try {
+      // Create or get Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        });
+        customerId = customer.id;
+        await storage.updateStripeCustomerId(user.id, customerId);
+      }
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'NexusPlay Pro',
+              description: 'Advanced features for productivity tracking',
+            },
+            unit_amount: 999, // $9.99 in cents
+            recurring: {
+              interval: 'month',
+            },
+          },
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with subscription info
+      await storage.updateUserStripeInfo(user.id, {
+        customerId,
+        subscriptionId: subscription.id
+      });
+
+      const paymentIntent = subscription.latest_invoice?.payment_intent;
+      const clientSecret = typeof paymentIntent !== 'string' ? paymentIntent?.client_secret : null;
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: clientSecret,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      return res.status(400).json({ error: { message: error.message } });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription-status', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    if (!stripe) {
+      return res.json({ isPremium: false });
+    }
+
+    const user = req.user as any;
+    
+    if (!user.stripeSubscriptionId) {
+      return res.json({ isPremium: false });
+    }
+
+    try {
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      const isPremium = subscription.status === 'active';
+      
+      res.json({
+        isPremium,
+        subscriptionStatus: subscription.status,
+        subscriptionEndsAt: subscription.current_period_end * 1000, // Convert to JS timestamp
+      });
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      res.json({ isPremium: false });
     }
   });
 

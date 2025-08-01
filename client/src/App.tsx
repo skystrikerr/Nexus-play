@@ -12,6 +12,8 @@ import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
 import { GamingPlatforms } from "@/pages/gaming-platforms";
 import { GameBacklog } from "@/pages/game-backlog";
+import { Premium } from "@/pages/premium";
+import Subscribe from "@/pages/subscribe";
 import Dashboard from "@/pages/dashboard";
 import GameLibrary from "@/pages/game-library";
 import Calendar from "@/pages/calendar";
@@ -34,6 +36,8 @@ function Router() {
       <Route path="/auth" component={Auth} />
       <Route path="/gaming-platforms" component={GamingPlatforms} />
       <Route path="/game-backlog" component={GameBacklog} />
+      <Route path="/premium" component={Premium} />
+      <Route path="/subscribe" component={Subscribe} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
