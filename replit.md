@@ -104,6 +104,7 @@ The application defines two main entities with enhanced flexibility:
 - **Completion Tracking**: Mark activities and tasks as completed with celebration flow
 - **Review System**: Write detailed reviews for completed activities with ratings, pros/cons, and recommendations
 - **Gaming Platform Integration**: Dedicated page for connecting Steam and Xbox accounts to track game progress and achievements (January 2025)
+- **Game Backlog System**: Comprehensive game planning page with priority management, estimated playtime, and organized wishlist tracking (January 2025)
 
 ### UI Components
 - **ActivityCard (formerly GameCard)**: Universal activity display supporting all types with image preview, status, progress, and ratings

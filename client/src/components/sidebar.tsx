@@ -31,6 +31,7 @@ export default function Sidebar() {
     { name: "Statistics", href: "/stats", icon: BarChart3 },
     { name: "Analytics", href: "/analytics", icon: TrendingUp },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
+    { name: "Game Backlog", href: "/game-backlog", icon: Gamepad2 },
     { name: "Community", href: "/users", icon: Users },
     { name: "Gaming Platforms", href: "/gaming-platforms", icon: Trophy },
     { name: "Settings", href: "/settings", icon: Settings },
