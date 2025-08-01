@@ -49,8 +49,8 @@ export async function setupAuth(app: Express) {
       try {
         console.log('LocalStrategy attempting login for:', email);
         const user = await storage.getUserByEmail(email);
-        if (!user || user.provider !== 'local') {
-          console.log('User not found or not local provider:', user?.provider);
+        if (!user) {
+          console.log('User not found');
           return done(null, false, { message: 'Invalid email or password' });
         }
         
@@ -340,83 +340,3 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   next();
 };
 
-// Xbox Live token verification
-async function verifyXboxToken(accessToken: string) {
-  try {
-    // Step 1: Get Xbox Live user token
-    const userTokenResponse = await axios.post('https://user.auth.xboxlive.com/user/authenticate', {
-      Properties: {
-        AuthMethod: 'RPS',
-        SiteName: 'user.auth.xboxlive.com',
-        RpsTicket: `d=${accessToken}`
-      },
-      RelyingParty: 'http://auth.xboxlive.com',
-      TokenType: 'JWT'
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-
-    const userToken = userTokenResponse.data.Token;
-    const userHash = userTokenResponse.data.DisplayClaims.xui[0].uhs;
-
-    // Step 2: Get XSTS token
-    const xstsResponse = await axios.post('https://xsts.auth.xboxlive.com/xsts/authorize', {
-      Properties: {
-        SandboxId: 'RETAIL',
-        UserTokens: [userToken]
-      },
-      RelyingParty: 'http://xboxlive.com',
-      TokenType: 'JWT'
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-
-    const xstsToken = xstsResponse.data.Token;
-
-    // Step 3: Get Xbox profile
-    const profileResponse = await axios.get('https://profile.xboxlive.com/users/me/profile/settings', {
-      headers: {
-        'Authorization': `XBL3.0 x=${userHash};${xstsToken}`,
-        'x-xbl-contract-version': '2',
-        'Accept': 'application/json'
-      },
-      params: {
-        settings: 'GameDisplayName,Gamertag,GameDisplayPicRaw'
-      }
-    });
-
-    return profileResponse.data;
-  } catch (error) {
-    console.error('Xbox token verification failed:', error);
-    return null;
-  }
-}
-
-// Steam profile verification
-async function getSteamProfile(steamId: string, apiKey?: string) {
-  try {
-    if (!apiKey) {
-      throw new Error('Steam API key not provided');
-    }
-
-    const response = await axios.get('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/', {
-      params: {
-        key: apiKey,
-        steamids: steamId,
-        format: 'json'
-      }
-    });
-
-    const players = response.data.response.players;
-    return players && players.length > 0 ? players[0] : null;
-  } catch (error) {
-    console.error('Steam profile verification failed:', error);
-    return null;
-  }
-}
