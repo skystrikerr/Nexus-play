@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -90,12 +90,12 @@ export default function Settings() {
   useEffect(() => {
     if (settings) {
       form.reset({
-        theme: settings.theme || theme,
-        isPublic: settings.isPublic,
-        bio: settings.bio || "",
-        firstName: settings.firstName || "",
-        lastName: settings.lastName || "",
-        notifications: settings.notifications || {
+        theme: (settings as any)?.theme || theme,
+        isPublic: (settings as any)?.isPublic ?? true,
+        bio: (settings as any)?.bio || "",
+        firstName: (settings as any)?.firstName || "",
+        lastName: (settings as any)?.lastName || "",
+        notifications: (settings as any)?.notifications || {
           achievements: true,
           reminders: true,
           social: true,
@@ -448,7 +448,7 @@ export default function Settings() {
                     />
                     
                     {/* Password Management - only for local accounts */}
-                    {user?.provider === 'local' && (
+                    {(user as any)?.provider === 'local' && (
                       <div className="p-4 bg-slate-800 rounded-lg border border-slate-600">
                         <h4 className="text-white font-medium mb-2 flex items-center gap-2">
                           <Key className="w-4 h-4" />

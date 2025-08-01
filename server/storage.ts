@@ -33,6 +33,7 @@ export interface IStorage {
   // Activities (user-scoped)
   getActivities(userId: string): Promise<Activity[]>;
   getActivityById(id: string, userId: string): Promise<Activity | undefined>;
+  getActivityByExternalId(externalId: string, userId: string): Promise<Activity | undefined>;
   createActivity(activity: InsertActivity, userId: string): Promise<Activity>;
   updateActivity(id: string, activity: Partial<InsertActivity>, userId: string): Promise<Activity | undefined>;
   deleteActivity(id: string, userId: string): Promise<boolean>;
@@ -158,6 +159,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(activities)
       .where(and(eq(activities.id, id), eq(activities.userId, userId)));
+    return activity;
+  }
+
+  async getActivityByExternalId(externalId: string, userId: string): Promise<Activity | undefined> {
+    const [activity] = await db
+      .select()
+      .from(activities)
+      .where(and(eq(activities.externalId, externalId), eq(activities.userId, userId)));
     return activity;
   }
 
@@ -445,12 +454,13 @@ export class DatabaseStorage implements IStorage {
     startDate.setDate(startDate.getDate() - days);
 
     // Get sessions within the time range
+    const startDateStr = startDate.toISOString().split('T')[0];
     const sessions = await db
       .select()
       .from(activitySessions)
       .where(and(
         eq(activitySessions.userId, userId),
-        gte(activitySessions.date, startDate)
+        gte(activitySessions.date, startDateStr)
       ))
       .orderBy(desc(activitySessions.date));
 
@@ -485,7 +495,7 @@ export class DatabaseStorage implements IStorage {
     sessions.forEach(session => {
       const activity = activityMap.get(session.activityId);
       const type = activity?.type || 'other';
-      const dateStr = session.date.toISOString().split('T')[0];
+      const dateStr = session.date;
       const hours = session.duration || 0;
       
       if (!dailyHoursMap.has(dateStr)) {
@@ -503,7 +513,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate weekly stats (simplified for now)
     const totalHours = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
     const totalSessions = sessions.length;
-    const uniqueDays = new Set(sessions.map(s => s.date.toISOString().split('T')[0])).size;
+    const uniqueDays = new Set(sessions.map(s => s.date)).size;
     
     const weeklyStats = [{
       week: `Last ${days} days`,
