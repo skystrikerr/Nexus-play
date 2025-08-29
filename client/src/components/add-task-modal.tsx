@@ -64,11 +64,7 @@ const taskTypes = [
   { value: ACTIVITY_TYPES.OTHER, label: "Personal Task", icon: Coffee, color: "bg-purple-500/20 text-purple-400" },
 ];
 
-const priorityLevels = [
-  { value: "low", label: "Low Priority", color: "bg-slate-500/20 text-slate-400" },
-  { value: "medium", label: "Medium Priority", color: "bg-yellow-500/20 text-yellow-400" },
-  { value: "high", label: "High Priority", color: "bg-red-500/20 text-red-400" },
-];
+// Removed priority levels
 
 const taskCategories = {
   work: ["Project", "Meeting", "Research", "Development", "Review", "Documentation"],
@@ -107,11 +103,7 @@ export default function AddTaskModal({ open, onOpenChange, defaultType = "work" 
       const taskData = {
         ...data,
         tags: selectedTags,
-        metadata: {
-          priority: (data.metadata as any)?.priority || "medium",
-          dueDate: (data.metadata as any)?.dueDate,
-          estimatedHours: (data.metadata as any)?.estimatedHours,
-        },
+        metadata: {},
       };
       return apiRequest("POST", "/api/activities", taskData);
     },
@@ -219,109 +211,31 @@ export default function AddTaskModal({ open, onOpenChange, defaultType = "work" 
               )}
             />
 
-            {/* Category and Priority */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-slate-800 border-slate-600">
-                        {taskCategories[selectedType as keyof typeof taskCategories]?.map((category) => (
-                          <SelectItem key={category} value={category.toLowerCase()}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="metadata.priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue="medium">
-                      <FormControl>
-                        <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-slate-800 border-slate-600">
-                        {priorityLevels.map((level) => (
-                          <SelectItem key={level.value} value={level.value}>
-                            <div className="flex items-center gap-2">
-                              <div className={cn("w-2 h-2 rounded-full", level.color)} />
-                              {level.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Estimated Hours and Due Date */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="metadata.estimatedHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Estimated Hours
-                    </FormLabel>
+            {/* Category */}
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        placeholder="0"
-                        className="bg-slate-800 border-slate-600 text-white"
-                      />
+                      <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="metadata.dueDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Due Date
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="date"
-                        className="bg-slate-800 border-slate-600 text-white"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      {taskCategories[selectedType as keyof typeof taskCategories]?.map((category) => (
+                        <SelectItem key={category} value={category.toLowerCase()}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Description */}
             <FormField

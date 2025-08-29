@@ -36,7 +36,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-// import ActivityTimer from "./activity-timer";
+import TimeLogModal from "./time-log-modal";
 import type { Activity } from "@shared/schema";
 
 interface TaskCardProps {
@@ -45,11 +45,7 @@ interface TaskCardProps {
   variant?: "default" | "compact";
 }
 
-const priorityConfig = {
-  low: { color: "bg-slate-500/20 text-slate-400 border-slate-500/20", icon: Circle },
-  medium: { color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/20", icon: AlertCircle },
-  high: { color: "bg-red-500/20 text-red-400 border-red-500/20", icon: Target },
-};
+// Removed priority configuration
 
 const statusConfig = {
   wishlist: { color: "bg-purple-500/20 text-purple-400", label: "Planned" },
@@ -67,13 +63,11 @@ const typeConfig = {
 
 export default function TaskCard({ task, onClick, variant = "default" }: TaskCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showTimeLogModal, setShowTimeLogModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const priority = (task.metadata as any)?.priority || "medium";
-  const dueDate = (task.metadata as any)?.dueDate;
-  const estimatedHours = (task.metadata as any)?.estimatedHours;
-  const PriorityIcon = priorityConfig[priority as keyof typeof priorityConfig]?.icon || Circle;
+  const timeSpent = task.totalHours || 0;
 
   const deleteTaskMutation = useMutation({
     mutationFn: () => apiRequest("DELETE", `/api/activities/${task.id}`),
@@ -133,8 +127,7 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
     setShowDeleteDialog(false);
   };
 
-  const isOverdue = dueDate && new Date(dueDate) < new Date() && task.status !== "completed";
-  const isDueSoon = dueDate && new Date(dueDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000) && task.status !== "completed";
+  // Simplified - removed overdue logic
 
   if (variant === "compact") {
     return (
@@ -163,18 +156,14 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
             )}>
               {task.title}
             </p>
-            <Badge variant="outline" className={cn("text-xs", priorityConfig[priority as keyof typeof priorityConfig]?.color)}>
-              {priority}
-            </Badge>
+            {timeSpent > 0 && (
+              <Badge variant="outline" className="text-xs bg-cyan-500/20 text-cyan-400">
+                <Clock className="w-3 h-3 mr-1" />
+                {timeSpent.toFixed(1)}h
+              </Badge>
+            )}
           </div>
-          {dueDate && (
-            <p className={cn(
-              "text-xs mt-1",
-              isOverdue ? "text-red-400" : isDueSoon ? "text-yellow-400" : "text-slate-400"
-            )}>
-              Due {new Date(dueDate).toLocaleDateString()}
-            </p>
-          )}
+          {/* Removed due date display */}
         </div>
 
         <div className="flex items-center gap-2">
@@ -272,10 +261,12 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
                   <Badge variant="outline" className={cn("text-xs", typeConfig[task.type as keyof typeof typeConfig]?.color)}>
                     {typeConfig[task.type as keyof typeof typeConfig]?.label}
                   </Badge>
-                  <Badge variant="outline" className={cn("text-xs", priorityConfig[priority as keyof typeof priorityConfig]?.color)}>
-                    <PriorityIcon className="w-3 h-3 mr-1" />
-                    {priority} priority
-                  </Badge>
+                  {timeSpent > 0 && (
+                    <Badge variant="outline" className="text-xs bg-cyan-500/20 text-cyan-400">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {timeSpent.toFixed(1)}h spent
+                    </Badge>
+                  )}
                   <Badge variant="outline" className={cn("text-xs", statusConfig[task.status as keyof typeof statusConfig]?.color)}>
                     {statusConfig[task.status as keyof typeof statusConfig]?.label}
                   </Badge>
@@ -302,28 +293,21 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
 
           {/* Footer Info */}
           <div className="flex items-center justify-between text-sm text-slate-400">
-            <div className="flex items-center gap-4">
-              {estimatedHours && (
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{estimatedHours}h est.</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1">
-                <TrendingUp className="w-4 h-4" />
-                <span>{task.totalHours}h logged</span>
-              </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{timeSpent.toFixed(1)}h logged</span>
             </div>
-            
-            {dueDate && (
-              <div className={cn(
-                "flex items-center gap-1",
-                isOverdue ? "text-red-400" : isDueSoon ? "text-yellow-400" : "text-slate-400"
-              )}>
-                <Calendar className="w-4 h-4" />
-                <span>Due {new Date(dueDate).toLocaleDateString()}</span>
-              </div>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTimeLogModal(true);
+              }}
+              className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              + Log Time
+            </Button>
           </div>
 
           {/* Tags */}
@@ -338,6 +322,13 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
           )}
         </div>
       </div>
+
+      {/* Time Log Modal */}
+      <TimeLogModal
+        open={showTimeLogModal}
+        onOpenChange={setShowTimeLogModal}
+        task={task}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
