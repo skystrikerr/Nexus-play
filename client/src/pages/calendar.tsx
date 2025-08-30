@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Menu } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ActivityCalendar from "@/components/activity-calendar";
 import { format, parseISO, isSameDay, startOfDay, endOfDay } from "date-fns";
 import { Clock, Calendar as CalendarIcon, Trophy, Target, Gamepad2, BookOpen, Briefcase, Activity, Star, MapPin } from "lucide-react";
 
@@ -180,6 +181,9 @@ export default function CalendarPage() {
         </header>
 
         <div className="p-6 space-y-6">
+          {/* Interactive Calendar for Adding Activities */}
+          <ActivityCalendar />
+          
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Calendar */}
             <Card className="lg:col-span-2 bg-slate-800/50 border-slate-700">

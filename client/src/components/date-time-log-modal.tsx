@@ -32,13 +32,14 @@ const timeLogSchema = z.object({
 
 type TimeLogData = z.infer<typeof timeLogSchema>;
 
-interface TimeLogModalProps {
+interface DateTimeLogModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task: Activity;
+  date: string; // YYYY-MM-DD format
 }
 
-export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalProps) {
+export default function DateTimeLogModal({ open, onOpenChange, task, date }: DateTimeLogModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,10 +53,10 @@ export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalP
 
   const logTimeMutation = useMutation({
     mutationFn: async (data: TimeLogData) => {
-      // Create session entry for the current date
+      // Create session entry for the specific date
       await apiRequest("POST", "/api/sessions", {
         activityId: task.id,
-        date: new Date().toISOString().split('T')[0],
+        date: date,
         duration: data.duration,
         notes: data.notes,
       });
@@ -72,7 +73,7 @@ export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalP
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
         title: "Time Logged",
-        description: `Added ${form.getValues().duration} hours to ${task.title}`,
+        description: `Added ${form.getValues().duration} hours to ${task.title} for ${date}`,
       });
       onOpenChange(false);
       form.reset();
@@ -90,6 +91,16 @@ export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalP
     logTimeMutation.mutate(data);
   });
 
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700">
@@ -98,6 +109,7 @@ export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalP
             <Clock className="w-5 h-5" />
             Log Time - {task.title}
           </DialogTitle>
+          <p className="text-sm text-slate-400">{formatDate(date)}</p>
         </DialogHeader>
 
         <Form {...form}>
