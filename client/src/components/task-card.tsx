@@ -2,17 +2,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Clock, 
-  Calendar, 
   CheckCircle, 
   Circle, 
   MoreVertical, 
   Edit, 
-  Trash2, 
-  Play, 
-  Pause,
-  AlertCircle,
-  Target,
-  TrendingUp
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -45,20 +39,12 @@ interface TaskCardProps {
   variant?: "default" | "compact";
 }
 
-// Removed priority configuration
-
 const statusConfig = {
   wishlist: { color: "bg-purple-500/20 text-purple-400", label: "Planned" },
   in_progress: { color: "bg-blue-500/20 text-blue-400", label: "In Progress" },
   completed: { color: "bg-green-500/20 text-green-400", label: "Completed" },
   on_hold: { color: "bg-orange-500/20 text-orange-400", label: "On Hold" },
   dropped: { color: "bg-red-500/20 text-red-400", label: "Cancelled" },
-};
-
-const typeConfig = {
-  work: { color: "bg-blue-500/20 text-blue-400", label: "Work" },
-  study: { color: "bg-green-500/20 text-green-400", label: "Study" },
-  other: { color: "bg-purple-500/20 text-purple-400", label: "Personal" },
 };
 
 export default function TaskCard({ task, onClick, variant = "default" }: TaskCardProps) {
@@ -127,7 +113,6 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
     setShowDeleteDialog(false);
   };
 
-  // Simplified - removed overdue logic
 
   if (variant === "compact") {
     return (
@@ -163,11 +148,9 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
               </Badge>
             )}
           </div>
-          {/* Removed due date display */}
         </div>
 
         <div className="flex items-center gap-2">
-          {/* <ActivityTimer activity={task} variant="mini" /> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild data-dropdown-trigger>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400">
@@ -258,9 +241,6 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
                   {task.title}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className={cn("text-xs", typeConfig[task.type as keyof typeof typeConfig]?.color)}>
-                    {typeConfig[task.type as keyof typeof typeConfig]?.label}
-                  </Badge>
                   {timeSpent > 0 && (
                     <Badge variant="outline" className="text-xs bg-cyan-500/20 text-cyan-400">
                       <Clock className="w-3 h-3 mr-1" />
@@ -273,8 +253,6 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
                 </div>
               </div>
             </div>
-
-            {/* <ActivityTimer activity={task} variant="small" /> */}
           </div>
 
           {/* Description */}
@@ -310,16 +288,6 @@ export default function TaskCard({ task, onClick, variant = "default" }: TaskCar
             </Button>
           </div>
 
-          {/* Tags */}
-          {task.tags && task.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {task.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="bg-slate-700 text-slate-300 text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
