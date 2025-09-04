@@ -12,7 +12,7 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, ACTIVITY_TYPES } from "@shared/schema";
+import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 
@@ -933,6 +933,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error checking subscription:', error);
       res.json({ isPremium: false });
+    }
+  });
+
+  // Posts API (Social Media Features)
+  app.get("/api/posts", async (req, res) => {
+    try {
+      const posts = await storage.getPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      res.status(500).json({ message: "Failed to fetch posts" });
+    }
+  });
+
+  app.post("/api/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const postData = insertPostSchema.parse(req.body);
+      const post = await storage.createPost(postData, userId);
+      res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating post:", error);
+      res.status(400).json({ message: error.message || "Failed to create post" });
+    }
+  });
+
+  app.post("/api/posts/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      const success = await storage.likePost(id, userId);
+      
+      if (success) {
+        res.json({ message: "Post liked successfully" });
+      } else {
+        res.status(404).json({ message: "Post not found" });
+      }
+    } catch (error) {
+      console.error("Error liking post:", error);
+      res.status(500).json({ message: "Failed to like post" });
+    }
+  });
+
+  // Tasks API with Public/Private Visibility
+  app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const tasks = await storage.getTasks(userId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.get("/api/tasks/public/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const tasks = await storage.getPublicTasks(userId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching public tasks:", error);
+      res.status(500).json({ message: "Failed to fetch public tasks" });
+    }
+  });
+
+  app.post("/api/tasks", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const taskData = insertTaskSchema.parse(req.body);
+      const task = await storage.createTask(taskData, userId);
+      res.status(201).json(task);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      res.status(400).json({ message: error.message || "Failed to create task" });
+    }
+  });
+
+  // Communities API (Discord-like)
+  app.get("/api/communities", async (req, res) => {
+    try {
+      const communities = await storage.getCommunities();
+      res.json(communities);
+    } catch (error) {
+      console.error("Error fetching communities:", error);
+      res.status(500).json({ message: "Failed to fetch communities" });
+    }
+  });
+
+  app.post("/api/communities", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const communityData = insertCommunitySchema.parse(req.body);
+      const community = await storage.createCommunity(communityData, userId);
+      res.status(201).json(community);
+    } catch (error) {
+      console.error("Error creating community:", error);
+      res.status(400).json({ message: error.message || "Failed to create community" });
     }
   });
 

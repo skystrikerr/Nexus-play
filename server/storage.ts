@@ -3,6 +3,11 @@ import {
   activities,
   activitySessions,
   reviews,
+  posts,
+  communities,
+  channels,
+  communityMembers,
+  tasks,
   type User,
   type UpsertUser,
   type InsertActivity,
@@ -11,6 +16,16 @@ import {
   type ActivitySession,
   type InsertReview,
   type Review,
+  type Post,
+  type InsertPost,
+  type Community,
+  type InsertCommunity,
+  type Channel,
+  type InsertChannel,
+  type CommunityMember,
+  type InsertCommunityMember,
+  type Task,
+  type InsertTask,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, gte } from "drizzle-orm";
@@ -76,6 +91,41 @@ export interface IStorage {
   updateUserStripeInfo(userId: string, stripeData: { customerId: string; subscriptionId: string }): Promise<void>;
   updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<void>;
   
+  // Posts (social features)
+  createPost(post: InsertPost, userId: string): Promise<Post>;
+  getPosts(userId?: string): Promise<Post[]>; // Get all public posts or user's posts
+  getPostById(id: string): Promise<Post | undefined>;
+  getUserPosts(userId: string): Promise<Post[]>;
+  updatePost(id: string, post: Partial<InsertPost>, userId: string): Promise<Post | undefined>;
+  deletePost(id: string, userId: string): Promise<boolean>;
+  likePost(postId: string, userId: string): Promise<boolean>;
+
+  // Tasks with public/private visibility
+  createTask(task: InsertTask, userId: string): Promise<Task>;
+  getTasks(userId: string): Promise<Task[]>;
+  getPublicTasks(userId: string): Promise<Task[]>; // Get user's public tasks for profile
+  getTaskById(id: string, userId: string): Promise<Task | undefined>;
+  updateTask(id: string, task: Partial<InsertTask>, userId: string): Promise<Task | undefined>;
+  deleteTask(id: string, userId: string): Promise<boolean>;
+  
+  // Communities (Discord-like)
+  createCommunity(community: InsertCommunity, userId: string): Promise<Community>;
+  getCommunities(): Promise<Community[]>; // Get all public communities
+  getUserCommunities(userId: string): Promise<Community[]>; // Get user's communities
+  getCommunityById(id: string): Promise<Community | undefined>;
+  updateCommunity(id: string, community: Partial<InsertCommunity>, userId: string): Promise<Community | undefined>;
+  deleteCommunity(id: string, userId: string): Promise<boolean>;
+  joinCommunity(communityId: string, userId: string): Promise<CommunityMember>;
+  leaveCommunity(communityId: string, userId: string): Promise<boolean>;
+  getCommunityMembers(communityId: string): Promise<CommunityMember[]>;
+
+  // Channels
+  createChannel(channel: InsertChannel, userId: string): Promise<Channel>;
+  getChannelsByCommunity(communityId: string): Promise<Channel[]>;
+  getChannelById(id: string): Promise<Channel | undefined>;
+  updateChannel(id: string, channel: Partial<InsertChannel>, userId: string): Promise<Channel | undefined>;
+  deleteChannel(id: string, userId: string): Promise<boolean>;
+
   // Backward compatibility aliases
   getGames(userId: string): Promise<Activity[]>;
   getGameById(id: string, userId: string): Promise<Activity | undefined>;
@@ -559,6 +609,240 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ isPremium })
       .where(eq(users.id, userId));
+  }
+
+  // Posts (social features)
+  async createPost(postData: InsertPost, userId: string): Promise<Post> {
+    const [post] = await db
+      .insert(posts)
+      .values({ ...postData, userId })
+      .returning();
+    return post;
+  }
+
+  async getPosts(userId?: string): Promise<Post[]> {
+    if (userId) {
+      // Get user's own posts (including private ones)
+      return await db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.createdAt));
+    } else {
+      // Get all public posts
+      return await db.select().from(posts).where(eq(posts.isPublic, 1)).orderBy(desc(posts.createdAt));
+    }
+  }
+
+  async getPostById(id: string): Promise<Post | undefined> {
+    const [post] = await db.select().from(posts).where(eq(posts.id, id));
+    return post;
+  }
+
+  async getUserPosts(userId: string): Promise<Post[]> {
+    return await db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.createdAt));
+  }
+
+  async updatePost(id: string, postData: Partial<InsertPost>, userId: string): Promise<Post | undefined> {
+    const [post] = await db
+      .update(posts)
+      .set({ ...postData, updatedAt: new Date() })
+      .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+      .returning();
+    return post;
+  }
+
+  async deletePost(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(posts)
+      .where(and(eq(posts.id, id), eq(posts.userId, userId)));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async likePost(postId: string, userId: string): Promise<boolean> {
+    const [post] = await db
+      .update(posts)
+      .set({ likes: sql`${posts.likes} + 1` })
+      .where(eq(posts.id, postId))
+      .returning();
+    return !!post;
+  }
+
+  // Tasks with public/private visibility
+  async createTask(taskData: InsertTask, userId: string): Promise<Task> {
+    const [task] = await db
+      .insert(tasks)
+      .values({ ...taskData, userId })
+      .returning();
+    return task;
+  }
+
+  async getTasks(userId: string): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(desc(tasks.createdAt));
+  }
+
+  async getPublicTasks(userId: string): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), eq(tasks.isPublic, 1)))
+      .orderBy(desc(tasks.createdAt));
+  }
+
+  async getTaskById(id: string, userId: string): Promise<Task | undefined> {
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+    return task;
+  }
+
+  async updateTask(id: string, taskData: Partial<InsertTask>, userId: string): Promise<Task | undefined> {
+    const [task] = await db
+      .update(tasks)
+      .set({ ...taskData, updatedAt: new Date() })
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .returning();
+    return task;
+  }
+
+  async deleteTask(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Communities (Discord-like)
+  async createCommunity(communityData: InsertCommunity, userId: string): Promise<Community> {
+    const [community] = await db
+      .insert(communities)
+      .values({ ...communityData, ownerId: userId })
+      .returning();
+    
+    // Add creator as owner member
+    await db.insert(communityMembers).values({
+      communityId: community.id,
+      userId: userId,
+      role: "owner"
+    });
+    
+    return community;
+  }
+
+  async getCommunities(): Promise<Community[]> {
+    return await db.select().from(communities).where(eq(communities.isPublic, 1)).orderBy(desc(communities.createdAt));
+  }
+
+  async getUserCommunities(userId: string): Promise<Community[]> {
+    const memberCommunities = await db
+      .select({ 
+        id: communities.id,
+        name: communities.name,
+        description: communities.description,
+        iconUrl: communities.iconUrl,
+        bannerUrl: communities.bannerUrl,
+        ownerId: communities.ownerId,
+        memberCount: communities.memberCount,
+        isPublic: communities.isPublic,
+        createdAt: communities.createdAt,
+        updatedAt: communities.updatedAt
+      })
+      .from(communities)
+      .innerJoin(communityMembers, eq(communities.id, communityMembers.communityId))
+      .where(eq(communityMembers.userId, userId));
+    return memberCommunities;
+  }
+
+  async getCommunityById(id: string): Promise<Community | undefined> {
+    const [community] = await db.select().from(communities).where(eq(communities.id, id));
+    return community;
+  }
+
+  async updateCommunity(id: string, communityData: Partial<InsertCommunity>, userId: string): Promise<Community | undefined> {
+    const [community] = await db
+      .update(communities)
+      .set({ ...communityData, updatedAt: new Date() })
+      .where(and(eq(communities.id, id), eq(communities.ownerId, userId)))
+      .returning();
+    return community;
+  }
+
+  async deleteCommunity(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(communities)
+      .where(and(eq(communities.id, id), eq(communities.ownerId, userId)));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async joinCommunity(communityId: string, userId: string): Promise<CommunityMember> {
+    const [member] = await db
+      .insert(communityMembers)
+      .values({ communityId, userId, role: "member" })
+      .returning();
+    
+    await db
+      .update(communities)
+      .set({ memberCount: sql`${communities.memberCount} + 1` })
+      .where(eq(communities.id, communityId));
+    
+    return member;
+  }
+
+  async leaveCommunity(communityId: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(communityMembers)
+      .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)));
+    
+    if (result.rowCount && result.rowCount > 0) {
+      await db
+        .update(communities)
+        .set({ memberCount: sql`${communities.memberCount} - 1` })
+        .where(eq(communities.id, communityId));
+      return true;
+    }
+    return false;
+  }
+
+  async getCommunityMembers(communityId: string): Promise<CommunityMember[]> {
+    return await db
+      .select()
+      .from(communityMembers)
+      .where(eq(communityMembers.communityId, communityId));
+  }
+
+  // Channels
+  async createChannel(channelData: InsertChannel, userId: string): Promise<Channel> {
+    const [channel] = await db
+      .insert(channels)
+      .values(channelData)
+      .returning();
+    return channel;
+  }
+
+  async getChannelsByCommunity(communityId: string): Promise<Channel[]> {
+    return await db
+      .select()
+      .from(channels)
+      .where(eq(channels.communityId, communityId))
+      .orderBy(channels.position);
+  }
+
+  async getChannelById(id: string): Promise<Channel | undefined> {
+    const [channel] = await db.select().from(channels).where(eq(channels.id, id));
+    return channel;
+  }
+
+  async updateChannel(id: string, channelData: Partial<InsertChannel>, userId: string): Promise<Channel | undefined> {
+    const [channel] = await db
+      .update(channels)
+      .set(channelData)
+      .where(eq(channels.id, id))
+      .returning();
+    return channel;
+  }
+
+  async deleteChannel(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(channels)
+      .where(eq(channels.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 }
 

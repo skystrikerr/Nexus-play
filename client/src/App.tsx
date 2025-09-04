@@ -26,6 +26,7 @@ import Tasks from "@/pages/tasks";
 import Analytics from "@/pages/analytics";
 import Reviews from "@/pages/reviews";
 import Profile from "@/pages/profile";
+import PostsPage from "@/pages/posts";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -44,6 +45,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Dashboard} />
+          <Route path="/posts" component={PostsPage} />
           <Route path="/tasks" component={Tasks} />
           <Route path="/library" component={GameLibrary} />
           <Route path="/calendar" component={Calendar} />

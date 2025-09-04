@@ -168,6 +168,123 @@ export const games = activities;
 export const gamingSessions = activitySessions;
 export const insertGameSchema = insertActivitySchema;
 
+// Communities table (Discord-like servers)
+export const communities = pgTable("communities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  iconUrl: text("icon_url"),
+  bannerUrl: text("banner_url"),
+  ownerId: varchar("owner_id").notNull().references(() => users.id),
+  memberCount: integer("member_count").default(1),
+  isPublic: integer("is_public").default(1), // 1 for public, 0 for private/invite-only
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Channels table (Discord-like channels within communities)
+export const channels = pgTable("channels", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  communityId: varchar("community_id").notNull().references(() => communities.id),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  type: varchar("type").default("text"), // text, voice, announcement
+  position: integer("position").default(0), // for ordering channels
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tasks table (making tasks separate from activities for better public/private control)
+export const tasks = pgTable("tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  priority: varchar("priority").default("medium"), // low, medium, high, urgent
+  dueDate: timestamp("due_date"),
+  estimatedHours: real("estimated_hours"),
+  actualHours: real("actual_hours"),
+  status: varchar("status").default("pending"), // pending, in_progress, completed, cancelled
+  isPublic: integer("is_public").default(0), // 1 for public, 0 for private
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Posts table for social media functionality
+export const posts = pgTable("posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"), // Optional image attachment
+  activityId: varchar("activity_id").references(() => activities.id), // Link to activity if relevant
+  communityId: varchar("community_id").references(() => communities.id), // Link to community if posted there
+  channelId: varchar("channel_id").references(() => channels.id), // Link to channel if posted there
+  likes: integer("likes").default(0),
+  commentsCount: integer("comments_count").default(0),
+  isPublic: integer("is_public").default(1), // 1 for public, 0 for private
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Community members table
+export const communityMembers = pgTable("community_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  communityId: varchar("community_id").notNull().references(() => communities.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: varchar("role").default("member"), // owner, admin, moderator, member
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// Validation schemas
+export const insertPostSchema = createInsertSchema(posts).omit({
+  id: true,
+  userId: true,
+  likes: true,
+  commentsCount: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  content: z.string().min(1).max(2000),
+  imageUrl: z.string().url().optional(),
+});
+
+export const insertCommunitySchema = createInsertSchema(communities).omit({
+  id: true,
+  ownerId: true,
+  memberCount: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  iconUrl: z.string().url().optional(),
+  bannerUrl: z.string().url().optional(),
+});
+
+export const insertChannelSchema = createInsertSchema(channels).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().min(1).max(100),
+  description: z.string().max(200).optional(),
+  type: z.enum(["text", "voice", "announcement"]).default("text"),
+});
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+  completedAt: true,
+}).extend({
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  estimatedHours: z.number().min(0).optional(),
+  actualHours: z.number().min(0).optional(),
+  status: z.enum(["pending", "in_progress", "completed", "cancelled"]).default("pending"),
+});
+
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
@@ -176,6 +293,18 @@ export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type ActivitySession = typeof activitySessions.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Review = typeof reviews.$inferSelect;
+
+// New types for posts and communities
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type Community = typeof communities.$inferSelect;
+export type InsertCommunity = z.infer<typeof insertCommunitySchema>;
+export type Channel = typeof channels.$inferSelect;
+export type InsertChannel = z.infer<typeof insertChannelSchema>;
+export type CommunityMember = typeof communityMembers.$inferSelect;
+export type InsertCommunityMember = typeof communityMembers.$inferInsert;
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = z.infer<typeof insertTaskSchema>;
 
 // Backward compatibility types
 export type InsertGame = InsertActivity;

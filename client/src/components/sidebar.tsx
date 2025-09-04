@@ -18,7 +18,8 @@ import {
   LogOut,
   Trophy,
   Crown,
-  UserIcon
+  UserIcon,
+  MessageCircle
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -27,6 +28,7 @@ export default function Sidebar() {
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
+    { name: "Posts", href: "/posts", icon: MessageCircle },
     { name: "Task Manager", href: "/tasks", icon: Target },
     { name: "Activity Library", href: "/library", icon: Library },
     { name: "Calendar", href: "/calendar", icon: Calendar },
