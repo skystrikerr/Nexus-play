@@ -25,6 +25,7 @@ import Settings from "@/pages/settings";
 import Tasks from "@/pages/tasks";
 import Analytics from "@/pages/analytics";
 import Reviews from "@/pages/reviews";
+import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -53,6 +54,7 @@ function Router() {
           <Route path="/settings" component={Settings} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/reviews" component={Reviews} />
+          <Route path="/profile" component={Profile} />
         </>
       )}
       <Route component={NotFound} />

@@ -23,6 +23,7 @@ export interface IStorage {
   getUserBySteamId(steamId: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUser(userId: string, userData: Partial<UpsertUser>): Promise<User | undefined>;
   updateUserXboxInfo(userId: string, xboxInfo: { xboxLiveId: string; xboxAccessToken: string }): Promise<User | undefined>;
   updateUserSteamInfo(userId: string, steamInfo: { steamId: string; steamApiKey?: string }): Promise<User | undefined>;
   

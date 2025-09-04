@@ -13,6 +13,7 @@ if (process.env.STRIPE_SECRET_KEY) {
 
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, ACTIVITY_TYPES } from "@shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -28,6 +29,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Profile management routes
+  app.put("/api/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const updateData = z.object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        bio: z.string().max(500).optional(),
+        isPublic: z.number().min(0).max(1).optional(),
+      }).parse(req.body);
+
+      const user = await storage.updateUser(userId, updateData);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      }
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Profile photo upload URL
+  app.post("/api/profile/photo/upload", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getProfilePhotoUploadURL(userId);
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  // Update profile photo
+  app.put("/api/profile/photo", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { profileImageUrl } = z.object({
+        profileImageUrl: z.string().url(),
+      }).parse(req.body);
+
+      // Normalize the object path for security
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeObjectPath(profileImageUrl);
+      
+      const user = await storage.updateUser(userId, { 
+        profileImageUrl: normalizedPath 
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ profileImageUrl: normalizedPath });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid photo URL", errors: error.errors });
+      }
+      console.error("Error updating profile photo:", error);
+      res.status(500).json({ message: "Failed to update profile photo" });
+    }
+  });
+
+  // Serve profile photos (with access control)
+  app.get("/objects/profile-photos/:userId/:photoId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.userId;
+      const photoId = req.params.photoId;
+      
+      // Check if user can access this photo
+      if (currentUserId !== targetUserId) {
+        const targetUser = await storage.getUser(targetUserId);
+        if (!targetUser || !targetUser.isPublic) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = `/objects/profile-photos/${targetUserId}/${photoId}`;
+      const objectFile = await objectStorageService.getProfilePhotoFile(objectPath);
+      
+      await objectStorageService.downloadProfilePhoto(objectFile, res);
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ message: "Photo not found" });
+      }
+      console.error("Error serving profile photo:", error);
+      res.status(500).json({ message: "Failed to serve photo" });
     }
   });
 
