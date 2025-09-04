@@ -57,7 +57,10 @@ export function GameBacklog() {
   // Fetch backlog games (wishlist status)
   const { data: games = [], isLoading } = useQuery({
     queryKey: ["/api/activities", { type: "game", status: "wishlist" }],
-    queryFn: () => apiRequest("GET", "/api/activities?type=game&status=wishlist"),
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/activities?type=game&status=wishlist");
+      return await response.json();
+    },
   });
 
   // Add game to backlog mutation
@@ -144,7 +147,7 @@ export function GameBacklog() {
   });
 
   // Filter games based on search and filters
-  const filteredGames = games.filter((game: Game) => {
+  const filteredGames = (games || []).filter((game: Game) => {
     const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          game.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlatform = platformFilter === "all" || game.metadata?.platform === platformFilter;
@@ -175,7 +178,7 @@ export function GameBacklog() {
     }
   };
 
-  const platforms = [...new Set(games.map((game: Game) => game.metadata?.platform).filter(Boolean))];
+  const platforms = [...new Set((games || []).map((game: Game) => game.metadata?.platform).filter(Boolean))];
   const priorities = ["high", "medium", "low"];
 
   return (
