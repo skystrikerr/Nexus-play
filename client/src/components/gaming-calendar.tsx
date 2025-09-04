@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import CalendarDayModal from "./calendar-day-modal";
-import type { ActivitySession } from "@shared/schema";
+import type { ActivitySession, Activity } from "@shared/schema";
 
 export default function GamingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +28,14 @@ export default function GamingCalendar() {
       return await response.json();
     },
   });
+
+  // Get activities for today's sessions
+  const { data: activities = [] } = useQuery<Activity[]>({
+    queryKey: ["/api/activities"],
+  });
+
+  // Get today's sessions
+  const todaySessions = sessions.filter(session => session.date === todayDateString);
 
   // Calendar grid generation
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -148,12 +156,12 @@ export default function GamingCalendar() {
           <div className="space-y-2">
             {todaySessions.length > 0 ? (
               todaySessions.map((session) => {
-                const game = games.find(g => g.id === session.gameId);
+                const activity = activities.find(a => a.id === session.activityId);
                 return (
                   <div key={session.id} className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-primary rounded-full" />
                     <span className="text-sm text-slate-300">
-                      {game?.title || "Unknown Game"}
+                      {activity?.title || "Unknown Activity"}
                     </span>
                     <span className="text-xs text-slate-500 flex items-center">
                       <Clock className="w-3 h-3 mr-1" />
@@ -163,7 +171,7 @@ export default function GamingCalendar() {
                 );
               })
             ) : (
-              <p className="text-sm text-slate-500">No gaming sessions today</p>
+              <p className="text-sm text-slate-500">No sessions today</p>
             )}
           </div>
         </div>
