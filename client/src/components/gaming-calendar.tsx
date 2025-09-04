@@ -154,7 +154,7 @@ export default function GamingCalendar() {
         <div className="mt-4 pt-4 border-t border-slate-700">
           <h5 className="text-sm font-medium text-white mb-2">Today's Sessions</h5>
           <div className="space-y-2">
-            {todaySessions.length > 0 ? (
+            {todaySessions && todaySessions.length > 0 ? (
               todaySessions.map((session) => {
                 const activity = activities.find(a => a.id === session.activityId);
                 return (
