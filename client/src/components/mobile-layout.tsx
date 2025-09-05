@@ -19,7 +19,8 @@ import {
   TrendingUp,
   LogOut,
   Menu,
-  MessageSquare
+  MessageSquare,
+  BookOpen
 } from "lucide-react";
 
 interface MobileLayoutProps {
@@ -33,6 +34,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Tasks", href: "/tasks", icon: Target },
+    { name: "Journal", href: "/journal", icon: BookOpen },
     { name: "Library", href: "/library", icon: Library },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Statistics", href: "/stats", icon: BarChart3 },
