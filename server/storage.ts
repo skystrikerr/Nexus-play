@@ -98,10 +98,6 @@ export interface IStorage {
   // Completion tracking
   markActivityCompleted(activityId: string, userId: string, completedAt?: Date): Promise<Activity | undefined>;
   
-  // Stripe/Premium operations
-  updateStripeCustomerId(userId: string, customerId: string): Promise<void>;
-  updateUserStripeInfo(userId: string, stripeData: { customerId: string; subscriptionId: string }): Promise<void>;
-  updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<void>;
   
   // Posts (social features)
   createPost(post: InsertPost, userId: string): Promise<Post>;
@@ -668,31 +664,6 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  // Stripe/Premium operations
-  async updateStripeCustomerId(userId: string, customerId: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ stripeCustomerId: customerId })
-      .where(eq(users.id, userId));
-  }
-
-  async updateUserStripeInfo(userId: string, stripeData: { customerId: string; subscriptionId: string }): Promise<void> {
-    await db
-      .update(users)
-      .set({ 
-        stripeCustomerId: stripeData.customerId,
-        stripeSubscriptionId: stripeData.subscriptionId,
-        isPremium: true
-      })
-      .where(eq(users.id, userId));
-  }
-
-  async updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<void> {
-    await db
-      .update(users)
-      .set({ isPremium })
-      .where(eq(users.id, userId));
-  }
 
   // Posts (social features)
   async createPost(postData: InsertPost, userId: string): Promise<Post> {

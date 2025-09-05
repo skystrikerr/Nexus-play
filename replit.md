@@ -176,3 +176,4 @@ The application is structured as a monorepo with shared TypeScript types between
 - **Authentication**: Simplified to local email/password only (Google and Steam login removed per user request)
 - **Gaming Platform Integration**: Re-added Steam and Xbox connections for progress tracking and achievement monitoring (January 2025)
 - **Mobile Ready**: Optimized for Android with home screen installation capability
+- **Monetization**: Switched from paid subscription model to ad-supported free platform (September 2025)

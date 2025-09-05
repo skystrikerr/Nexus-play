@@ -39,7 +39,7 @@ export default function Sidebar() {
     { name: "Community", href: "/users", icon: Users },
     { name: "Gaming Platforms", href: "/gaming-platforms", icon: Trophy },
     { name: "Profile", href: "/profile", icon: UserIcon },
-    { name: "Premium", href: "/premium", icon: Crown },
+    { name: "Features", href: "/premium", icon: Crown },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

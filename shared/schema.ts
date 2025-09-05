@@ -48,9 +48,6 @@ export const users = pgTable("users", {
   steamId: varchar("steam_id"), // Steam user ID
   xboxAccessToken: varchar("xbox_access_token"), // Xbox access token
   steamApiKey: varchar("steam_api_key"), // Steam API key
-  stripeCustomerId: varchar("stripe_customer_id"), // Stripe customer ID
-  stripeSubscriptionId: varchar("stripe_subscription_id"), // Stripe subscription ID
-  isPremium: boolean("is_premium").default(false), // Premium subscription status
   isPublic: integer("is_public").default(1), // 1 for public, 0 for private profile
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
