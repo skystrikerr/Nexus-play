@@ -9,6 +9,7 @@ import AddTaskModal from "@/components/add-task-modal";
 import GameCard from "@/components/game-card";
 import TaskCard from "@/components/task-card";
 import GamingCalendar from "@/components/gaming-calendar";
+import { ActiveTimerWidget } from "@/components/active-timer-widget";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
@@ -259,8 +260,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Gaming Calendar */}
-            <GamingCalendar games={games} />
+            {/* Timer and Calendar */}
+            <div className="space-y-8">
+              <ActiveTimerWidget />
+              <GamingCalendar games={games} />
+            </div>
           </div>
         </div>
       </main>

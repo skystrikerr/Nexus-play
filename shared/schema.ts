@@ -83,9 +83,20 @@ export const activitySessions = pgTable("activity_sessions", {
   activityId: varchar("activity_id").notNull().references(() => activities.id),
   date: text("date").notNull(), // YYYY-MM-DD format
   duration: real("duration").notNull(), // hours
+  startTime: timestamp("start_time"), // when the session started
+  endTime: timestamp("end_time"), // when the session ended
   notes: text("notes"),
   quality: integer("quality"), // 1-5 rating for session quality/productivity
   location: text("location"), // where the session took place
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Active timers table - tracks currently running timers
+export const activeTimers = pgTable("active_timers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  activityId: varchar("activity_id").notNull().references(() => activities.id),
+  startTime: timestamp("start_time").notNull().defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -147,6 +158,13 @@ export const insertSessionSchema = createInsertSchema(activitySessions).omit({
   createdAt: true,
 }).extend({
   quality: z.number().min(1).max(5).optional(),
+});
+
+export const insertActiveTimerSchema = createInsertSchema(activeTimers).omit({
+  id: true,
+  userId: true,
+  startTime: true,
+  createdAt: true,
 });
 
 export const insertReviewSchema = createInsertSchema(reviews).omit({
@@ -333,6 +351,8 @@ export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type JournalEntry = typeof journalEntries.$inferSelect;
 export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type ActiveTimer = typeof activeTimers.$inferSelect;
+export type InsertActiveTimer = z.infer<typeof insertActiveTimerSchema>;
 
 // Backward compatibility types
 export type InsertGame = InsertActivity;

@@ -22,13 +22,12 @@ import {
   CheckCircle,
   Trophy,
   MessageSquare,
-  Play,
-  Pause,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import CompletionModal from "./completion-modal";
+import { TimerButton } from "./timer-button";
 import type { Activity } from "@shared/schema";
 
 const activityIcons = {
@@ -57,42 +56,9 @@ interface ActivityCardProps {
 
 export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCardProps) {
   const [showCompletion, setShowCompletion] = useState(false);
-  const [timerRunning, setTimerRunning] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const Icon = activityIcons[activity.type as keyof typeof activityIcons] || Star;
-
-  const startTimerMutation = useMutation({
-    mutationFn: () => {
-      // Timer logic would be implemented here
-      // For now, just simulate starting a timer
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      setTimerRunning(true);
-      toast({
-        title: "Timer started",
-        description: `Started tracking time for ${activity.title}`,
-      });
-    },
-  });
-
-  const stopTimerMutation = useMutation({
-    mutationFn: () => {
-      // Timer logic would be implemented here
-      // This would create a session with the elapsed time
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      setTimerRunning(false);
-      toast({
-        title: "Session logged",
-        description: "Time has been added to your activity",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-    },
-  });
 
   const handleComplete = () => {
     if (activity.status === 'completed') {
@@ -103,14 +69,6 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
       return;
     }
     setShowCompletion(true);
-  };
-
-  const handleTimer = () => {
-    if (timerRunning) {
-      stopTimerMutation.mutate();
-    } else {
-      startTimerMutation.mutate();
-    }
   };
 
   return (
@@ -214,24 +172,12 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
               <Clock className="w-4 h-4" />
               <span>{activity.totalHours || 0}h logged</span>
             </div>
-            <Button
+            <TimerButton 
+              activityId={activity.id} 
+              activityTitle={activity.title}
               size="sm"
-              variant={timerRunning ? "destructive" : "outline"}
-              onClick={handleTimer}
-              disabled={startTimerMutation.isPending || stopTimerMutation.isPending}
-            >
-              {timerRunning ? (
-                <>
-                  <Pause className="w-4 h-4 mr-2" />
-                  Stop
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Start
-                </>
-              )}
-            </Button>
+              showTimeDisplay={false}
+            />
           </div>
 
           {/* Description */}

@@ -2,6 +2,7 @@ import {
   users,
   activities,
   activitySessions,
+  activeTimers,
   reviews,
   posts,
   communities,
@@ -15,6 +16,8 @@ import {
   type Activity,
   type InsertSession,
   type ActivitySession,
+  type ActiveTimer,
+  type InsertActiveTimer,
   type InsertReview,
   type Review,
   type Post,
@@ -73,6 +76,12 @@ export interface IStorage {
   
   // Public sessions (for viewing other users' profiles)
   getPublicSessions(userId: string): Promise<ActivitySession[]>;
+  
+  // Active Timers (user-scoped)
+  startTimer(activityId: string, userId: string): Promise<ActiveTimer>;
+  stopTimer(activityId: string, userId: string): Promise<ActivitySession | null>;
+  getActiveTimer(userId: string): Promise<ActiveTimer | null>;
+  getActiveTimerByActivity(activityId: string, userId: string): Promise<ActiveTimer | null>;
   
   // Reviews (user-scoped)
   getReviews(userId: string): Promise<Review[]>;
@@ -366,6 +375,8 @@ export class DatabaseStorage implements IStorage {
         activityId: activitySessions.activityId,
         date: activitySessions.date,
         duration: activitySessions.duration,
+        startTime: activitySessions.startTime,
+        endTime: activitySessions.endTime,
         notes: activitySessions.notes,
         quality: activitySessions.quality,
         location: activitySessions.location,
@@ -378,6 +389,67 @@ export class DatabaseStorage implements IStorage {
         eq(activities.isPublic, 1)
       ))
       .orderBy(desc(activitySessions.createdAt));
+  }
+
+  // Active Timers (user-scoped)
+  async startTimer(activityId: string, userId: string): Promise<ActiveTimer> {
+    // Check if there's already an active timer for this user
+    const existing = await this.getActiveTimer(userId);
+    if (existing) {
+      throw new Error("Timer already running. Stop the current timer before starting a new one.");
+    }
+
+    const [timer] = await db
+      .insert(activeTimers)
+      .values({ activityId, userId })
+      .returning();
+    return timer;
+  }
+
+  async stopTimer(activityId: string, userId: string): Promise<ActivitySession | null> {
+    // Get the active timer
+    const timer = await this.getActiveTimerByActivity(activityId, userId);
+    if (!timer) {
+      return null;
+    }
+
+    const endTime = new Date();
+    const duration = (endTime.getTime() - timer.startTime.getTime()) / (1000 * 60 * 60); // hours
+    const date = timer.startTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    // Create a session record
+    const session = await this.createSession({
+      activityId,
+      date,
+      duration,
+      startTime: timer.startTime,
+      endTime: endTime,
+    }, userId);
+
+    // Delete the active timer
+    await db
+      .delete(activeTimers)
+      .where(eq(activeTimers.id, timer.id));
+
+    return session;
+  }
+
+  async getActiveTimer(userId: string): Promise<ActiveTimer | null> {
+    const [timer] = await db
+      .select()
+      .from(activeTimers)
+      .where(eq(activeTimers.userId, userId))
+      .limit(1);
+    return timer || null;
+  }
+
+  async getActiveTimerByActivity(activityId: string, userId: string): Promise<ActiveTimer | null> {
+    const [timer] = await db
+      .select()
+      .from(activeTimers)
+      .where(and(eq(activeTimers.activityId, activityId), eq(activeTimers.userId, userId)))
+      .limit(1);
+    return timer || null;
   }
 
   async updateUserXboxInfo(userId: string, xboxInfo: { xboxLiveId: string; xboxAccessToken: string }): Promise<User | undefined> {

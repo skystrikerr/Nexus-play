@@ -415,6 +415,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Timer routes
+  app.get("/api/timer", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const activeTimer = await storage.getActiveTimer(userId);
+      res.json(activeTimer);
+    } catch (error) {
+      console.error("Error fetching active timer:", error);
+      res.status(500).json({ message: "Failed to fetch active timer" });
+    }
+  });
+
+  app.post("/api/timer/start", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { activityId } = z.object({
+        activityId: z.string(),
+      }).parse(req.body);
+
+      const timer = await storage.startTimer(activityId, userId);
+      res.status(201).json(timer);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid timer data", errors: error.errors });
+      }
+      if (error instanceof Error && error.message.includes("Timer already running")) {
+        return res.status(409).json({ message: error.message });
+      }
+      console.error("Error starting timer:", error);
+      res.status(500).json({ message: "Failed to start timer" });
+    }
+  });
+
+  app.post("/api/timer/stop", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { activityId } = z.object({
+        activityId: z.string(),
+      }).parse(req.body);
+
+      const session = await storage.stopTimer(activityId, userId);
+      if (!session) {
+        return res.status(404).json({ message: "No active timer found for this activity" });
+      }
+      res.json(session);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid timer data", errors: error.errors });
+      }
+      console.error("Error stopping timer:", error);
+      res.status(500).json({ message: "Failed to stop timer" });
+    }
+  });
+
   // External API proxy for game search
   app.get("/api/search-games", async (req, res) => {
     try {
