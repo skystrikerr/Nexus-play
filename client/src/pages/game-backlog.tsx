@@ -11,8 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, Calendar, Star, Clock, ExternalLink, Gamepad2, Monitor } from "lucide-react";
+import { Plus, Search, Filter, Calendar, Star, Clock, ExternalLink, Gamepad2, Monitor, Menu } from "lucide-react";
 import { format } from "date-fns";
+import Sidebar from "@/components/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Game {
   id: string;
@@ -38,6 +40,8 @@ export function GameBacklog() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [newGame, setNewGame] = useState({
     title: "",
     category: "",
@@ -178,30 +182,61 @@ export function GameBacklog() {
     }
   };
 
-  const platforms = [...new Set((games || []).map((game: Game) => game.metadata?.platform).filter(Boolean))];
+  const platforms = Array.from(new Set((games || []).map((game: Game) => game.metadata?.platform).filter(Boolean)));
   const priorities = ["high", "medium", "low"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="container mx-auto max-w-7xl py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              <Gamepad2 className="h-10 w-10 text-purple-400" />
-              Game Backlog
-            </h1>
-            <p className="text-gray-300">
-              Plan and organize games you want to play
-            </p>
-          </div>
+    <div className="min-h-screen flex">
+      <Sidebar />
+      
+      {/* Mobile sidebar overlay */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-20" onClick={() => setSidebarOpen(false)} />
+      )}
 
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Game
-              </Button>
-            </DialogTrigger>
+      <main className="flex-1 overflow-auto">
+        {/* Top Bar */}
+        <header className="bg-dark-surface border-b border-slate-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 lg:hidden"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              )}
+              <div>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Gamepad2 className="h-6 w-6 text-purple-400" />
+                  Game Backlog
+                </h2>
+                <p className="text-slate-400 text-sm">Plan and organize games you want to play</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="relative hidden md:block">
+                <Input
+                  type="text"
+                  placeholder="Search games..."
+                  className="bg-dark-bg border-slate-600 pl-10 w-80"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              </div>
+              
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-primary hover:bg-primary/80">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Game
+                  </Button>
+                </DialogTrigger>
             <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-xl font-bold text-white">Add Game to Backlog</DialogTitle>
@@ -346,131 +381,142 @@ export function GameBacklog() {
               </form>
             </DialogContent>
           </Dialog>
-        </div>
-
-        {/* Filters */}
-        <Card className="bg-slate-800/50 border-slate-700 mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex-1 min-w-64">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search games..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2 items-center">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                  <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
-                    <SelectValue placeholder="Platform" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
-                    <SelectItem value="all">All Platforms</SelectItem>
-                    {platforms.map(platform => (
-                      <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                  <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
-                    <SelectItem value="all">All Priorities</SelectItem>
-                    {priorities.map(priority => (
-                      <SelectItem key={priority} value={priority}>
-                        {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Game Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">{games.length}</div>
-                <div className="text-sm text-gray-400">Total Games</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">
-                  {games.filter((g: Game) => g.metadata?.priority === "high").length}
-                </div>
-                <div className="text-sm text-gray-400">High Priority</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">
-                  {games.filter((g: Game) => g.metadata?.priority === "medium").length}
-                </div>
-                <div className="text-sm text-gray-400">Medium Priority</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">
-                  {games.reduce((total: number, game: Game) => 
-                    total + (game.metadata?.estimatedHours || 0), 0
-                  )}h
-                </div>
-                <div className="text-sm text-gray-400">Est. Total Hours</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Games Grid */}
-        {isLoading ? (
-          <div className="text-center text-gray-400 py-12">
-            Loading your game backlog...
           </div>
-        ) : filteredGames.length === 0 ? (
-          <Card className="bg-slate-800/30 border-slate-700">
-            <CardContent className="pt-6 text-center">
-              <Gamepad2 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Games Found</h3>
-              <p className="text-gray-400 mb-4">
-                {searchTerm || platformFilter !== "all" || priorityFilter !== "all" 
-                  ? "Try adjusting your filters" 
-                  : "Start building your game backlog by adding games you want to play"}
-              </p>
-              {!searchTerm && platformFilter === "all" && priorityFilter === "all" && (
-                <Button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Game
-                </Button>
-              )}
+        </header>
+
+        <div className="p-6">
+          {/* Dashboard Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-dark-surface border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Total Games</p>
+                    <p className="text-3xl font-bold text-white">{games.length}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+                    <span className="text-2xl">🎮</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-surface border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">High Priority</p>
+                    <p className="text-3xl font-bold text-white">
+                      {games.filter((g: Game) => g.metadata?.priority === "high").length}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center">
+                    <span className="text-2xl">🔥</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-surface border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Medium Priority</p>
+                    <p className="text-3xl font-bold text-white">
+                      {games.filter((g: Game) => g.metadata?.priority === "medium").length}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center">
+                    <span className="text-2xl">⚡</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-surface border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Est. Total Hours</p>
+                    <p className="text-3xl font-bold text-white">
+                      {games.reduce((total: number, game: Game) => 
+                        total + (game.metadata?.estimatedHours || 0), 0
+                      )}h
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                    <span className="text-2xl">⏰</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters */}
+          <Card className="bg-slate-800/50 border-slate-700 mb-6">
+            <CardContent className="pt-6">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex gap-2 items-center">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                    <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Platform" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="all">All Platforms</SelectItem>
+                      {platforms.map(platform => (
+                        <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                    <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Priority" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="all">All Priorities</SelectItem>
+                      {priorities.map(priority => (
+                        <SelectItem key={priority} value={priority}>
+                          {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+          {/* Games Grid */}
+          {isLoading ? (
+            <div className="text-center text-gray-400 py-12">
+              Loading your game backlog...
+            </div>
+          ) : filteredGames.length === 0 ? (
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardContent className="pt-6 text-center">
+                <Gamepad2 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No Games Found</h3>
+                <p className="text-gray-400 mb-4">
+                  {searchTerm || platformFilter !== "all" || priorityFilter !== "all" 
+                    ? "Try adjusting your filters" 
+                    : "Start building your game backlog by adding games you want to play"}
+                </p>
+                {!searchTerm && platformFilter === "all" && priorityFilter === "all" && (
+                  <Button
+                    onClick={() => setIsAddDialogOpen(true)}
+                    className="bg-primary hover:bg-primary/80"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Your First Game
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredGames.map((game: Game) => (
               <Card key={game.id} className="bg-slate-800/50 border-slate-700 overflow-hidden">
                 {game.imageUrl && (
@@ -557,9 +603,10 @@ export function GameBacklog() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
