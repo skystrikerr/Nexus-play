@@ -100,6 +100,17 @@ export interface IStorage {
   deletePost(id: string, userId: string): Promise<boolean>;
   likePost(postId: string, userId: string): Promise<boolean>;
 
+  // Communities (social features)
+  createCommunity(community: InsertCommunity, userId: string): Promise<Community>;
+  getCommunities(): Promise<Community[]>;
+  getCommunityById(id: string): Promise<Community | undefined>;
+  updateCommunity(id: string, community: Partial<InsertCommunity>, userId: string): Promise<Community | undefined>;
+  deleteCommunity(id: string, userId: string): Promise<boolean>;
+  joinCommunity(communityId: string, userId: string): Promise<boolean>;
+  leaveCommunity(communityId: string, userId: string): Promise<boolean>;
+  getUserCommunities(userId: string): Promise<Community[]>;
+  getCommunityMembers(communityId: string): Promise<CommunityMember[]>;
+
   // Tasks with public/private visibility
   createTask(task: InsertTask, userId: string): Promise<Task>;
   getTasks(userId: string): Promise<Task[]>;
@@ -771,18 +782,32 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
-  async joinCommunity(communityId: string, userId: string): Promise<CommunityMember> {
-    const [member] = await db
-      .insert(communityMembers)
-      .values({ communityId, userId, role: "member" })
-      .returning();
+  async joinCommunity(communityId: string, userId: string): Promise<boolean> {
+    try {
+      // Check if already a member
+      const [existingMember] = await db
+        .select()
+        .from(communityMembers)
+        .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)));
+      
+      if (existingMember) {
+        return true; // Already a member
+      }
+      
+      const [member] = await db
+        .insert(communityMembers)
+        .values({ communityId, userId, role: "member" })
+        .returning();
     
-    await db
-      .update(communities)
-      .set({ memberCount: sql`${communities.memberCount} + 1` })
-      .where(eq(communities.id, communityId));
-    
-    return member;
+      await db
+        .update(communities)
+        .set({ memberCount: sql`${communities.memberCount} + 1` })
+        .where(eq(communities.id, communityId));
+      
+      return !!member;
+    } catch (error) {
+      return false;
+    }
   }
 
   async leaveCommunity(communityId: string, userId: string): Promise<boolean> {

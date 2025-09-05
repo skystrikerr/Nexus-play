@@ -976,6 +976,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Communities API (Discord/Reddit-like)
+  app.get("/api/communities", async (req, res) => {
+    try {
+      const communities = await storage.getCommunities();
+      res.json(communities);
+    } catch (error) {
+      console.error("Error fetching communities:", error);
+      res.status(500).json({ message: "Failed to fetch communities" });
+    }
+  });
+
+  app.post("/api/communities", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const communityData = insertCommunitySchema.parse(req.body);
+      const community = await storage.createCommunity(communityData, userId);
+      res.status(201).json(community);
+    } catch (error) {
+      console.error("Error creating community:", error);
+      res.status(400).json({ message: error.message || "Failed to create community" });
+    }
+  });
+
+  app.post("/api/communities/:id/join", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      const success = await storage.joinCommunity(id, userId);
+      
+      if (success) {
+        res.json({ message: "Joined community successfully" });
+      } else {
+        res.status(404).json({ message: "Community not found" });
+      }
+    } catch (error) {
+      console.error("Error joining community:", error);
+      res.status(500).json({ message: "Failed to join community" });
+    }
+  });
+
+  app.post("/api/communities/:id/leave", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      const success = await storage.leaveCommunity(id, userId);
+      
+      if (success) {
+        res.json({ message: "Left community successfully" });
+      } else {
+        res.status(404).json({ message: "Community not found" });
+      }
+    } catch (error) {
+      console.error("Error leaving community:", error);
+      res.status(500).json({ message: "Failed to leave community" });
+    }
+  });
+
   // Tasks API with Public/Private Visibility
   app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
     try {
