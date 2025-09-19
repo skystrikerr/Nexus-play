@@ -3,16 +3,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Search, Filter, Calendar, Star, Clock, ExternalLink, Gamepad2, Monitor } from "lucide-react";
 import { format } from "date-fns";
+import AddGameModal from "@/components/add-game-modal";
+import DateTimeLogModal from "@/components/date-time-log-modal";
 
 interface Game {
   id: string;
@@ -37,18 +36,10 @@ export function GameBacklog() {
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newGame, setNewGame] = useState({
-    title: "",
-    category: "",
-    subcategory: "",
-    imageUrl: "",
-    description: "",
-    platform: "",
-    genre: "",
-    priority: "medium",
-    estimatedHours: "",
-    notes: ""
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [timeLogModal, setTimeLogModal] = useState<{open: boolean, game: Game | null}>({
+    open: false,
+    game: null
   });
 
   const { toast } = useToast();
@@ -63,48 +54,6 @@ export function GameBacklog() {
     },
   });
 
-  // Add game to backlog mutation
-  const addGameMutation = useMutation({
-    mutationFn: (gameData: any) => apiRequest("POST", "/api/activities", {
-      ...gameData,
-      type: "game",
-      status: "wishlist",
-      metadata: {
-        platform: gameData.platform,
-        genre: gameData.genre,
-        priority: gameData.priority,
-        estimatedHours: gameData.estimatedHours ? parseInt(gameData.estimatedHours) : undefined,
-        notes: gameData.notes
-      }
-    }),
-    onSuccess: () => {
-      toast({
-        title: "Game Added!",
-        description: "The game has been added to your backlog.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      setIsAddDialogOpen(false);
-      setNewGame({
-        title: "",
-        category: "",
-        subcategory: "",
-        imageUrl: "",
-        description: "",
-        platform: "",
-        genre: "",
-        priority: "medium",
-        estimatedHours: "",
-        notes: ""
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add game to backlog",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Move game to "in progress" mutation
   const startGameMutation = useMutation({
@@ -156,18 +105,6 @@ export function GameBacklog() {
     return matchesSearch && matchesPlatform && matchesPriority;
   });
 
-  const handleAddGame = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newGame.title.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide a game title",
-        variant: "destructive",
-      });
-      return;
-    }
-    addGameMutation.mutate(newGame);
-  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -195,157 +132,13 @@ export function GameBacklog() {
             </p>
           </div>
 
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Game
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-white">Add Game to Backlog</DialogTitle>
-              </DialogHeader>
-              
-              <form onSubmit={handleAddGame} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="text-gray-300">Game Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="Enter game title"
-                      value={newGame.title}
-                      onChange={(e) => setNewGame(prev => ({ ...prev, title: e.target.value }))}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="platform" className="text-gray-300">Platform</Label>
-                    <Select value={newGame.platform} onValueChange={(value) => setNewGame(prev => ({ ...prev, platform: value }))}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Select platform" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="PC">PC</SelectItem>
-                        <SelectItem value="PlayStation">PlayStation</SelectItem>
-                        <SelectItem value="Xbox">Xbox</SelectItem>
-                        <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
-                        <SelectItem value="Mobile">Mobile</SelectItem>
-                        <SelectItem value="Steam">Steam</SelectItem>
-                        <SelectItem value="Epic Games">Epic Games</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="genre" className="text-gray-300">Genre</Label>
-                    <Select value={newGame.genre} onValueChange={(value) => setNewGame(prev => ({ ...prev, genre: value }))}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Select genre" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="Action">Action</SelectItem>
-                        <SelectItem value="Adventure">Adventure</SelectItem>
-                        <SelectItem value="RPG">RPG</SelectItem>
-                        <SelectItem value="Strategy">Strategy</SelectItem>
-                        <SelectItem value="Simulation">Simulation</SelectItem>
-                        <SelectItem value="Sports">Sports</SelectItem>
-                        <SelectItem value="Racing">Racing</SelectItem>
-                        <SelectItem value="Puzzle">Puzzle</SelectItem>
-                        <SelectItem value="Horror">Horror</SelectItem>
-                        <SelectItem value="Indie">Indie</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="priority" className="text-gray-300">Priority</Label>
-                    <Select value={newGame.priority} onValueChange={(value) => setNewGame(prev => ({ ...prev, priority: value }))}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="estimatedHours" className="text-gray-300">Estimated Hours</Label>
-                    <Input
-                      id="estimatedHours"
-                      type="number"
-                      placeholder="Expected playtime"
-                      value={newGame.estimatedHours}
-                      onChange={(e) => setNewGame(prev => ({ ...prev, estimatedHours: e.target.value }))}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="imageUrl" className="text-gray-300">Cover Image URL</Label>
-                    <Input
-                      id="imageUrl"
-                      placeholder="https://example.com/image.jpg"
-                      value={newGame.imageUrl}
-                      onChange={(e) => setNewGame(prev => ({ ...prev, imageUrl: e.target.value }))}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-gray-300">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Brief description or why you want to play this game"
-                    value={newGame.description}
-                    onChange={(e) => setNewGame(prev => ({ ...prev, description: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes" className="text-gray-300">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Additional notes, recommendations, or when to play"
-                    value={newGame.notes}
-                    onChange={(e) => setNewGame(prev => ({ ...prev, notes: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAddDialogOpen(false)}
-                    className="text-gray-300 border-gray-600 hover:bg-slate-700"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={addGameMutation.isPending}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    {addGameMutation.isPending ? "Adding..." : "Add to Backlog"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Game
+          </Button>
         </div>
 
         {/* Filters */}
@@ -460,7 +253,7 @@ export function GameBacklog() {
               </p>
               {!searchTerm && platformFilter === "all" && priorityFilter === "all" && (
                 <Button
-                  onClick={() => setIsAddDialogOpen(true)}
+                  onClick={() => setIsAddModalOpen(true)}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -546,6 +339,13 @@ export function GameBacklog() {
                       Start Playing
                     </Button>
                     <Button
+                      onClick={() => setTimeLogModal({ open: true, game })}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3"
+                      title="Log Time"
+                    >
+                      <Clock className="h-4 w-4" />
+                    </Button>
+                    <Button
                       onClick={() => removeGameMutation.mutate(game.id)}
                       disabled={removeGameMutation.isPending}
                       variant="outline"
@@ -560,6 +360,17 @@ export function GameBacklog() {
           </div>
         )}
       </div>
+      
+      {/* Modals */}
+      <AddGameModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+      {timeLogModal.game && (
+        <DateTimeLogModal 
+          open={timeLogModal.open} 
+          onOpenChange={(open) => setTimeLogModal({ open, game: null })}
+          task={timeLogModal.game as any}
+          date={new Date().toISOString().split('T')[0]}
+        />
+      )}
     </div>
   );
 }

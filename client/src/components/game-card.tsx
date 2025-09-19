@@ -1,7 +1,8 @@
-import { Star, Clock, TrendingUp, MoreVertical, Trash2, Edit, CheckCircle, MessageSquare } from "lucide-react";
+import { Star, Clock, TrendingUp, MoreVertical, Trash2, Edit, CheckCircle, MessageSquare, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ActivityTimer from "./activity-timer";
 import CompletionModal from "./completion-modal";
+import DateTimeLogModal from "./date-time-log-modal";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -49,6 +50,7 @@ const statusLabels = {
 export default function GameCard({ game, onClick }: GameCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [showTimeLog, setShowTimeLog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -123,6 +125,16 @@ export default function GameCard({ game, onClick }: GameCardProps) {
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTimeLog(true);
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Log Time
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
@@ -242,6 +254,14 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Time Logging Modal */}
+      <DateTimeLogModal 
+        open={showTimeLog} 
+        onOpenChange={setShowTimeLog}
+        task={game}
+        date={new Date().toISOString().split('T')[0]}
+      />
 
       {/* Completion Modal */}
       <CompletionModal
