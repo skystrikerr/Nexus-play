@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar";
 import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
+import AdMobBanner from "@/components/ads/admob-banner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
@@ -112,6 +113,9 @@ export default function GameLibrary() {
           </div>
         </div>
       </main>
+
+      {/* Ad Banner */}
+      <AdMobBanner position="bottom" />
 
       <AddGameModal open={showAddModal} onOpenChange={setShowAddModal} />
     </div>
