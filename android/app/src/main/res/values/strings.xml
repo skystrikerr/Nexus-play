@@ -4,4 +4,8 @@
     <string name="title_activity_main">NexusPlay</string>
     <string name="package_name">com.nexusplay.app</string>
     <string name="custom_url_scheme">com.nexusplay.app</string>
+    
+    <!-- AdMob App ID - Replace with your actual AdMob App ID from https://apps.admob.com -->
+    <!-- Test ID for development: ca-app-pub-3940256099942544~3347511713 -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>
