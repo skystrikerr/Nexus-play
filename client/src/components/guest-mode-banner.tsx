@@ -28,7 +28,7 @@ export default function GuestModeBanner() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 relative">
+    <div className="bg-gradient-to-r from-red-600 to-red-800 text-white px-4 py-3 relative">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
           <div className="flex-1">
@@ -45,7 +45,7 @@ export default function GuestModeBanner() {
               logoutMutation.mutate();
             }}
             size="sm"
-            className="bg-white text-purple-600 hover:bg-white/90"
+            className="bg-white text-red-600 hover:bg-white/90"
             data-testid="button-signup-from-guest"
           >
             <UserPlus className="w-4 h-4 mr-2" />

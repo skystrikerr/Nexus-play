@@ -4,7 +4,7 @@ import { Play, Users, BarChart3, Calendar, Timer } from "lucide-react";
 
 export function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold text-white mb-6">
@@ -16,7 +16,7 @@ export function Landing() {
           </p>
           <Button 
             size="lg" 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg"
             onClick={() => window.location.href = "/auth"}
           >
             Get Started
@@ -27,7 +27,7 @@ export function Landing() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Play className="h-8 w-8 text-purple-400" />
+                <Play className="h-8 w-8 text-red-400" />
                 <CardTitle className="text-white">Multi-Activity Tracking</CardTitle>
               </div>
             </CardHeader>
@@ -41,7 +41,7 @@ export function Landing() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Timer className="h-8 w-8 text-blue-400" />
+                <Timer className="h-8 w-8 text-red-400" />
                 <CardTitle className="text-white">Built-in Timer</CardTitle>
               </div>
             </CardHeader>
@@ -55,7 +55,7 @@ export function Landing() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-green-400" />
+                <Users className="h-8 w-8 text-white" />
                 <CardTitle className="text-white">Social Features</CardTitle>
               </div>
             </CardHeader>
@@ -69,7 +69,7 @@ export function Landing() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <BarChart3 className="h-8 w-8 text-yellow-400" />
+                <BarChart3 className="h-8 w-8 text-white" />
                 <CardTitle className="text-white">Detailed Statistics</CardTitle>
               </div>
             </CardHeader>
@@ -97,7 +97,7 @@ export function Landing() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Play className="h-8 w-8 text-pink-400" />
+                <Play className="h-8 w-8 text-white" />
                 <CardTitle className="text-white">Image Support</CardTitle>
               </div>
             </CardHeader>
