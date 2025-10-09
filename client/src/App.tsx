@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobile, useCapacitor } from "@/hooks/useMobile";
 import MobileLayout from "@/components/mobile-layout";
+import GuestModeBanner from "@/components/guest-mode-banner";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
 import { GamingPlatforms } from "@/pages/gaming-platforms";
@@ -65,12 +66,15 @@ function Router() {
     </Switch>
   );
 
-  // For authenticated users, wrap with mobile layout
+  // For authenticated users, wrap with mobile layout and show guest banner
   if (isAuthenticated && !isLoading) {
     return (
-      <MobileLayout>
-        <AppContent />
-      </MobileLayout>
+      <>
+        <GuestModeBanner />
+        <MobileLayout>
+          <AppContent />
+        </MobileLayout>
+      </>
     );
   }
 

@@ -49,6 +49,20 @@ export function Auth() {
     },
   });
 
+  const guestMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/auth/guest", {}),
+    onSuccess: () => {
+      window.location.href = "/";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Guest Mode Failed",
+        description: error.message || "Could not start guest mode",
+        variant: "destructive",
+      });
+    },
+  });
+
   const registerMutation = useMutation({
     mutationFn: (data: RegisterData) => apiRequest("POST", "/api/auth/register", data),
     onSuccess: () => {
@@ -380,6 +394,27 @@ export function Auth() {
                 </form>
               </TabsContent>
             </Tabs>
+
+            {/* Guest Mode */}
+            <Separator className="my-6 bg-slate-600" />
+            
+            <div className="space-y-3">
+              <p className="text-center text-sm text-gray-400">
+                Just want to explore?
+              </p>
+              <Button
+                onClick={() => guestMutation.mutate()}
+                disabled={guestMutation.isPending}
+                variant="outline"
+                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                data-testid="button-guest-mode"
+              >
+                {guestMutation.isPending ? "Starting..." : "Try as Guest"}
+              </Button>
+              <p className="text-center text-xs text-gray-500">
+                Explore the app with demo data. No account needed!
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
