@@ -10,7 +10,6 @@ import GameCard from "@/components/game-card";
 import TaskCard from "@/components/task-card";
 import GamingCalendar from "@/components/gaming-calendar";
 import { ActiveTimerWidget } from "@/components/active-timer-widget";
-import AdMobBanner from "@/components/ads/admob-banner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
@@ -269,9 +268,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-
-      {/* Ad Banner */}
-      <AdMobBanner position="bottom" />
 
       <AddGameModal open={showAddGameModal} onOpenChange={setShowAddGameModal} />
       <AddTaskModal open={showAddTaskModal} onOpenChange={setShowAddTaskModal} />
