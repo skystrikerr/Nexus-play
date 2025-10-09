@@ -6,6 +6,7 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertJournalEntrySchema, ACTIVITY_TYPES } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
+import { guestActivities, guestSessions, guestStats } from "./guestData";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -164,8 +165,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const { type } = req.query;
-      let activities;
       
+      // Return demo data for guest users
+      if (req.user.isGuest) {
+        let activities = [...guestActivities];
+        if (type && typeof type === 'string') {
+          activities = activities.filter(a => a.type === type);
+        }
+        return res.json(activities);
+      }
+      
+      let activities;
       if (type && typeof type === 'string') {
         activities = await storage.getActivitiesByType(type, userId);
       } else {
@@ -321,6 +331,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const { activityId, gameId, date, startDate, endDate } = req.query;
+      
+      // Return demo data for guest users
+      if (req.user.isGuest) {
+        let sessions = [...guestSessions];
+        if (activityId) {
+          sessions = sessions.filter(s => s.activityId === activityId);
+        } else if (gameId) {
+          sessions = sessions.filter(s => s.activityId === gameId);
+        } else if (date) {
+          sessions = sessions.filter(s => s.date === date);
+        }
+        
+        // Enhance with activity details
+        const enhancedSessions = sessions.map(session => {
+          const activity = guestActivities.find(a => a.id === session.activityId);
+          return {
+            ...session,
+            activity: activity ? {
+              title: activity.title,
+              type: activity.type,
+              category: activity.category,
+              imageUrl: activity.imageUrl
+            } : null
+          };
+        });
+        
+        return res.json(enhancedSessions);
+      }
       
       let sessions;
       if (activityId) {
@@ -549,6 +587,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      
+      // Return demo stats for guest users
+      if (req.user.isGuest) {
+        return res.json(guestStats);
+      }
+      
       const { type } = req.query;
       let activities;
       
