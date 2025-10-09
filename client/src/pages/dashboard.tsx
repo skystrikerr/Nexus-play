@@ -263,7 +263,7 @@ export default function Dashboard() {
             {/* Timer and Calendar */}
             <div className="space-y-8">
               <ActiveTimerWidget />
-              <GamingCalendar games={games} />
+              <GamingCalendar />
             </div>
           </div>
         </div>
