@@ -131,7 +131,7 @@ export function GamingPlatforms() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-4">
       <div className="container mx-auto max-w-4xl py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
@@ -147,7 +147,7 @@ export function GamingPlatforms() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <SiSteam className="h-8 w-8 text-blue-400" />
+                <SiSteam className="h-8 w-8 text-red-400" />
                 <div>
                   <CardTitle className="text-white">Steam</CardTitle>
                   <CardDescription className="text-gray-400">
@@ -190,7 +190,7 @@ export function GamingPlatforms() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-red-600 hover:bg-red-700"
                   disabled={connectSteamMutation.isPending}
                 >
                   <Link className="mr-2 h-4 w-4" />
@@ -208,7 +208,7 @@ export function GamingPlatforms() {
                       onClick={() => syncSteamGamesMutation.mutate()}
                       variant="outline"
                       disabled={syncSteamGamesMutation.isPending}
-                      className="w-full text-blue-400 border-blue-600 hover:bg-blue-600 hover:text-white"
+                      className="w-full text-red-400 border-red-600 hover:bg-red-600 hover:text-white"
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       {syncSteamGamesMutation.isPending ? "Syncing..." : "Sync Steam Games"}

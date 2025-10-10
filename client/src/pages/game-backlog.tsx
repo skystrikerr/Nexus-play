@@ -119,12 +119,12 @@ export function GameBacklog() {
   const priorities = ["high", "medium", "low"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-4">
       <div className="container mx-auto max-w-7xl py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              <Gamepad2 className="h-10 w-10 text-purple-400" />
+              <Gamepad2 className="h-10 w-10 text-red-400" />
               Game Backlog
             </h1>
             <p className="text-gray-300">
@@ -134,7 +134,7 @@ export function GameBacklog() {
 
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Game
@@ -225,7 +225,7 @@ export function GameBacklog() {
           <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">
+                <div className="text-2xl font-bold text-white">
                   {games.reduce((total: number, game: Game) => 
                     total + (game.metadata?.estimatedHours || 0), 0
                   )}h
@@ -254,7 +254,7 @@ export function GameBacklog() {
               {!searchTerm && platformFilter === "all" && priorityFilter === "all" && (
                 <Button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="bg-purple-600 hover:bg-purple-700"
+                  className="bg-red-600 hover:bg-red-700"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Your First Game
@@ -340,7 +340,7 @@ export function GameBacklog() {
                     </Button>
                     <Button
                       onClick={() => setTimeLogModal({ open: true, game })}
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3"
+                      className="bg-red-600 hover:bg-red-700 text-white text-sm px-3"
                       title="Log Time"
                     >
                       <Clock className="h-4 w-4" />

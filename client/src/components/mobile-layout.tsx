@@ -103,7 +103,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black">
       {/* Mobile Header */}
       <header className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-3">
