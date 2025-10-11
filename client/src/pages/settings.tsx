@@ -434,7 +434,9 @@ export default function Settings() {
                           <div className="space-y-0.5">
                             <FormLabel className="text-white">Public Profile</FormLabel>
                             <p className="text-sm text-slate-400">
-                              Allow other users to view your profile and activity library
+                              {field.value 
+                                ? "Your profile is visible to everyone. Other users can see your activities, sessions, and reviews."
+                                : "Your profile is private. You won't appear in community searches and only you can see your data."}
                             </p>
                           </div>
                           <FormControl>
