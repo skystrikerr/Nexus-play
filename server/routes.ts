@@ -540,21 +540,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Settings endpoints
   app.get("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
-      // For now, return default settings since we don't have a settings table
-      // This can be extended later to use a dedicated settings table
-      const defaultSettings = {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const settings = {
         theme: "dark",
-        isPublic: true,
-        bio: "",
-        firstName: "",
-        lastName: "",
+        isPublic: user.isPublic === 1, // Convert 1/0 to boolean
+        bio: user.bio || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
         notifications: {
           achievements: true,
           reminders: true,
           social: true,
         },
       };
-      res.json(defaultSettings);
+      res.json(settings);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch settings" });
     }
@@ -565,14 +570,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const settingsData = req.body;
       
-      // Update user profile fields in the users table
-      if (settingsData.firstName !== undefined || settingsData.lastName !== undefined || settingsData.bio !== undefined) {
-        const updateData: any = {};
-        if (settingsData.firstName !== undefined) updateData.firstName = settingsData.firstName;
-        if (settingsData.lastName !== undefined) updateData.lastName = settingsData.lastName;
-        // Note: bio field would need to be added to users table schema
-        
-        await storage.upsertUser({ id: userId, ...updateData });
+      // Build update object for user profile
+      const updateData: any = {};
+      if (settingsData.firstName !== undefined) updateData.firstName = settingsData.firstName;
+      if (settingsData.lastName !== undefined) updateData.lastName = settingsData.lastName;
+      if (settingsData.bio !== undefined) updateData.bio = settingsData.bio;
+      if (settingsData.isPublic !== undefined) {
+        // Convert boolean to 1/0 for database
+        updateData.isPublic = settingsData.isPublic ? 1 : 0;
+      }
+      
+      // Update user profile if there are changes
+      if (Object.keys(updateData).length > 0) {
+        await storage.updateUser(userId, updateData);
       }
       
       // For other settings like theme and notifications, we'd need a separate settings table
