@@ -140,13 +140,14 @@ export async function setupAuth(app: Express) {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Create user
+      // Create user with private profile by default
       const user = await storage.createUser({
         email,
         password: hashedPassword,
         firstName,
         lastName: lastName || '',
         provider: 'local',
+        isPublic: 0, // Private by default for security
       });
 
       // Log in the user

@@ -48,7 +48,7 @@ export const users = pgTable("users", {
   steamId: varchar("steam_id"), // Steam user ID
   xboxAccessToken: varchar("xbox_access_token"), // Xbox access token
   steamApiKey: varchar("steam_api_key"), // Steam API key
-  isPublic: integer("is_public").default(1), // 1 for public, 0 for private profile
+  isPublic: integer("is_public").default(0), // 1 for public, 0 for private profile (private by default)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
