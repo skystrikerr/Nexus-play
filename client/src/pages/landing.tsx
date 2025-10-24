@@ -111,7 +111,9 @@ export function Landing() {
 
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-6">Ready to start tracking?</h2>
-          <p className="text-gray-300 mb-6">Join thousands of users managing their time effectively</p>
+          <p className="text-gray-300 mb-6">
+            <span className="inline-block px-3 py-1 bg-red-600 text-white text-sm font-semibold rounded-full">BETA</span>
+          </p>
         </div>
       </div>
     </div>
