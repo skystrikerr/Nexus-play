@@ -15,6 +15,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
+      // Guest users don't exist in database, return session user directly
+      if (req.user.isGuest) {
+        return res.json(req.user);
+      }
+      
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);

@@ -360,27 +360,6 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Guest mode login
-  app.post('/api/auth/guest', (req, res) => {
-    const guestUser = {
-      id: 'guest',
-      email: 'guest@nexusplay.app',
-      firstName: 'Guest',
-      lastName: 'User',
-      provider: 'guest',
-      isGuest: true
-    };
-    
-    req.login(guestUser, (err) => {
-      if (err) {
-        console.error('Guest session error:', err);
-        return res.status(500).json({ message: 'Guest session failed' });
-      }
-      console.log('Guest mode activated');
-      res.json({ message: 'Guest mode activated', user: guestUser });
-    });
-  });
-
   // Logout route
   app.post('/api/auth/logout', (req, res) => {
     req.logout(() => {
