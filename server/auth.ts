@@ -99,6 +99,20 @@ export async function setupAuth(app: Express) {
       const userId = typeof id === 'string' ? id : id.id;
       console.log('Deserializing user ID:', userId);
       
+      // Handle guest users - they don't exist in database
+      if (userId.startsWith('guest-')) {
+        const guestUser = {
+          id: userId,
+          email: 'guest@nexusplay.app',
+          firstName: 'Guest',
+          lastName: 'User',
+          provider: 'guest',
+          isGuest: true
+        };
+        console.log('Guest user deserialized');
+        return done(null, guestUser);
+      }
+      
       const user = await storage.getUser(userId);
       if (user) {
         const sessionUser = { 
@@ -190,6 +204,33 @@ export async function setupAuth(app: Express) {
         res.json({ message: 'Login successful', user });
       });
     })(req, res, next);
+  });
+
+  // Guest mode - browse without account
+  app.post('/api/auth/guest', async (req, res) => {
+    try {
+      // Create a temporary guest session with demo user
+      const guestUser = {
+        id: 'guest-' + Date.now(),
+        email: 'guest@nexusplay.app',
+        firstName: 'Guest',
+        lastName: 'User',
+        provider: 'guest',
+        isGuest: true
+      };
+
+      req.login(guestUser, (err) => {
+        if (err) {
+          console.error('Guest session error:', err);
+          return res.status(500).json({ message: 'Guest mode failed' });
+        }
+        console.log('Guest mode activated');
+        res.json({ message: 'Guest mode activated', user: guestUser });
+      });
+    } catch (error) {
+      console.error('Guest mode error:', error);
+      res.status(500).json({ message: 'Guest mode failed' });
+    }
   });
 
 
