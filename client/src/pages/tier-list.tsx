@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   DragStartEvent,
+  useDroppable,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -94,6 +95,57 @@ function SortableActivityCard({ activity }: { activity: Activity }) {
   );
 }
 
+function TierRow({ tier, activities, selectedType }: { tier: typeof TIERS[0]; activities: Activity[]; selectedType: string }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `tier-${tier.id}`,
+  });
+
+  return (
+    <div className="space-y-2" data-testid={`tier-section-${tier.id}`}>
+      <div className="flex items-center gap-4">
+        <div
+          className={`flex items-center justify-center w-20 h-16 rounded-lg font-bold text-2xl border-2 ${tier.bgColor} ${tier.color}`}
+        >
+          {tier.id === "Unranked" ? "?" : tier.id}
+        </div>
+        <div className="flex-1">
+          <h2 className={`text-xl font-bold ${tier.color}`}>{tier.label}</h2>
+          <p className="text-sm text-slate-400">
+            {activities.length} {selectedType}{activities.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </div>
+
+      <div
+        ref={setNodeRef}
+        className={`min-h-[180px] p-4 rounded-lg border-2 border-dashed transition-colors ${
+          isOver
+            ? "border-red-500 bg-red-500/10"
+            : "border-slate-700 bg-slate-900/50"
+        }`}
+      >
+        <SortableContext
+          id={`tier-${tier.id}`}
+          items={activities.map(a => a.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {activities.length === 0 ? (
+              <div className="flex items-center justify-center w-full text-slate-500 text-sm">
+                Drag {selectedType}s here
+              </div>
+            ) : (
+              activities.map((activity) => (
+                <SortableActivityCard key={activity.id} activity={activity} />
+              ))
+            )}
+          </div>
+        </SortableContext>
+      </div>
+    </div>
+  );
+}
+
 export default function TierList() {
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<string>("game");
@@ -134,7 +186,7 @@ export default function TierList() {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       toast({
         title: "Tier Updated",
-        description: "Game tier has been updated successfully.",
+        description: "Activity tier has been updated successfully.",
       });
     },
     onError: () => {
@@ -157,15 +209,34 @@ export default function TierList() {
 
     if (!over) return;
 
-    // Extract tier from the over container ID
-    const overId = over.id as string;
+    // Try to get the tier container ID from the sortable context first,
+    // or fall back to the droppable ID if dropping into an empty tier
+    let tierContainerId: string | null = null;
     
-    // Check if we're dropping over a tier container
-    const tierMatch = TIERS.find(t => overId.startsWith(`tier-${t.id}`));
+    if (over.data.current?.sortable?.containerId) {
+      // Dropped over a card in a sortable context
+      tierContainerId = over.data.current.sortable.containerId as string;
+    } else {
+      // Dropped directly over the droppable container (empty tier)
+      const overId = over.id as string;
+      if (overId.startsWith("tier-")) {
+        tierContainerId = overId;
+      }
+    }
     
-    if (tierMatch) {
-      const newTier = tierMatch.id === "Unranked" ? null : tierMatch.id;
-      updateTierMutation.mutate({ activityId: active.id as string, tier: newTier });
+    // Extract the tier from the container ID
+    if (tierContainerId && tierContainerId.startsWith("tier-")) {
+      const tierIdString = tierContainerId.replace("tier-", "");
+      const newTier = tierIdString === "Unranked" ? null : tierIdString;
+      
+      // Get the current activity to check if tier actually changed
+      const currentActivity = filteredActivities.find(a => a.id === active.id);
+      const currentTier = currentActivity?.tier || null;
+      
+      // Only update if tier actually changed
+      if (currentTier !== newTier) {
+        updateTierMutation.mutate({ activityId: active.id as string, tier: newTier });
+      }
     }
   };
 
@@ -228,43 +299,13 @@ export default function TierList() {
         <div className="space-y-6">
           {TIERS.map((tier) => {
             const tierActivities = groupedByTier[tier.id] || [];
-
             return (
-              <div key={tier.id} className="space-y-2" data-testid={`tier-section-${tier.id}`}>
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`flex items-center justify-center w-20 h-16 rounded-lg font-bold text-2xl border-2 ${tier.bgColor} ${tier.color}`}
-                  >
-                    {tier.id === "Unranked" ? "?" : tier.id}
-                  </div>
-                  <div className="flex-1">
-                    <h2 className={`text-xl font-bold ${tier.color}`}>{tier.label}</h2>
-                    <p className="text-sm text-slate-400">
-                      {tierActivities.length} {selectedType}{tierActivities.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
-
-                <SortableContext
-                  id={`tier-${tier.id}`}
-                  items={tierActivities.map(a => a.id)}
-                  strategy={horizontalListSortingStrategy}
-                >
-                  <div className="min-h-[180px] p-4 rounded-lg border-2 border-dashed border-slate-700 bg-slate-900/50">
-                    <div className="flex gap-4 overflow-x-auto pb-2">
-                      {tierActivities.length === 0 ? (
-                        <div className="flex items-center justify-center w-full text-slate-500 text-sm">
-                          Drag {selectedType}s here
-                        </div>
-                      ) : (
-                        tierActivities.map((activity) => (
-                          <SortableActivityCard key={activity.id} activity={activity} />
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </SortableContext>
-              </div>
+              <TierRow
+                key={tier.id}
+                tier={tier}
+                activities={tierActivities}
+                selectedType={selectedType}
+              />
             );
           })}
         </div>
