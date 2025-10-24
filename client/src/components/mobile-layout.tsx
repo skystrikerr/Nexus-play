@@ -20,7 +20,8 @@ import {
   LogOut,
   Menu,
   MessageSquare,
-  BookOpen
+  BookOpen,
+  Trophy
 } from "lucide-react";
 
 interface MobileLayoutProps {
@@ -36,6 +37,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
     { name: "Tasks", href: "/tasks", icon: Target },
     { name: "Journal", href: "/journal", icon: BookOpen },
     { name: "Library", href: "/library", icon: Library },
+    { name: "Tier List", href: "/tier-list", icon: Trophy },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Statistics", href: "/stats", icon: BarChart3 },
     { name: "Analytics", href: "/analytics", icon: TrendingUp },
