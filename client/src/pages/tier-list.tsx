@@ -82,7 +82,7 @@ function SortableActivityCard({ activity }: { activity: Activity }) {
                 </span>
               </div>
             )}
-            {activity.totalHours > 0 && (
+            {activity.totalHours && activity.totalHours > 0 && (
               <p className="text-xs text-slate-400">
                 {activity.totalHours.toFixed(1)}h played
               </p>
