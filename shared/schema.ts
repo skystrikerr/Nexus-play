@@ -64,6 +64,7 @@ export const activities = pgTable("activities", {
   rating: integer("rating"), // 1-5 stars
   progress: integer("progress").default(0), // percentage 0-100
   totalHours: real("total_hours").default(0),
+  tier: text("tier"), // S, A, B, C, D, F, or null for unranked
   imageUrl: text("image_url"), // URL or path to activity image
   externalId: text("external_id"), // External API ID (e.g., game API, book API)
   description: text("description"),
