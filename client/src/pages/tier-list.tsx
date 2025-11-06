@@ -1,42 +1,47 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   DndContext,
   DragEndEvent,
-  DragOverlay,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  useDroppable,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
   useSortable,
+  arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, GripVertical } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Trophy, GripVertical, Search, X, Plus } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { searchGames, mapRawgToActivity, type RawgGame } from "@/lib/rawg-api";
 import type { Activity } from "@shared/schema";
 
-type TierType = "S" | "A" | "B" | "C" | "D" | "F" | "Unranked";
+function debounce(func: Function, wait: number) {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
-const TIERS: { id: TierType; label: string; color: string; bgColor: string }[] = [
-  { id: "S", label: "S Tier", color: "text-red-500", bgColor: "bg-red-500/20 border-red-500" },
-  { id: "A", label: "A Tier", color: "text-orange-500", bgColor: "bg-orange-500/20 border-orange-500" },
-  { id: "B", label: "B Tier", color: "text-yellow-500", bgColor: "bg-yellow-500/20 border-yellow-500" },
-  { id: "C", label: "C Tier", color: "text-green-500", bgColor: "bg-green-500/20 border-green-500" },
-  { id: "D", label: "D Tier", color: "text-blue-500", bgColor: "bg-blue-500/20 border-blue-500" },
-  { id: "F", label: "F Tier", color: "text-gray-500", bgColor: "bg-gray-500/20 border-gray-500" },
-  { id: "Unranked", label: "Unranked", color: "text-slate-400", bgColor: "bg-slate-800 border-slate-600" },
-];
+interface RankedActivity extends Activity {
+  rankOrder: number;
+}
 
-function SortableActivityCard({ activity }: { activity: Activity }) {
+function SortableRankItem({ activity, rank }: { activity: Activity; rank: number }) {
   const {
     attributes,
     listeners,
@@ -53,41 +58,48 @@ function SortableActivityCard({ activity }: { activity: Activity }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card
-        className="w-[150px] bg-slate-800 border-slate-700 hover:border-red-500 transition-all cursor-grab active:cursor-grabbing"
-        data-testid={`card-activity-${activity.id}`}
-      >
-        <CardContent className="p-3 space-y-2">
-          {activity.imageUrl && (
-            <div className="w-full h-[180px] rounded overflow-hidden bg-slate-700">
-              <img
-                src={activity.imageUrl}
-                alt={activity.title}
-                className="w-full h-full object-cover"
-              />
+    <div ref={setNodeRef} style={style} data-testid={`ranked-item-${activity.id}`}>
+      <Card className="bg-slate-800 border-slate-700 hover:border-red-500 transition-all">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                <GripVertical className="w-5 h-5 text-slate-400" />
+              </div>
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-600 text-white font-bold text-xl">
+                {rank}
+              </div>
             </div>
-          )}
-          <div className="space-y-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold text-white line-clamp-2">
-                {activity.title}
-              </h3>
-              <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
-            </div>
-            {activity.rating && (
-              <div className="flex items-center gap-1">
-                <span className="text-yellow-500 text-xs">★</span>
-                <span className="text-xs text-slate-400">
-                  {activity.rating}/5
-                </span>
+
+            {activity.imageUrl && (
+              <div className="w-16 h-16 rounded overflow-hidden bg-slate-700 flex-shrink-0">
+                <img
+                  src={activity.imageUrl}
+                  alt={activity.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
             )}
-            {activity.totalHours && activity.totalHours > 0 && (
-              <p className="text-xs text-slate-400">
-                {activity.totalHours.toFixed(1)}h played
-              </p>
-            )}
+
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-white truncate">
+                {activity.title}
+              </h3>
+              <div className="flex items-center gap-4 text-sm text-slate-400">
+                {activity.category && (
+                  <span>{activity.category}</span>
+                )}
+                {activity.rating && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-yellow-500">★</span>
+                    <span>{activity.rating}/5</span>
+                  </div>
+                )}
+                {activity.totalHours && activity.totalHours > 0 && (
+                  <span>{activity.totalHours.toFixed(1)}h played</span>
+                )}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -95,60 +107,12 @@ function SortableActivityCard({ activity }: { activity: Activity }) {
   );
 }
 
-function TierRow({ tier, activities, selectedType }: { tier: typeof TIERS[0]; activities: Activity[]; selectedType: string }) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `tier-${tier.id}`,
-  });
-
-  return (
-    <div className="space-y-2" data-testid={`tier-section-${tier.id}`}>
-      <div className="flex items-center gap-4">
-        <div
-          className={`flex items-center justify-center w-20 h-16 rounded-lg font-bold text-2xl border-2 ${tier.bgColor} ${tier.color}`}
-        >
-          {tier.id === "Unranked" ? "?" : tier.id}
-        </div>
-        <div className="flex-1">
-          <h2 className={`text-xl font-bold ${tier.color}`}>{tier.label}</h2>
-          <p className="text-sm text-slate-400">
-            {activities.length} {selectedType}{activities.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-      </div>
-
-      <div
-        ref={setNodeRef}
-        className={`min-h-[180px] p-4 rounded-lg border-2 border-dashed transition-colors ${
-          isOver
-            ? "border-red-500 bg-red-500/10"
-            : "border-slate-700 bg-slate-900/50"
-        }`}
-      >
-        <SortableContext
-          id={`tier-${tier.id}`}
-          items={activities.map(a => a.id)}
-          strategy={horizontalListSortingStrategy}
-        >
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {activities.length === 0 ? (
-              <div className="flex items-center justify-center w-full text-slate-500 text-sm">
-                Drag {selectedType}s here
-              </div>
-            ) : (
-              activities.map((activity) => (
-                <SortableActivityCard key={activity.id} activity={activity} />
-              ))
-            )}
-          </div>
-        </SortableContext>
-      </div>
-    </div>
-  );
-}
-
 export default function TierList() {
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<string>("game");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<RawgGame[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   
   const sensors = useSensors(
@@ -164,84 +128,117 @@ export default function TierList() {
     queryKey: ["/api/activities"],
   });
 
-  // Filter by type and group by tier
-  const filteredActivities = activities.filter(
-    (activity) => activity.type === selectedType
+  // Filter by type and sort by tier (using tier as rank order)
+  const rankedActivities = activities
+    .filter((activity) => activity.type === selectedType && activity.tier)
+    .sort((a, b) => {
+      const rankA = parseInt(a.tier || "999");
+      const rankB = parseInt(b.tier || "999");
+      return rankA - rankB;
+    });
+
+  // Search games using RAWG API
+  const handleSearch = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchGames(query);
+      setSearchResults(results.results || []);
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const debouncedSearch = useCallback(
+    debounce((query: string) => handleSearch(query), 500),
+    [handleSearch]
   );
 
-  const groupedByTier = TIERS.reduce((acc, tier) => {
-    acc[tier.id] = filteredActivities.filter((activity) => 
-      tier.id === "Unranked" 
-        ? !activity.tier || activity.tier === null
-        : activity.tier === tier.id
-    );
-    return acc;
-  }, {} as Record<TierType, Activity[]>);
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value.trim()) {
+      debouncedSearch(value);
+    } else {
+      setSearchResults([]);
+    }
+  };
 
-  // Update tier mutation
-  const updateTierMutation = useMutation({
-    mutationFn: ({ activityId, tier }: { activityId: string; tier: string | null }) =>
-      apiRequest("PUT", `/api/activities/${activityId}`, { tier }),
+  // Add game to ranking
+  const addToRankingMutation = useMutation({
+    mutationFn: async (rawgGame: RawgGame) => {
+      const activityData = mapRawgToActivity(rawgGame);
+      // Set tier to next rank number
+      const nextRank = rankedActivities.length + 1;
+      return apiRequest("POST", "/api/activities", {
+        ...activityData,
+        tier: nextRank.toString(),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      setSearchQuery("");
+      setSearchResults([]);
       toast({
-        title: "Tier Updated",
-        description: "Activity tier has been updated successfully.",
+        title: "Added to Rankings",
+        description: "Game has been added to your ranking list.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to update tier. Please try again.",
+        description: "Failed to add game. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
+  // Update rankings after reorder
+  const updateRankingsMutation = useMutation({
+    mutationFn: async (orderedActivities: Activity[]) => {
+      // Update each activity's tier to match its new position
+      const updates = orderedActivities.map((activity, index) =>
+        apiRequest("PUT", `/api/activities/${activity.id}`, {
+          tier: (index + 1).toString(),
+        })
+      );
+      return Promise.all(updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      toast({
+        title: "Rankings Updated",
+        description: "Your ranking list has been reordered.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update rankings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveId(null);
-    
     const { active, over } = event;
-
-    if (!over) return;
-
-    // Try to get the tier container ID from the sortable context first,
-    // or fall back to the droppable ID if dropping into an empty tier
-    let tierContainerId: string | null = null;
-    
-    if (over.data.current?.sortable?.containerId) {
-      // Dropped over a card in a sortable context
-      tierContainerId = over.data.current.sortable.containerId as string;
-    } else {
-      // Dropped directly over the droppable container (empty tier)
-      const overId = over.id as string;
-      if (overId.startsWith("tier-")) {
-        tierContainerId = overId;
-      }
-    }
-    
-    // Extract the tier from the container ID
-    if (tierContainerId && tierContainerId.startsWith("tier-")) {
-      const tierIdString = tierContainerId.replace("tier-", "");
-      const newTier = tierIdString === "Unranked" ? null : tierIdString;
-      
-      // Get the current activity to check if tier actually changed
-      const currentActivity = filteredActivities.find(a => a.id === active.id);
-      const currentTier = currentActivity?.tier || null;
-      
-      // Only update if tier actually changed
-      if (currentTier !== newTier) {
-        updateTierMutation.mutate({ activityId: active.id as string, tier: newTier });
-      }
-    }
-  };
-
-  const handleDragCancel = () => {
     setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = rankedActivities.findIndex((a) => a.id === active.id);
+    const newIndex = rankedActivities.findIndex((a) => a.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reordered = arrayMove(rankedActivities, oldIndex, newIndex);
+      updateRankingsMutation.mutate(reordered);
+    }
   };
 
   if (isLoading) {
@@ -252,14 +249,14 @@ export default function TierList() {
     );
   }
 
-  const activeActivity = activeId ? filteredActivities.find(a => a.id === activeId) : null;
+  const activeActivity = activeId ? rankedActivities.find(a => a.id === activeId) : null;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Trophy className="w-8 h-8 text-red-500" />
-          <h1 className="text-3xl font-bold text-white">Tier List</h1>
+          <h1 className="text-3xl font-bold text-white">My Rankings</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -289,50 +286,149 @@ export default function TierList() {
         </div>
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-      >
-        <div className="space-y-6">
-          {TIERS.map((tier) => {
-            const tierActivities = groupedByTier[tier.id] || [];
-            return (
-              <TierRow
-                key={tier.id}
-                tier={tier}
-                activities={tierActivities}
-                selectedType={selectedType}
-              />
-            );
-          })}
-        </div>
-
-        <DragOverlay>
-          {activeActivity ? (
-            <Card className="w-[150px] bg-slate-800 border-red-500 shadow-2xl shadow-red-500/50">
-              <CardContent className="p-3 space-y-2">
-                {activeActivity.imageUrl && (
-                  <div className="w-full h-[180px] rounded overflow-hidden bg-slate-700">
-                    <img
-                      src={activeActivity.imageUrl}
-                      alt={activeActivity.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+      {/* Search to add games */}
+      {selectedType === "game" && (
+        <Card className="bg-slate-800 border-slate-700 mb-6">
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Input
+                  placeholder="Search games to add to your ranking..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="pl-10 bg-slate-900 border-slate-700 text-white"
+                  data-testid="input-search-games"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchResults([]);
+                    }}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 )}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-white line-clamp-2">
-                    {activeActivity.title}
-                  </h3>
+              </div>
+
+              {isSearching && (
+                <div className="flex items-center justify-center py-4">
+                  <div className="w-6 h-6 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-              </CardContent>
-            </Card>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+              )}
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {searchResults.map((game) => (
+                    <Card key={game.id} className="bg-slate-900 border-slate-700">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-3">
+                          {game.background_image && (
+                            <img
+                              src={game.background_image}
+                              alt={game.name}
+                              className="w-16 h-16 rounded object-cover"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-medium truncate">{game.name}</h4>
+                            <p className="text-sm text-slate-400">
+                              {game.genres?.[0]?.name || "Game"} • ★ {game.rating}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => addToRankingMutation.mutate(game)}
+                            disabled={addToRankingMutation.isPending}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-testid={`button-add-game-${game.id}`}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Ranked list */}
+      {rankedActivities.length === 0 ? (
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="p-12">
+            <div className="text-center text-slate-400">
+              <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+              <h3 className="text-xl font-semibold mb-2">No Rankings Yet</h3>
+              <p>
+                {selectedType === "game"
+                  ? "Search for games above to add them to your ranking list."
+                  : `Add ${selectedType}s to your library and rank them here.`}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={(e) => setActiveId(e.active.id as string)}
+          onDragEnd={handleDragEnd}
+          onDragCancel={() => setActiveId(null)}
+        >
+          <SortableContext
+            items={rankedActivities.map((a) => a.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-3">
+              {rankedActivities.map((activity, index) => (
+                <SortableRankItem
+                  key={activity.id}
+                  activity={activity}
+                  rank={index + 1}
+                />
+              ))}
+            </div>
+          </SortableContext>
+
+          <DragOverlay>
+            {activeActivity ? (
+              <Card className="bg-slate-800 border-red-500 shadow-2xl shadow-red-500/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="w-5 h-5 text-slate-400" />
+                      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-600 text-white font-bold text-xl">
+                        {rankedActivities.findIndex(a => a.id === activeId) + 1}
+                      </div>
+                    </div>
+                    {activeActivity.imageUrl && (
+                      <div className="w-16 h-16 rounded overflow-hidden bg-slate-700">
+                        <img
+                          src={activeActivity.imageUrl}
+                          alt={activeActivity.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white">
+                        {activeActivity.title}
+                      </h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
     </div>
   );
 }
