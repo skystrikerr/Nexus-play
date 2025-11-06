@@ -19,11 +19,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trophy, GripVertical, Search, X, Plus } from "lucide-react";
+import { Trophy, GripVertical, Search, X, Plus, UserPlus } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { searchGames, mapRawgToActivity, type RawgGame } from "@/lib/rawg-api";
 import type { Activity } from "@shared/schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout;
@@ -122,6 +123,12 @@ export default function TierList() {
       },
     })
   );
+
+  // Check if user is a guest
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+  const isGuest = (user as any)?.isGuest;
 
   // Fetch all activities
   const { data: activities = [], isLoading } = useQuery<Activity[]>({
@@ -286,8 +293,25 @@ export default function TierList() {
         </div>
       </div>
 
+      {/* Guest user message */}
+      {isGuest && selectedType === "game" && (
+        <Alert className="bg-slate-800 border-slate-700 mb-6">
+          <UserPlus className="h-5 w-5 text-red-500" />
+          <AlertDescription className="text-slate-300 ml-2">
+            <span className="font-semibold text-white">Sign up for free</span> to add games to your personal ranking list!
+            <Button
+              size="sm"
+              onClick={() => window.location.href = "/auth"}
+              className="ml-3 bg-red-600 hover:bg-red-700"
+            >
+              Create Account
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Search to add games */}
-      {selectedType === "game" && (
+      {selectedType === "game" && !isGuest && (
         <Card className="bg-slate-800 border-slate-700 mb-6">
           <CardContent className="p-4">
             <div className="space-y-4">
