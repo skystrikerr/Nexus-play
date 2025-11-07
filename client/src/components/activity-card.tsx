@@ -41,11 +41,45 @@ const activityIcons = {
 };
 
 const statusColors = {
-  wishlist: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  in_progress: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  completed: "bg-green-500/20 text-green-400 border-green-500/30",
-  dropped: "bg-red-500/20 text-red-400 border-red-500/30",
-  on_hold: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  wishlist: "bg-info/20 text-info border-info/30",
+  in_progress: "bg-warning/20 text-warning border-warning/30",
+  completed: "bg-success/20 text-success border-success/30",
+  dropped: "bg-destructive/20 text-destructive border-destructive/30",
+  on_hold: "bg-silver/20 text-silver border-silver/30",
+};
+
+const getActivityGradient = (type: string) => {
+  switch (type) {
+    case 'game':
+      return {
+        rail: 'rail-aurora',
+        gradient: 'bg-gradient-aurora',
+        text: 'text-gradient-aurora',
+        glow: 'hover:shadow-aurora-start/20'
+      };
+    case 'study':
+    case 'work':
+      return {
+        rail: 'rail-solar',
+        gradient: 'bg-gradient-solar',
+        text: 'text-gradient-solar',
+        glow: 'hover:shadow-solar-start/20'
+      };
+    case 'exercise':
+      return {
+        rail: 'rail-pulse',
+        gradient: 'bg-gradient-pulse',
+        text: 'text-gradient-pulse',
+        glow: 'hover:shadow-pulse-start/20'
+      };
+    default:
+      return {
+        rail: 'rail-neutral',
+        gradient: 'bg-gradient-neutral',
+        text: 'text-gradient-neutral',
+        glow: 'hover:shadow-neutral-start/20'
+      };
+  }
 };
 
 interface ActivityCardProps {
@@ -59,6 +93,7 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
   const { toast } = useToast();
 
   const Icon = activityIcons[activity.type as keyof typeof activityIcons] || Star;
+  const categoryStyles = getActivityGradient(activity.type);
 
   const handleComplete = () => {
     if (activity.status === 'completed') {
@@ -73,29 +108,39 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
 
   return (
     <>
-      <Card className="group hover:shadow-lg transition-all duration-300 border-slate-700 bg-slate-800/50">
+      <Card 
+        className={cn(
+          "group hover-lift glass noise overflow-hidden transition-smooth",
+          categoryStyles.rail,
+          categoryStyles.glow
+        )}
+        data-testid={`card-activity-${activity.id}`}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 flex-1 min-w-0">
               {activity.imageUrl ? (
-                <img
-                  src={activity.imageUrl}
-                  alt={activity.title}
-                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                />
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src={activity.imageUrl}
+                    alt={activity.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={cn("absolute inset-0 bg-gradient-to-t from-black/60 to-transparent", categoryStyles.gradient, "opacity-30")} />
+                </div>
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-6 h-6 text-slate-300" />
+                <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0", categoryStyles.gradient)}>
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-white truncate">{activity.title}</h3>
+                <h3 className="font-display font-semibold text-white truncate">{activity.title}</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs capitalize">
+                  <Badge variant="outline" className={cn("text-xs capitalize", categoryStyles.text)}>
                     {activity.type}
                   </Badge>
                   {activity.category && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-graphite/50">
                       {activity.category}
                     </Badge>
                   )}
@@ -107,24 +152,29 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                  className="opacity-0 group-hover:opacity-100 transition-smooth h-8 w-8 p-0"
+                  data-testid={`button-more-${activity.id}`}
                 >
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onEdit}>
+              <DropdownMenuContent align="end" className="glass border-slate/50">
+                <DropdownMenuItem onClick={onEdit} data-testid={`button-edit-${activity.id}`}>
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleComplete}>
+                <DropdownMenuItem onClick={handleComplete} data-testid={`button-complete-${activity.id}`}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Mark Complete
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem data-testid={`button-review-${activity.id}`}>
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Write Review
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onDelete} className="text-red-400">
+                <DropdownMenuItem 
+                  onClick={onDelete} 
+                  className="text-destructive"
+                  data-testid={`button-delete-${activity.id}`}
+                >
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -137,13 +187,14 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
           <div className="flex items-center justify-between">
             <Badge 
               className={cn("text-xs border", statusColors[activity.status as keyof typeof statusColors])}
+              data-testid={`status-${activity.id}`}
             >
               {activity.status === 'in_progress' ? 'In Progress' : 
                activity.status === 'on_hold' ? 'On Hold' : 
                activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
             </Badge>
             {activity.status === 'completed' && (
-              <Trophy className="w-4 h-4 text-yellow-500" />
+              <Trophy className="w-4 h-4 text-warning" />
             )}
           </div>
 
@@ -151,26 +202,26 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
           {activity.progress !== null && activity.progress > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Progress</span>
-                <span className="text-slate-300">{activity.progress}%</span>
+                <span className="text-silver">Progress</span>
+                <span className="text-white font-mono">{activity.progress}%</span>
               </div>
-              <Progress value={activity.progress} className="h-2" />
+              <Progress value={activity.progress} className={cn("h-2", categoryStyles.gradient)} />
             </div>
           )}
 
           {/* Rating */}
           {activity.rating && (
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm text-slate-300">{activity.rating}/5</span>
+              <Star className="w-4 h-4 fill-warning text-warning" />
+              <span className="text-sm text-white font-mono">{activity.rating}/5</span>
             </div>
           )}
 
           {/* Time Tracking */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-silver">
               <Clock className="w-4 h-4" />
-              <span>{activity.totalHours || 0}h logged</span>
+              <span className="font-mono">{activity.totalHours || 0}h logged</span>
             </div>
             <TimerButton 
               activityId={activity.id} 
@@ -182,7 +233,7 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
 
           {/* Description */}
           {activity.description && (
-            <p className="text-sm text-slate-400 line-clamp-2">
+            <p className="text-sm text-silver line-clamp-2">
               {activity.description}
             </p>
           )}
@@ -191,12 +242,12 @@ export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCar
           {activity.tags && activity.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {activity.tags.slice(0, 3).map((tag, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge key={index} variant="secondary" className="text-xs bg-graphite/50 border-slate/30">
                   {tag}
                 </Badge>
               ))}
               {activity.tags.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs bg-graphite/50 border-slate/30">
                   +{activity.tags.length - 3} more
                 </Badge>
               )}
