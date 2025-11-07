@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertJournalEntrySchema, ACTIVITY_TYPES } from "@shared/schema";
+import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertJournalEntrySchema, insertRankingListSchema, insertRankingItemSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 import { guestActivities, guestSessions, guestStats } from "./guestData";
@@ -1118,6 +1118,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting journal entry:", error);
       res.status(500).json({ message: "Failed to delete journal entry" });
+    }
+  });
+
+  // Ranking Lists API
+  app.get("/api/ranking-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { type } = req.query;
+      const lists = type 
+        ? await storage.getRankingListsByType(type as string, userId)
+        : await storage.getRankingLists(userId);
+      res.json(lists);
+    } catch (error) {
+      console.error("Error fetching ranking lists:", error);
+      res.status(500).json({ message: "Failed to fetch ranking lists" });
+    }
+  });
+
+  app.get("/api/ranking-lists/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const list = await storage.getRankingListById(req.params.id, userId);
+      if (!list) {
+        return res.status(404).json({ message: "Ranking list not found" });
+      }
+      res.json(list);
+    } catch (error) {
+      console.error("Error fetching ranking list:", error);
+      res.status(500).json({ message: "Failed to fetch ranking list" });
+    }
+  });
+
+  app.post("/api/ranking-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const listData = insertRankingListSchema.parse(req.body);
+      const list = await storage.createRankingList(listData, userId);
+      res.status(201).json(list);
+    } catch (error) {
+      console.error("Error creating ranking list:", error);
+      res.status(400).json({ message: error.message || "Failed to create ranking list" });
+    }
+  });
+
+  app.put("/api/ranking-lists/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const listData = insertRankingListSchema.partial().parse(req.body);
+      const list = await storage.updateRankingList(req.params.id, listData, userId);
+      if (!list) {
+        return res.status(404).json({ message: "Ranking list not found" });
+      }
+      res.json(list);
+    } catch (error) {
+      console.error("Error updating ranking list:", error);
+      res.status(400).json({ message: error.message || "Failed to update ranking list" });
+    }
+  });
+
+  app.delete("/api/ranking-lists/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const success = await storage.deleteRankingList(req.params.id, userId);
+      if (!success) {
+        return res.status(404).json({ message: "Ranking list not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting ranking list:", error);
+      res.status(500).json({ message: "Failed to delete ranking list" });
+    }
+  });
+
+  // Ranking Items API
+  app.get("/api/ranking-lists/:listId/items", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const items = await storage.getRankingItems(req.params.listId, userId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching ranking items:", error);
+      res.status(500).json({ message: "Failed to fetch ranking items" });
+    }
+  });
+
+  app.post("/api/ranking-lists/:listId/items", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const itemData = insertRankingItemSchema.parse(req.body);
+      const item = await storage.addRankingItem(itemData, userId);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error adding ranking item:", error);
+      res.status(400).json({ message: error.message || "Failed to add ranking item" });
+    }
+  });
+
+  app.delete("/api/ranking-items/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const success = await storage.removeRankingItem(req.params.id, userId);
+      if (!success) {
+        return res.status(404).json({ message: "Ranking item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing ranking item:", error);
+      res.status(500).json({ message: "Failed to remove ranking item" });
+    }
+  });
+
+  app.post("/api/ranking-lists/:listId/reorder", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { items } = req.body;
+      const success = await storage.reorderRankingItems(req.params.listId, items, userId);
+      if (!success) {
+        return res.status(500).json({ message: "Failed to reorder ranking items" });
+      }
+      res.status(200).json({ message: "Items reordered successfully" });
+    } catch (error) {
+      console.error("Error reordering ranking items:", error);
+      res.status(500).json({ message: "Failed to reorder ranking items" });
     }
   });
 

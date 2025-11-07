@@ -268,6 +268,28 @@ export const journalEntries = pgTable("journal_entries", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Ranking lists table (support multiple named ranking lists)
+export const rankingLists = pgTable("ranking_lists", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // game, study, work, exercise, reading, hobby, other
+  isPublic: integer("is_public").default(0), // 1 for public, 0 for private
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Ranking items table (items within each ranking list with position)
+export const rankingItems = pgTable("ranking_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  rankingListId: varchar("ranking_list_id").notNull().references(() => rankingLists.id, { onDelete: "cascade" }),
+  activityId: varchar("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+  position: integer("position").notNull(), // 1-based position in the ranking
+  notes: text("notes"), // Optional notes about why this item is ranked here
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Validation schemas
 export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
   id: true,
@@ -280,6 +302,35 @@ export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit(
   hoursPlayed: z.number().min(0).max(24).optional(),
   notes: z.string().max(1000).optional(),
   mood: z.enum(["happy", "excited", "frustrated", "relaxed", "focused", "bored", "accomplished"]).optional(),
+});
+
+export const insertRankingListSchema = createInsertSchema(rankingLists).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  type: z.enum([
+    ACTIVITY_TYPES.GAME,
+    ACTIVITY_TYPES.STUDY,
+    ACTIVITY_TYPES.WORK,
+    ACTIVITY_TYPES.EXERCISE,
+    ACTIVITY_TYPES.READING,
+    ACTIVITY_TYPES.HOBBY,
+    ACTIVITY_TYPES.OTHER
+  ]),
+});
+
+export const insertRankingItemSchema = createInsertSchema(rankingItems).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  rankingListId: z.string().uuid(),
+  activityId: z.string().uuid(),
+  position: z.number().int().min(1),
+  notes: z.string().max(500).optional(),
 });
 
 export const insertPostSchema = createInsertSchema(posts).omit({
@@ -355,6 +406,10 @@ export type JournalEntry = typeof journalEntries.$inferSelect;
 export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
 export type ActiveTimer = typeof activeTimers.$inferSelect;
 export type InsertActiveTimer = z.infer<typeof insertActiveTimerSchema>;
+export type RankingList = typeof rankingLists.$inferSelect;
+export type InsertRankingList = z.infer<typeof insertRankingListSchema>;
+export type RankingItem = typeof rankingItems.$inferSelect;
+export type InsertRankingItem = z.infer<typeof insertRankingItemSchema>;
 
 // Backward compatibility types
 export type InsertGame = InsertActivity;

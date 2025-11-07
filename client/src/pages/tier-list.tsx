@@ -19,12 +19,29 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trophy, GripVertical, Search, X, Plus, UserPlus } from "lucide-react";
+import { Trophy, GripVertical, Search, X, Plus, UserPlus, List, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { searchGames, mapRawgToActivity, type RawgGame } from "@/lib/rawg-api";
 import type { Activity } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout;
@@ -38,11 +55,32 @@ function debounce(func: Function, wait: number) {
   };
 }
 
-interface RankedActivity extends Activity {
-  rankOrder: number;
+interface RankingList {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  type: string;
+  isPublic: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-function SortableRankItem({ activity, rank }: { activity: Activity; rank: number }) {
+interface RankingItem {
+  id: string;
+  rankingListId: string;
+  activityId: string;
+  position: number;
+  notes: string | null;
+  createdAt: Date;
+}
+
+interface RankedGameWithActivity {
+  item: RankingItem;
+  activity: Activity;
+}
+
+function SortableRankItem({ activity, rank, onRemove }: { activity: Activity; rank: number; onRemove: () => void }) {
   const {
     attributes,
     listeners,
@@ -60,14 +98,14 @@ function SortableRankItem({ activity, rank }: { activity: Activity; rank: number
 
   return (
     <div ref={setNodeRef} style={style} data-testid={`ranked-item-${activity.id}`}>
-      <Card className="bg-slate-800 border-slate-700 hover:border-red-500 transition-all">
+      <Card className="bg-[#1E293B] border-[#334155] hover:border-teal-500 transition-all">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
                 <GripVertical className="w-5 h-5 text-slate-400" />
               </div>
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-600 text-white font-bold text-xl">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-white font-bold text-xl">
                 {rank}
               </div>
             </div>
@@ -101,6 +139,16 @@ function SortableRankItem({ activity, rank }: { activity: Activity; rank: number
                 )}
               </div>
             </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRemove}
+              className="text-red-400 hover:text-red-300 hover:bg-red-950"
+              data-testid={`button-remove-${activity.id}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -111,10 +159,14 @@ function SortableRankItem({ activity, rank }: { activity: Activity; rank: number
 export default function TierList() {
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<string>("game");
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<RawgGame[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [newListDescription, setNewListDescription] = useState("");
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -130,18 +182,40 @@ export default function TierList() {
   });
   const isGuest = (user as any)?.isGuest;
 
-  // Fetch all activities
-  const { data: activities = [], isLoading } = useQuery<Activity[]>({
-    queryKey: ["/api/activities"],
+  // Fetch ranking lists
+  const { data: rankingLists = [], isLoading: listsLoading } = useQuery<RankingList[]>({
+    queryKey: ["/api/ranking-lists", selectedType],
+    enabled: !isGuest,
   });
 
-  // Filter by type and sort by tier (using tier as rank order)
-  const rankedActivities = activities
-    .filter((activity) => activity.type === selectedType && activity.tier)
+  // Auto-select first list when lists load
+  if (!selectedListId && rankingLists.length > 0) {
+    setSelectedListId(rankingLists[0].id);
+  }
+
+  // Fetch activities for the selected list
+  const { data: activities = [], isLoading: activitiesLoading } = useQuery<Activity[]>({
+    queryKey: ["/api/activities"],
+    enabled: !isGuest,
+  });
+
+  // Fetch ranking items for selected list
+  const { data: rankingItems = [], isLoading: itemsLoading } = useQuery<RankingItem[]>({
+    queryKey: ["/api/ranking-lists", selectedListId, "items"],
+    enabled: !isGuest && !!selectedListId,
+  });
+
+  // Combine ranking items with activities
+  const rankedActivities: Activity[] = rankingItems
+    .map(item => {
+      const activity = activities.find(a => a.id === item.activityId);
+      return activity;
+    })
+    .filter((a): a is Activity => a !== undefined)
     .sort((a, b) => {
-      const rankA = parseInt(a.tier || "999");
-      const rankB = parseInt(b.tier || "999");
-      return rankA - rankB;
+      const aItem = rankingItems.find(i => i.activityId === a.id);
+      const bItem = rankingItems.find(i => i.activityId === b.id);
+      return (aItem?.position || 0) - (bItem?.position || 0);
     });
 
   // Search games using RAWG API
@@ -177,19 +251,57 @@ export default function TierList() {
     }
   };
 
-  // Add game to ranking
+  // Create ranking list
+  const createListMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/ranking-lists", {
+        name: newListName,
+        description: newListDescription || null,
+        type: selectedType,
+      });
+    },
+    onSuccess: (newList: RankingList) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ranking-lists"] });
+      setSelectedListId(newList.id);
+      setIsCreateDialogOpen(false);
+      setNewListName("");
+      setNewListDescription("");
+      toast({
+        title: "List Created",
+        description: "Your new ranking list has been created.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create ranking list. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add game to ranking list
   const addToRankingMutation = useMutation({
     mutationFn: async (rawgGame: RawgGame) => {
+      if (!selectedListId) {
+        throw new Error("No list selected");
+      }
+
+      // First create the activity
       const activityData = mapRawgToActivity(rawgGame);
-      // Set tier to next rank number
-      const nextRank = rankedActivities.length + 1;
-      return apiRequest("POST", "/api/activities", {
-        ...activityData,
-        tier: nextRank.toString(),
+      const activity = await apiRequest("POST", "/api/activities", activityData);
+
+      // Then add it to the ranking list
+      const nextPosition = rankingItems.length + 1;
+      return apiRequest("POST", `/api/ranking-lists/${selectedListId}/items`, {
+        rankingListId: selectedListId,
+        activityId: activity.id,
+        position: nextPosition,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ranking-lists", selectedListId, "items"] });
       setSearchQuery("");
       setSearchResults([]);
       toast({
@@ -197,10 +309,35 @@ export default function TierList() {
         description: "Game has been added to your ranking list.",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add game. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove game from ranking list
+  const removeFromRankingMutation = useMutation({
+    mutationFn: async (activityId: string) => {
+      const item = rankingItems.find(i => i.activityId === activityId);
+      if (!item) {
+        throw new Error("Item not found");
+      }
+      return apiRequest("DELETE", `/api/ranking-items/${item.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ranking-lists", selectedListId, "items"] });
+      toast({
+        title: "Removed from Rankings",
+        description: "Game has been removed from your ranking list.",
+      });
+    },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to add game. Please try again.",
+        description: "Failed to remove game. Please try again.",
         variant: "destructive",
       });
     },
@@ -209,16 +346,28 @@ export default function TierList() {
   // Update rankings after reorder
   const updateRankingsMutation = useMutation({
     mutationFn: async (orderedActivities: Activity[]) => {
-      // Update each activity's tier to match its new position
-      const updates = orderedActivities.map((activity, index) =>
-        apiRequest("PUT", `/api/activities/${activity.id}`, {
-          tier: (index + 1).toString(),
-        })
-      );
-      return Promise.all(updates);
+      if (!selectedListId) {
+        throw new Error("No list selected");
+      }
+
+      // Map activities to ranking items and update positions
+      const itemPositions = orderedActivities.map((activity, index) => {
+        const item = rankingItems.find(i => i.activityId === activity.id);
+        if (!item) {
+          throw new Error(`Item not found for activity ${activity.id}`);
+        }
+        return {
+          id: item.id,
+          position: index + 1,
+        };
+      });
+
+      return apiRequest("POST", `/api/ranking-lists/${selectedListId}/reorder`, {
+        items: itemPositions,
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ranking-lists", selectedListId, "items"] });
       toast({
         title: "Rankings Updated",
         description: "Your ranking list has been reordered.",
@@ -248,61 +397,46 @@ export default function TierList() {
     }
   };
 
-  if (isLoading) {
+  if (listsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   const activeActivity = activeId ? rankedActivities.find(a => a.id === activeId) : null;
+  const selectedList = rankingLists.find(l => l.id === selectedListId);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-red-500" />
-          <h1 className="text-3xl font-bold text-white">My Rankings</h1>
+          <Trophy className="w-8 h-8 text-teal-500" />
+          <h1 className="text-3xl font-bold text-white">Game Rankings</h1>
         </div>
         <div className="flex gap-2">
           <Button
             variant={selectedType === "game" ? "default" : "outline"}
             onClick={() => setSelectedType("game")}
-            className={selectedType === "game" ? "bg-red-600 hover:bg-red-700" : ""}
+            className={selectedType === "game" ? "bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600" : ""}
             data-testid="button-filter-games"
           >
             Games
-          </Button>
-          <Button
-            variant={selectedType === "study" ? "default" : "outline"}
-            onClick={() => setSelectedType("study")}
-            className={selectedType === "study" ? "bg-red-600 hover:bg-red-700" : ""}
-            data-testid="button-filter-study"
-          >
-            Study
-          </Button>
-          <Button
-            variant={selectedType === "work" ? "default" : "outline"}
-            onClick={() => setSelectedType("work")}
-            className={selectedType === "work" ? "bg-red-600 hover:bg-red-700" : ""}
-            data-testid="button-filter-work"
-          >
-            Work
           </Button>
         </div>
       </div>
 
       {/* Guest user message */}
-      {isGuest && selectedType === "game" && (
-        <Alert className="bg-slate-800 border-slate-700 mb-6">
-          <UserPlus className="h-5 w-5 text-red-500" />
+      {isGuest && (
+        <Alert className="bg-[#1E293B] border-[#334155] mb-6">
+          <UserPlus className="h-5 w-5 text-teal-500" />
           <AlertDescription className="text-slate-300 ml-2">
-            <span className="font-semibold text-white">Sign up for free</span> to add games to your personal ranking list!
+            <span className="font-semibold text-white">Sign up for free</span> to create and manage your personal game ranking lists!
             <Button
               size="sm"
               onClick={() => window.location.href = "/auth"}
-              className="ml-3 bg-red-600 hover:bg-red-700"
+              className="ml-3 bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600"
             >
               Create Account
             </Button>
@@ -310,9 +444,95 @@ export default function TierList() {
         </Alert>
       )}
 
+      {/* List selector and create button */}
+      {!isGuest && (
+        <Card className="bg-[#1E293B] border-[#334155] mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Label className="text-slate-300 mb-2 block">Select Ranking List</Label>
+                <Select
+                  value={selectedListId || undefined}
+                  onValueChange={setSelectedListId}
+                  disabled={rankingLists.length === 0}
+                >
+                  <SelectTrigger className="bg-[#0F172A] border-[#94A3B8] text-white">
+                    <SelectValue placeholder="Select a ranking list" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rankingLists.map((list) => (
+                      <SelectItem key={list.id} value={list.id}>
+                        {list.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600 mt-6"
+                    data-testid="button-create-list"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New List
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#1E293B] border-[#334155] text-white">
+                  <DialogHeader>
+                    <DialogTitle>Create New Ranking List</DialogTitle>
+                    <DialogDescription className="text-slate-400">
+                      Create a new list to rank your favorite games.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="list-name">List Name</Label>
+                      <Input
+                        id="list-name"
+                        placeholder="e.g., Top 10 Racing Games"
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        className="bg-[#0F172A] border-[#94A3B8] text-white"
+                        data-testid="input-list-name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="list-description">Description (Optional)</Label>
+                      <Input
+                        id="list-description"
+                        placeholder="Describe your ranking list..."
+                        value={newListDescription}
+                        onChange={(e) => setNewListDescription(e.target.value)}
+                        className="bg-[#0F172A] border-[#94A3B8] text-white"
+                        data-testid="input-list-description"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={() => createListMutation.mutate()}
+                      disabled={!newListName.trim() || createListMutation.isPending}
+                      className="bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600"
+                      data-testid="button-create-list-submit"
+                    >
+                      {createListMutation.isPending ? "Creating..." : "Create List"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+            {selectedList && selectedList.description && (
+              <p className="text-sm text-slate-400 mt-2">{selectedList.description}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search to add games */}
-      {selectedType === "game" && !isGuest && (
-        <Card className="bg-slate-800 border-slate-700 mb-6">
+      {selectedType === "game" && !isGuest && selectedListId && (
+        <Card className="bg-[#1E293B] border-[#334155] mb-6">
           <CardContent className="p-4">
             <div className="space-y-4">
               <div className="relative">
@@ -321,7 +541,7 @@ export default function TierList() {
                   placeholder="Search games to add to your ranking..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10 bg-slate-900 border-slate-700 text-white"
+                  className="pl-10 bg-[#1E293B] border-[#94A3B8] text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   data-testid="input-search-games"
                 />
                 {searchQuery && (
@@ -339,14 +559,14 @@ export default function TierList() {
 
               {isSearching && (
                 <div className="flex items-center justify-center py-4">
-                  <div className="w-6 h-6 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
 
               {searchResults.length > 0 && (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {searchResults.map((game) => (
-                    <Card key={game.id} className="bg-slate-900 border-slate-700">
+                    <Card key={game.id} className="bg-[#0F172A] border-[#334155]">
                       <CardContent className="p-3">
                         <div className="flex items-center gap-3">
                           {game.background_image && (
@@ -366,7 +586,7 @@ export default function TierList() {
                             size="sm"
                             onClick={() => addToRankingMutation.mutate(game)}
                             disabled={addToRankingMutation.isPending}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600"
                             data-testid={`button-add-game-${game.id}`}
                           >
                             <Plus className="w-4 h-4 mr-1" />
@@ -384,21 +604,40 @@ export default function TierList() {
       )}
 
       {/* Ranked list */}
-      {rankedActivities.length === 0 ? (
-        <Card className="bg-slate-800 border-slate-700">
+      {!isGuest && !selectedListId && rankingLists.length === 0 && (
+        <Card className="bg-[#1E293B] border-[#334155]">
+          <CardContent className="p-12">
+            <div className="text-center text-slate-400">
+              <List className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+              <h3 className="text-xl font-semibold mb-2 text-white">No Ranking Lists Yet</h3>
+              <p>
+                Create your first ranking list to start organizing your favorite games.
+              </p>
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="mt-4 bg-gradient-to-r from-teal-500 to-violet-500 hover:from-teal-600 hover:to-violet-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Your First List
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isGuest && selectedListId && rankedActivities.length === 0 ? (
+        <Card className="bg-[#1E293B] border-[#334155]">
           <CardContent className="p-12">
             <div className="text-center text-slate-400">
               <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <h3 className="text-xl font-semibold mb-2">No Rankings Yet</h3>
+              <h3 className="text-xl font-semibold mb-2 text-white">No Games Yet</h3>
               <p>
-                {selectedType === "game"
-                  ? "Search for games above to add them to your ranking list."
-                  : `Add ${selectedType}s to your library and rank them here.`}
+                Search for games above to add them to this ranking list.
               </p>
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : !isGuest && selectedListId && rankedActivities.length > 0 ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -416,6 +655,7 @@ export default function TierList() {
                   key={activity.id}
                   activity={activity}
                   rank={index + 1}
+                  onRemove={() => removeFromRankingMutation.mutate(activity.id)}
                 />
               ))}
             </div>
@@ -423,12 +663,12 @@ export default function TierList() {
 
           <DragOverlay>
             {activeActivity ? (
-              <Card className="bg-slate-800 border-red-500 shadow-2xl shadow-red-500/50">
+              <Card className="bg-[#1E293B] border-teal-500 shadow-2xl shadow-teal-500/50">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       <GripVertical className="w-5 h-5 text-slate-400" />
-                      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-600 text-white font-bold text-xl">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-white font-bold text-xl">
                         {rankedActivities.findIndex(a => a.id === activeId) + 1}
                       </div>
                     </div>
@@ -452,7 +692,7 @@ export default function TierList() {
             ) : null}
           </DragOverlay>
         </DndContext>
-      )}
+      ) : null}
     </div>
   );
 }

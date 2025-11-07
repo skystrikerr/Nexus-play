@@ -10,6 +10,8 @@ import {
   communityMembers,
   tasks,
   journalEntries,
+  rankingLists,
+  rankingItems,
   type User,
   type UpsertUser,
   type InsertActivity,
@@ -32,6 +34,10 @@ import {
   type InsertTask,
   type JournalEntry,
   type InsertJournalEntry,
+  type RankingList,
+  type InsertRankingList,
+  type RankingItem,
+  type InsertRankingItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, gte } from "drizzle-orm";
@@ -135,6 +141,21 @@ export interface IStorage {
   getJournalEntriesByDateRange(startDate: string, endDate: string, userId: string): Promise<JournalEntry[]>;
   updateJournalEntry(id: string, entry: Partial<InsertJournalEntry>, userId: string): Promise<JournalEntry | undefined>;
   deleteJournalEntry(id: string, userId: string): Promise<boolean>;
+
+  // Ranking lists (user-scoped)
+  createRankingList(list: InsertRankingList, userId: string): Promise<RankingList>;
+  getRankingLists(userId: string): Promise<RankingList[]>;
+  getRankingListById(id: string, userId: string): Promise<RankingList | undefined>;
+  getRankingListsByType(type: string, userId: string): Promise<RankingList[]>;
+  updateRankingList(id: string, list: Partial<InsertRankingList>, userId: string): Promise<RankingList | undefined>;
+  deleteRankingList(id: string, userId: string): Promise<boolean>;
+  
+  // Ranking items
+  addRankingItem(item: InsertRankingItem, userId: string): Promise<RankingItem>;
+  getRankingItems(rankingListId: string, userId: string): Promise<RankingItem[]>;
+  updateRankingItemPosition(id: string, position: number, userId: string): Promise<RankingItem | undefined>;
+  removeRankingItem(id: string, userId: string): Promise<boolean>;
+  reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number }[], userId: string): Promise<boolean>;
 
   // Channels
   createChannel(channel: InsertChannel, userId: string): Promise<Channel>;
@@ -822,6 +843,181 @@ export class DatabaseStorage implements IStorage {
       .delete(journalEntries)
       .where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Ranking lists (user-scoped)
+  async createRankingList(listData: InsertRankingList, userId: string): Promise<RankingList> {
+    const [list] = await db
+      .insert(rankingLists)
+      .values({ ...listData, userId })
+      .returning();
+    return list;
+  }
+
+  async getRankingLists(userId: string): Promise<RankingList[]> {
+    return await db
+      .select()
+      .from(rankingLists)
+      .where(eq(rankingLists.userId, userId))
+      .orderBy(desc(rankingLists.createdAt));
+  }
+
+  async getRankingListById(id: string, userId: string): Promise<RankingList | undefined> {
+    const [list] = await db
+      .select()
+      .from(rankingLists)
+      .where(and(eq(rankingLists.id, id), eq(rankingLists.userId, userId)))
+      .limit(1);
+    return list;
+  }
+
+  async getRankingListsByType(type: string, userId: string): Promise<RankingList[]> {
+    return await db
+      .select()
+      .from(rankingLists)
+      .where(and(eq(rankingLists.type, type), eq(rankingLists.userId, userId)))
+      .orderBy(desc(rankingLists.createdAt));
+  }
+
+  async updateRankingList(id: string, listData: Partial<InsertRankingList>, userId: string): Promise<RankingList | undefined> {
+    const [list] = await db
+      .update(rankingLists)
+      .set({ ...listData, updatedAt: new Date() })
+      .where(and(eq(rankingLists.id, id), eq(rankingLists.userId, userId)))
+      .returning();
+    return list;
+  }
+
+  async deleteRankingList(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(rankingLists)
+      .where(and(eq(rankingLists.id, id), eq(rankingLists.userId, userId)));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Ranking items
+  async addRankingItem(itemData: InsertRankingItem, userId: string): Promise<RankingItem> {
+    // Verify the ranking list belongs to the user
+    const list = await this.getRankingListById(itemData.rankingListId, userId);
+    if (!list) {
+      throw new Error("Ranking list not found or unauthorized");
+    }
+    
+    // Verify the activity belongs to the user
+    const activity = await this.getActivityById(itemData.activityId, userId);
+    if (!activity) {
+      throw new Error("Activity not found or unauthorized");
+    }
+    
+    const [item] = await db
+      .insert(rankingItems)
+      .values(itemData)
+      .returning();
+    return item;
+  }
+
+  async getRankingItems(rankingListId: string, userId: string): Promise<RankingItem[]> {
+    // Verify the ranking list belongs to the user
+    const list = await this.getRankingListById(rankingListId, userId);
+    if (!list) {
+      return [];
+    }
+    
+    return await db
+      .select()
+      .from(rankingItems)
+      .where(eq(rankingItems.rankingListId, rankingListId))
+      .orderBy(rankingItems.position);
+  }
+
+  async updateRankingItemPosition(id: string, position: number, userId: string): Promise<RankingItem | undefined> {
+    // First get the item to verify ownership via the parent list
+    const [existingItem] = await db
+      .select()
+      .from(rankingItems)
+      .where(eq(rankingItems.id, id))
+      .limit(1);
+    
+    if (!existingItem) {
+      return undefined;
+    }
+    
+    // Verify the ranking list belongs to the user
+    const list = await this.getRankingListById(existingItem.rankingListId, userId);
+    if (!list) {
+      return undefined;
+    }
+    
+    const [item] = await db
+      .update(rankingItems)
+      .set({ position })
+      .where(eq(rankingItems.id, id))
+      .returning();
+    return item;
+  }
+
+  async removeRankingItem(id: string, userId: string): Promise<boolean> {
+    // First get the item to verify ownership via the parent list
+    const [existingItem] = await db
+      .select()
+      .from(rankingItems)
+      .where(eq(rankingItems.id, id))
+      .limit(1);
+    
+    if (!existingItem) {
+      return false;
+    }
+    
+    // Verify the ranking list belongs to the user
+    const list = await this.getRankingListById(existingItem.rankingListId, userId);
+    if (!list) {
+      return false;
+    }
+    
+    const result = await db
+      .delete(rankingItems)
+      .where(eq(rankingItems.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number }[], userId: string): Promise<boolean> {
+    // Verify the ranking list belongs to the user
+    const list = await this.getRankingListById(rankingListId, userId);
+    if (!list) {
+      return false;
+    }
+    
+    // Fetch all existing items for this list to verify ownership
+    const existingItems = await db
+      .select()
+      .from(rankingItems)
+      .where(eq(rankingItems.rankingListId, rankingListId));
+    
+    const existingItemIds = new Set(existingItems.map(item => item.id));
+    
+    // Verify all provided item IDs belong to this list
+    for (const { id } of itemPositions) {
+      if (!existingItemIds.has(id)) {
+        console.error(`Item ${id} does not belong to list ${rankingListId}`);
+        return false;
+      }
+    }
+    
+    try {
+      // Update each item's position in a transaction
+      await db.transaction(async (tx) => {
+        for (const { id, position } of itemPositions) {
+          await tx
+            .update(rankingItems)
+            .set({ position })
+            .where(and(eq(rankingItems.id, id), eq(rankingItems.rankingListId, rankingListId)));
+        }
+      });
+      return true;
+    } catch (error) {
+      console.error("Error reordering ranking items:", error);
+      return false;
+    }
   }
 
   // Communities (Discord-like)
