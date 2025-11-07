@@ -116,8 +116,13 @@ export default function TimeLogModal({ open, onOpenChange, task }: TimeLogModalP
                       max="24"
                       placeholder="0.5"
                       className="bg-slate-800 border-slate-600 text-white"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      value={field.value}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        field.onChange(isNaN(value) ? 0 : value);
+                      }}
+                      onBlur={field.onBlur}
+                      name={field.name}
                     />
                   </FormControl>
                   <FormMessage />
