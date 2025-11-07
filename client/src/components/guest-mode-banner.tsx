@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { X, UserPlus } from "lucide-react";
+import { X, UserPlus, LogIn } from "lucide-react";
 import { useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -40,6 +40,18 @@ export default function GuestModeBanner() {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => {
+              logoutMutation.mutate();
+            }}
+            size="sm"
+            variant="outline"
+            className="bg-transparent border-white text-white hover:bg-white/20"
+            data-testid="button-signin-from-guest"
+          >
+            <LogIn className="w-4 h-4 mr-2" />
+            Sign In
+          </Button>
           <Button
             onClick={() => {
               logoutMutation.mutate();
