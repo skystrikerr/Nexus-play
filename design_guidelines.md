@@ -1,171 +1,362 @@
-# NexusPlay Gaming Tracker - Design Guidelines
+# NexusPlay - Neo Spectrum Nexus Design System
 
-## Design Approach
+## Design Philosophy
 
-**Selected Approach:** Reference-Based (Gaming Platform Hybrid)
-Drawing inspiration from Steam's content density + Discord's dark UI patterns + Xbox Game Pass's card-based game displays. Gaming interfaces prioritize visual hierarchy, quick scanning, and immersive dark themes that reduce eye strain during extended sessions.
+**Core Concept:** NexusPlay is an activity fusion hub that treats games, study, fitness, reading, and hobbies as equal citizens in a comprehensive life tracking ecosystem. The design system blends vibrant gradient neutrals with modular activity glyphs to create a unique visual identity distinct from traditional gaming trackers.
 
-**Core Principle:** High-contrast, information-dense design that celebrates game visuals while maintaining readability and scanability.
+**Design Principles:**
+- **Category Equality:** All activities (games, study, work, exercise, reading, hobbies) receive equal visual weight
+- **Dynamic Identity:** Color-coded gradients map to activity categories for instant recognition
+- **Layered Depth:** Glassmorphism and subtle textures create modern, premium feel
+- **Data-First:** Typography and layouts emphasize comparative insights and progress tracking
+- **Social & Personal:** Balance individual tracking with community features
+
+## Color System
+
+### Base Palette (Cool Spectrum Foundation)
+
+**Primary Neutrals:**
+- Ink Blue: `#0F172A` (hsl(222, 47%, 11%)) - Main background
+- Graphite: `#1E293B` (hsl(217, 33%, 17%)) - Surface/card backgrounds
+- Slate: `#334155` (hsl(215, 25%, 27%)) - Borders and dividers
+- Silver: `#94A3B8` (hsl(214, 20%, 69%)) - Muted text
+- White: `#FFFFFF` (hsl(0, 0%, 100%)) - Primary text
+
+### Activity Gradient Accents
+
+**Aurora (Gaming/Entertainment):**
+- Start: Teal `#14B8A6` (hsl(172, 66%, 50%))
+- End: Violet `#8B5CF6` (hsl(259, 94%, 51%))
+- Use: Game cards, gaming stats, tier lists
+
+**Solar Flare (Productivity/Study/Work):**
+- Start: Amber `#F59E0B` (hsl(38, 92%, 50%))
+- End: Magenta `#EC4899` (hsl(330, 81%, 60%))
+- Use: Study sessions, work tasks, productivity metrics
+
+**Pulse (Health/Exercise/Wellness):**
+- Start: Cyan `#06B6D4` (hsl(188, 94%, 42%))
+- End: Indigo `#6366F1` (hsl(239, 84%, 67%))
+- Use: Exercise tracking, wellness activities
+
+**Neutral Activity (Reading/Hobbies/Other):**
+- Start: Emerald `#10B981` (hsl(160, 84%, 39%))
+- End: Sky `#0EA5E9` (hsl(199, 89%, 48%))
+- Use: Reading, hobbies, custom categories
+
+### State Colors
+
+- **Success:** Emerald `#10B981` (hsl(160, 84%, 39%))
+- **Error:** Rose `#F43F5E` (hsl(351, 83%, 61%))
+- **Warning:** Amber `#F59E0B` (hsl(38, 92%, 50%))
+- **Info:** Sky `#0EA5E9` (hsl(199, 89%, 48%))
 
 ## Typography System
 
-**Primary Font:** Inter (Google Fonts) - Clean, modern, excellent readability
-**Accent Font:** Rajdhani (Google Fonts) - Bold, geometric, gaming aesthetic for headers
+### Font Families
 
-**Hierarchy:**
-- Page Titles: Rajdhani Bold, 48px (3rem), uppercase, tracking-wide
-- Section Headers: Rajdhani Bold, 32px (2rem), uppercase
-- Card Titles: Inter Semibold, 20px (1.25rem)
-- Body Text: Inter Regular, 16px (1rem)
-- Metadata/Stats: Inter Medium, 14px (0.875rem)
-- Labels: Inter Medium, 12px (0.75rem), uppercase, tracking-wider
+**Primary UI Font:** Inter (Google Fonts)
+- Clean, highly legible, excellent for UI text
+- Weights: 400 (Regular), 500 (Medium), 600 (Semibold), 700 (Bold)
+
+**Display Font:** Space Grotesk (Google Fonts)
+- Modern, geometric, tech-forward for headings
+- Weights: 500 (Medium), 600 (Semibold), 700 (Bold)
+
+**Data/Code Font:** JetBrains Mono (Google Fonts)
+- Monospace for stats, timers, numerical data
+- Weights: 400 (Regular), 600 (Semibold)
+
+### Type Scale
+
+- **Hero Title:** Space Grotesk Bold, 48px (3rem), letter-spacing -0.02em
+- **Page Title:** Space Grotesk Semibold, 32px (2rem), letter-spacing -0.01em
+- **Section Header:** Space Grotesk Medium, 24px (1.5rem)
+- **Card Title:** Inter Semibold, 20px (1.25rem)
+- **Body Large:** Inter Regular, 16px (1rem)
+- **Body:** Inter Regular, 14px (0.875rem)
+- **Small/Caption:** Inter Medium, 12px (0.75rem), letter-spacing 0.01em
+- **Data Display:** JetBrains Mono Semibold, 24-32px for key metrics
 
 ## Layout System
 
-**Spacing Primitives:** Tailwind units of 2, 4, 6, 8, 12, 16
-- Micro spacing (within components): 2, 4
-- Component padding: 6, 8
-- Section spacing: 12, 16
-- Page margins: 16
+### Spacing Scale
 
-**Grid System:**
-- Dashboard: 12-column grid with 16px gaps
-- Game cards: 4-column on desktop (3-column tablet, 1-column mobile)
-- Tier rows: Full-width with horizontal scroll for overflow
-- Sidebar: Fixed 280px width on desktop, slide-out on mobile
+**Based on 4px base unit (Tailwind units):**
+- Micro: 2 (8px) - Icon spacing, tight elements
+- Small: 4 (16px) - Component padding
+- Medium: 6 (24px) - Card padding
+- Large: 8 (32px) - Section spacing
+- XLarge: 12 (48px) - Page margins
+- XXLarge: 16 (64px) - Major section breaks
 
-**Container Strategy:**
-- Main content: max-w-7xl with px-6 padding
-- Sidebar navigation: Fixed left, full height
-- Header: Sticky top with backdrop-blur
+### Grid System
+
+- **Dashboard Grid:** 12-column responsive grid, 24px gaps
+- **Activity Cards:** 4-column desktop → 2-column tablet → 1-column mobile
+- **Stat Tiles:** 3-column desktop → 2-column tablet → 1-column mobile
+- **Sidebar:** Fixed 280px on desktop, slide-out drawer on mobile
+- **Container:** max-w-7xl (1280px) with responsive padding
+
+### Visual Treatments
+
+**Glassmorphism Cards:**
+- Background: Graphite (#1E293B) with 90% opacity
+- Backdrop blur: 12px
+- Border: 1px solid rgba(255, 255, 255, 0.1)
+- Subtle noise texture overlay (3% opacity)
+- Category color left rail (4px width)
+
+**Activity Ribbons:**
+- Horizontal pill-shaped chips showing activity context
+- Gradient background from category colors
+- Small size: 12px text, 6px padding
+- Appears near activity titles and in feeds
 
 ## Component Library
 
 ### Navigation
-**Top Bar:** Fixed header (h-16) with logo left, search bar center, user profile/notifications right. Black background with subtle red underline on active items.
 
-**Sidebar:** Vertical nav with icon + label format. Icons from Heroicons. Sections: Dashboard, My Games, Tier Lists, Statistics, Friends, Settings. Red accent bar on active item.
+**Sidebar:**
+- Fixed left, full height, 280px width
+- Ink Blue background (#0F172A)
+- Category sections with gradient icon backgrounds
+- Active state: Category gradient left border (3px), glassmorphism highlight
+- Icon size: 20px with 12px padding
 
-### Game Cards
-**Standard Card:** 
-- Aspect ratio 3:4 game cover image
-- Gradient overlay (black 0% to black 80% bottom)
-- Title overlaid at bottom with white text
-- Hover: Red border glow, slight scale (1.02)
-- Metadata below image: Platform icons, playtime, last played
+**Top Bar:**
+- Sticky header, 64px height
+- Graphite background with glassmorphism
+- Logo left, search center, profile/notifications right
+- Category gradient underline on active sections
 
-**Tier List Card:**
-- Horizontal card format
-- Game cover thumbnail (80x80px) left
-- Title and metadata center
-- Drag handle icon right
-- Red accent line separating tiers
+### Cards & Containers
 
-### Tier List System
-**Tier Rows:**
-- Tier label badge left (S, A, B, C, D, F) - Red background for S-tier, gradient fade for others
-- Horizontal scrollable game container
-- Drop zone highlights with red dashed border
-- Empty state shows dotted outline with "+ Add Games" text
+**Activity Card:**
+- Glassmorphism card with category-colored left rail
+- Image aspect ratio 3:4 (or 16:9 for wide cards)
+- Gradient overlay on images (transparent to 60% black)
+- Title overlay: White text with subtle shadow
+- Metadata row: Silver text with category badge
+- Hover: Parallax lift effect (translateY -4px), glow with category color
 
-**Tier Controls:**
-- Color picker for tier customization
-- Tier label text input
-- Add/remove tier buttons (red accent)
+**Stat Tile:**
+- Compact glassmorphism card
+- Large data display (JetBrains Mono 32px)
+- Label below in Space Grotesk
+- Category gradient icon in top-right
+- Hover: Category gradient border glow
 
-### Dashboard Widgets
-**Stats Cards:**
-- 4-column grid layout
-- Large number display (Rajdhani, 36px)
-- Label below (uppercase)
-- Icon top-right corner
-- Subtle red gradient background on hover
-
-**Activity Feed:**
-- Timeline layout with red vertical line
-- Activity items with timestamps
-- Game thumbnails (48x48px circles)
-- Action descriptions in white text
-
-**Recently Played:**
-- Horizontal carousel with 5 visible cards
-- Smooth scroll with arrow navigation
-- Auto-scrolling pause on hover
+**Social Feed Card:**
+- Wider glassmorphism card
+- User avatar (48px) with category ring
+- Activity context ribbon
+- Timestamp and interaction buttons
+- Preview image with gradient overlay
 
 ### Forms & Inputs
-**Search Bar:**
-- Rounded-full, black background
-- White text with placeholder gray-400
-- Red focus ring
-- Search icon (Heroicons) left, clear button right
 
-**Text Inputs:**
-- Black background, white text
-- Red bottom border (2px) on focus
-- Label above with red asterisk for required
+**Text Input:**
+- Graphite background (#1E293B)
+- Silver border (1px), White text
+- Focus: Category gradient border (2px), subtle glow
+- Placeholder: Silver with 60% opacity
+- Label: Inter Medium 12px, uppercase, Silver
 
-**Buttons:**
-- Primary: Red background, white text, rounded-lg, px-8 py-3
-- Secondary: Black background, white text, red border (2px)
-- Tertiary: Transparent, white text, red underline on hover
-- All buttons: Semibold Inter, tracking-wide, uppercase at 14px
+**Button Styles:**
+- **Primary:** Category gradient background, white text, rounded-lg, px-6 py-3
+- **Secondary:** Graphite background, white text, category gradient border (2px)
+- **Tertiary:** Transparent, white text, category gradient underline on hover
+- **All buttons:** Inter Semibold 14px, smooth 200ms transitions
 
-**Dropdowns/Selects:**
-- Black background, red caret icon
-- White text, red border on open
-- Options menu with red highlight on hover
-
-### Modals & Overlays
-**Modal:**
-- Black background with red border (2px)
-- Centered, max-w-2xl
-- Backdrop: Black with 80% opacity, blur
-- Close button: Top-right, white X with red on hover
-
-**Toast Notifications:**
-- Bottom-right positioning
-- Black background, white text
-- Red left border (4px) for errors, green for success
-- Auto-dismiss after 5 seconds
+**Select/Dropdown:**
+- Graphite background, white text
+- Category gradient caret icon
+- Options: Glassmorphism menu
+- Hover option: Category gradient highlight (10% opacity)
 
 ### Data Visualization
+
+**Progress Rings:**
+- SVG circle with gradient stroke
+- Category gradient colors
+- Animated on load (stroke-dashoffset transition)
+- Center: Data value in JetBrains Mono
+- Size: 120px default, 80px compact, 160px hero
+
 **Progress Bars:**
-- Black background track
-- Red fill with gradient (hsl(0, 100%, 50%) to hsl(0, 100%, 40%))
-- Rounded-full, h-2
-- Percentage label right-aligned
+- Graphite track background
+- Category gradient fill
+- Rounded-full, 8px height
+- Percentage label: JetBrains Mono right-aligned
 
 **Charts:**
-- Red primary color for data points
-- White grid lines (opacity 10%)
-- Black background
-- Tooltips: Black background, white text, red border
+- Category gradients for data series
+- White grid lines (5% opacity)
+- Ink Blue background
+- Tooltips: Glassmorphism with category accent
 
-## Animations
+### Modals & Overlays
 
-**Sparingly Used:**
-- Card hover: transform scale(1.02), duration 200ms
-- Tier drag: opacity 50% while dragging
-- Page transitions: None (instant for gaming responsiveness)
-- Modals: Fade in 150ms
-- Toasts: Slide from right, 200ms
+**Modal:**
+- Glassmorphism card centered
+- max-w-2xl width
+- Category gradient top border (3px)
+- Backdrop: Ink Blue 90% opacity, blur-xl
+- Close button: Silver, category gradient on hover
 
-## Images Section
+**Toast Notifications:**
+- Bottom-right stack
+- Glassmorphism background
+- Category/state color left border (4px)
+- Icon + message + close button
+- Auto-dismiss: 5 seconds, slide-out animation
 
-**Game Cover Images:**
-- Source: IGDB API or game cover CDN
-- Placement: Game cards, tier list thumbnails, activity feed
-- Format: WebP with JPG fallback
-- Sizes: Card covers (300x400px), thumbnails (80x80px), feed icons (48x48px)
+### Tier List Specific
 
-**Hero Section:** 
-**No large hero image.** This is a dashboard app, not a marketing site. Main view opens directly to user's dashboard with game library and tier lists immediately visible.
+**Tier Rows:**
+- Neutral Slate background (not category colored)
+- Numbered tier labels (1, 2, 3...) in glassmorphism badges
+- Horizontal scroll for game thumbnails
+- Games get category gradients (Aurora for gaming)
+- Drop zones: Dashed border with gradient pulse
 
-**Background Treatments:**
-- Subtle noise texture overlay (5% opacity) on black backgrounds
-- Diagonal stripe pattern (very subtle, 2% opacity) in empty states
-- Game cover blurred backgrounds for modals/detailed views (blur-3xl)
+**Tier Badge:**
+- Glassmorphism pill with number
+- Gradient background based on rank (top ranks get brighter gradients)
+- JetBrains Mono for numbers
 
-**User-Generated:**
-- Profile avatars: Circular, 40px (small), 64px (medium), 128px (large)
-- Game screenshots: User uploads for activity sharing, 16:9 aspect ratio
+## Animation & Motion
+
+### Timing & Easing
+
+**Standard Transitions:** 200ms cubic-bezier(0.4, 0.0, 0.2, 1)
+**Smooth Transitions:** 250ms cubic-bezier(0.4, 0.0, 0.2, 1)
+**Micro Interactions:** 150ms ease-out
+
+### Effects
+
+**Card Hover:**
+- Transform: translateY(-4px)
+- Box shadow: Category gradient glow
+- Duration: 200ms
+- Scale: 1.0 (no scaling)
+
+**Parallax Hover:**
+- Slight rotation on mouse position
+- 3D transform for depth
+- Applied to hero cards only
+
+**Confetti Pulse:**
+- Trigger on streaks, achievements, completions
+- Burst of category-colored particles
+- 1 second duration, fade-out
+
+**Progress Animations:**
+- Stroke-dashoffset for circular progress
+- Width transition for bars
+- Spring physics easing (if supported)
+- Duration: 800ms
+
+**Page Transitions:**
+- Fade-in content: 150ms
+- No slide animations (maintains data focus)
+
+## Accessibility
+
+### Contrast Targets
+
+- Text on Ink Blue: Minimum 4.5:1 (WCAG AA)
+- Text on Graphite: Minimum 4.5:1
+- Interactive elements: Minimum 3:1
+- Gradient text: Ensure lightest portion meets contrast
+
+### Interactive States
+
+- Focus: Category gradient ring (2px offset)
+- Disabled: 40% opacity, no hover effects
+- Error: Rose border with descriptive text
+- Loading: Shimmer effect with category gradient
+
+### Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## Image Guidelines
+
+### Activity Images
+
+- **Game Covers:** 3:4 aspect ratio, WebP format, 300x400px
+- **Activity Icons:** 80x80px thumbnails for compact views
+- **Hero Images:** 16:9 for featured activities, 1200x675px
+- **Gradient Overlays:** Always apply category gradient overlay (transparent to 60%)
+
+### User Content
+
+- **Avatars:** Circular, 40px small / 64px medium / 96px large
+- **Category Rings:** Gradient border around avatars (2px)
+- **Screenshots:** 16:9 aspect ratio, max 1920x1080px
+
+### Backgrounds
+
+- **Noise Texture:** Subtle grain overlay (3% opacity) on all cards
+- **Blur Effects:** backdrop-blur-xl for glassmorphism (12px)
+- **Diagonal Patterns:** Very subtle (2% opacity) for empty states only
+
+## Implementation Notes
+
+### CSS Variables Structure
+
+```css
+:root {
+  /* Base colors */
+  --ink-blue: #0F172A;
+  --graphite: #1E293B;
+  --slate: #334155;
+  --silver: #94A3B8;
+  
+  /* Gradients */
+  --gradient-aurora-start: #14B8A6;
+  --gradient-aurora-end: #8B5CF6;
+  --gradient-solar-start: #F59E0B;
+  --gradient-solar-end: #EC4899;
+  --gradient-pulse-start: #06B6D4;
+  --gradient-pulse-end: #6366F1;
+  --gradient-neutral-start: #10B981;
+  --gradient-neutral-end: #0EA5E9;
+}
+```
+
+### Tailwind Extensions
+
+- Custom gradient utilities for each category
+- Glassmorphism component classes
+- Category-specific border/text/bg utilities
+- Animation presets for common effects
+
+### Activity Category Mapping
+
+- `type="game"` → Aurora gradient
+- `type="study"` or `type="work"` → Solar Flare gradient
+- `type="exercise"` → Pulse gradient
+- `type="reading"` or `type="hobby"` or `type="other"` → Neutral gradient
+
+## Brand Differentiation
+
+**How This Differs from Competitors:**
+- **Multi-spectrum gradients** vs single accent colors
+- **Glassmorphism** vs flat cards
+- **Category-specific visual language** vs uniform styling
+- **Cool blue base** vs red/orange gaming themes
+- **Data-focused typography** (mono fonts) vs pure sans-serif
+- **Activity equality** vs game-first hierarchy
+- **Social ribbons & feed** vs isolated tracking
+
+This design system positions NexusPlay as a premium, multi-dimensional life tracking platform rather than a gaming-only tracker, while maintaining strong visual identity and user delight.
