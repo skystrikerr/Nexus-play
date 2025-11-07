@@ -139,16 +139,31 @@ export async function setupAuth(app: Express) {
   // Local auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { email, password, username, firstName, lastName } = req.body;
       
-      if (!email || !password || !firstName) {
+      if (!email || !password || !firstName || !username) {
         return res.status(400).json({ message: 'Missing required fields' });
       }
 
-      // Check if user already exists
+      // Validate username format
+      if (username.length < 3 || username.length > 20) {
+        return res.status(400).json({ message: 'Username must be 3-20 characters long' });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return res.status(400).json({ message: 'Username can only contain letters, numbers, and underscores' });
+      }
+
+      // Check if email already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+
+      // Check if username already exists
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ message: 'Username already taken' });
       }
 
       // Hash password
@@ -157,6 +172,7 @@ export async function setupAuth(app: Express) {
       // Create user with private profile by default
       const user = await storage.createUser({
         email,
+        username,
         password: hashedPassword,
         firstName,
         lastName: lastName || '',
@@ -168,6 +184,7 @@ export async function setupAuth(app: Express) {
       req.login({ 
         id: user.id, 
         email: user.email, 
+        username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
         provider: 'local'
@@ -175,7 +192,7 @@ export async function setupAuth(app: Express) {
         if (err) {
           return res.status(500).json({ message: 'Registration successful but login failed' });
         }
-        res.json({ message: 'Registration successful', user: { id: user.id, email: user.email } });
+        res.json({ message: 'Registration successful', user: { id: user.id, email: user.email, username: user.username } });
       });
     } catch (error) {
       console.error('Registration error:', error);

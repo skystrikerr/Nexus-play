@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff, Mail, User, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Lock, AtSign } from "lucide-react";
 
 
 interface LoginData {
@@ -19,6 +19,7 @@ interface LoginData {
 interface RegisterData {
   email: string;
   password: string;
+  username: string;
   firstName: string;
   lastName: string;
 }
@@ -28,7 +29,7 @@ export function Auth() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [loginData, setLoginData] = useState<LoginData>({ email: "", password: "" });
   const [registerData, setRegisterData] = useState<RegisterData>({ 
-    email: "", password: "", firstName: "", lastName: "" 
+    email: "", password: "", username: "", firstName: "", lastName: "" 
   });
   const [resetData, setResetData] = useState({ 
     email: "", newPassword: "", confirmPassword: "" 
@@ -104,6 +105,26 @@ export function Auth() {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate username
+    if (!registerData.username || registerData.username.length < 3) {
+      toast({
+        title: "Invalid Username",
+        description: "Username must be at least 3 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!/^[a-zA-Z0-9_]+$/.test(registerData.username)) {
+      toast({
+        title: "Invalid Username",
+        description: "Username can only contain letters, numbers, and underscores",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (registerData.password.length < 6) {
       toast({
         title: "Invalid Password",
@@ -112,6 +133,7 @@ export function Auth() {
       });
       return;
     }
+    
     registerMutation.mutate(registerData);
   };
 
@@ -310,6 +332,25 @@ export function Auth() {
 
               <TabsContent value="register" className="space-y-4">
                 <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-gray-300">Username</Label>
+                    <div className="relative">
+                      <AtSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="username"
+                        placeholder="Choose a unique username"
+                        value={registerData.username}
+                        onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }))}
+                        className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        required
+                        minLength={3}
+                        maxLength={20}
+                        data-testid="input-username"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Letters, numbers, and underscores only. 3-20 characters.</p>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="first-name" className="text-gray-300">First Name</Label>

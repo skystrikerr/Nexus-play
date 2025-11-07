@@ -37,11 +37,15 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  username: varchar("username").unique(), // unique username for social features
   password: varchar("password"), // for local auth
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  displayName: varchar("display_name"), // optional display name (can have spaces, emojis)
   profileImageUrl: varchar("profile_image_url"),
   bio: text("bio"),
+  location: varchar("location"), // user's location
+  website: varchar("website"), // personal website or social link
   provider: varchar("provider").default("local"), // 'local', 'google', 'replit'
   providerId: varchar("provider_id"), // external provider ID
   xboxLiveId: varchar("xbox_live_id"), // Xbox Live gamertag/ID
