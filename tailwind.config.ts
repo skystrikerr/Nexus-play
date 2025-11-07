@@ -44,6 +44,29 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        success: "var(--success)",
+        warning: "var(--warning)",
+        info: "var(--info)",
+        "ink-blue": "var(--ink-blue)",
+        graphite: "var(--graphite)",
+        slate: "var(--slate)",
+        silver: "var(--silver)",
+        aurora: {
+          start: "var(--gradient-aurora-start)",
+          end: "var(--gradient-aurora-end)",
+        },
+        solar: {
+          start: "var(--gradient-solar-start)",
+          end: "var(--gradient-solar-end)",
+        },
+        pulse: {
+          start: "var(--gradient-pulse-start)",
+          end: "var(--gradient-pulse-end)",
+        },
+        neutral: {
+          start: "var(--gradient-neutral-start)",
+          end: "var(--gradient-neutral-end)",
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",
