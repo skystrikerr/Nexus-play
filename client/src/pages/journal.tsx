@@ -365,12 +365,20 @@ export default function Journal() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | undefined>();
 
+  // Check if user is authenticated
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+  const isGuest = (user as any)?.isGuest;
+
   const { data: entries = [], isLoading } = useQuery<JournalEntry[]>({
     queryKey: ["/api/journal"],
+    enabled: !isGuest,
   });
 
   const { data: activities = [] } = useQuery<Activity[]>({
     queryKey: ["/api/activities"],
+    enabled: !isGuest,
   });
 
   const deleteMutation = useMutation({
@@ -427,6 +435,34 @@ export default function Journal() {
   }, {});
 
   const sortedDates = Object.keys(entriesByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  // Show login prompt for guests
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Activity Journal</h1>
+            <p className="text-gray-400">Track your daily activity sessions and progress</p>
+          </div>
+          
+          <Card className="bg-gray-900/50 border-gray-700 text-center py-12">
+            <CardContent>
+              <Gamepad2 className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-300 mb-2">Sign In Required</h3>
+              <p className="text-gray-500 mb-4">Create a free account to start tracking your activity sessions and progress</p>
+              <Button 
+                onClick={() => window.location.href = "/auth"}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Sign Up / Log In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
