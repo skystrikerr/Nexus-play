@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { JournalEntry, Activity } from "@shared/schema";
 
@@ -368,8 +368,10 @@ export default function Journal() {
   // Check if user is authenticated
   const { data: user } = useQuery({
     queryKey: ["/api/auth/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
   });
-  const isGuest = (user as any)?.isGuest;
+  const isGuest = !user || (user as any)?.isGuest;
 
   const { data: entries = [], isLoading } = useQuery<JournalEntry[]>({
     queryKey: ["/api/journal"],
