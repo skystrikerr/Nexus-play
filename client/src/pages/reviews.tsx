@@ -101,7 +101,7 @@ export default function Reviews() {
               placeholder="Search reviews..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-white"
             />
           </div>
           <div className="flex gap-2">

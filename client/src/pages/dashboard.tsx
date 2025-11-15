@@ -145,7 +145,7 @@ export default function Dashboard() {
                 <Input
                   type="text"
                   placeholder="Search activities..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-80"
+                  className="bg-dark-bg border-slate-600 pl-10 w-80 text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

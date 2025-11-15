@@ -261,7 +261,7 @@ export function Users() {
               placeholder="Search communities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-md"
+              className="max-w-md text-white"
             />
           </div>
           {filteredCommunities?.length === 0 ? (
@@ -316,7 +316,7 @@ export function Users() {
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-md"
+              className="max-w-md text-white"
             />
           </div>
           {filteredUsers?.length === 0 ? (

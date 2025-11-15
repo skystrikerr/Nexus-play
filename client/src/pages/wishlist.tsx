@@ -61,7 +61,7 @@ export default function Wishlist() {
                 <Input
                   type="text"
                   placeholder="Search wishlist..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-80"
+                  className="bg-dark-bg border-slate-600 pl-10 w-80 text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -87,7 +87,7 @@ export default function Wishlist() {
                 <Input
                   type="text"
                   placeholder="Search wishlist..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-full"
+                  className="bg-dark-bg border-slate-600 pl-10 w-full text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
