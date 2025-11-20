@@ -9,7 +9,6 @@ import {
   channels,
   communityMembers,
   tasks,
-  journalEntries,
   rankingLists,
   rankingItems,
   type User,
@@ -32,8 +31,6 @@ import {
   type InsertCommunityMember,
   type Task,
   type InsertTask,
-  type JournalEntry,
-  type InsertJournalEntry,
   type RankingList,
   type InsertRankingList,
   type RankingItem,
@@ -133,14 +130,6 @@ export interface IStorage {
   getTaskById(id: string, userId: string): Promise<Task | undefined>;
   updateTask(id: string, task: Partial<InsertTask>, userId: string): Promise<Task | undefined>;
   deleteTask(id: string, userId: string): Promise<boolean>;
-
-  // Journal entries (daily gaming journal)
-  createJournalEntry(entry: InsertJournalEntry, userId: string): Promise<JournalEntry>;
-  getJournalEntries(userId: string): Promise<JournalEntry[]>;
-  getJournalEntriesByDate(date: string, userId: string): Promise<JournalEntry[]>;
-  getJournalEntriesByDateRange(startDate: string, endDate: string, userId: string): Promise<JournalEntry[]>;
-  updateJournalEntry(id: string, entry: Partial<InsertJournalEntry>, userId: string): Promise<JournalEntry | undefined>;
-  deleteJournalEntry(id: string, userId: string): Promise<boolean>;
 
   // Ranking lists (user-scoped)
   createRankingList(list: InsertRankingList, userId: string): Promise<RankingList>;
@@ -787,61 +776,6 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(tasks)
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
-    return result.rowCount ? result.rowCount > 0 : false;
-  }
-
-  // Journal entries (daily gaming journal)
-  async createJournalEntry(entryData: InsertJournalEntry, userId: string): Promise<JournalEntry> {
-    const [entry] = await db
-      .insert(journalEntries)
-      .values({ ...entryData, userId })
-      .returning();
-    return entry;
-  }
-
-  async getJournalEntries(userId: string): Promise<JournalEntry[]> {
-    return await db
-      .select()
-      .from(journalEntries)
-      .where(eq(journalEntries.userId, userId))
-      .orderBy(desc(journalEntries.date));
-  }
-
-  async getJournalEntriesByDate(date: string, userId: string): Promise<JournalEntry[]> {
-    return await db
-      .select()
-      .from(journalEntries)
-      .where(and(eq(journalEntries.userId, userId), eq(journalEntries.date, date)))
-      .orderBy(desc(journalEntries.createdAt));
-  }
-
-  async getJournalEntriesByDateRange(startDate: string, endDate: string, userId: string): Promise<JournalEntry[]> {
-    return await db
-      .select()
-      .from(journalEntries)
-      .where(
-        and(
-          eq(journalEntries.userId, userId),
-          gte(journalEntries.date, startDate),
-          sql`${journalEntries.date} <= ${endDate}`
-        )
-      )
-      .orderBy(desc(journalEntries.date));
-  }
-
-  async updateJournalEntry(id: string, entryData: Partial<InsertJournalEntry>, userId: string): Promise<JournalEntry | undefined> {
-    const [entry] = await db
-      .update(journalEntries)
-      .set({ ...entryData, updatedAt: new Date() })
-      .where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)))
-      .returning();
-    return entry;
-  }
-
-  async deleteJournalEntry(id: string, userId: string): Promise<boolean> {
-    const result = await db
-      .delete(journalEntries)
-      .where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)));
     return result.rowCount ? result.rowCount > 0 : false;
   }
 

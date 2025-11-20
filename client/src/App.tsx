@@ -28,7 +28,6 @@ import Analytics from "@/pages/analytics";
 import Reviews from "@/pages/reviews";
 import Profile from "@/pages/profile";
 import PostsPage from "@/pages/posts";
-import Journal from "@/pages/journal";
 import TierList from "@/pages/tier-list";
 import NotFound from "@/pages/not-found";
 
@@ -60,7 +59,6 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/reviews" component={Reviews} />
           <Route path="/profile" component={Profile} />
-          <Route path="/journal" component={Journal} />
           <Route path="/tier-list" component={TierList} />
         </>
       )}

@@ -255,19 +255,6 @@ export const communityMembers = pgTable("community_members", {
   joinedAt: timestamp("joined_at").defaultNow(),
 });
 
-// Journal entries table (daily gaming journal)
-export const journalEntries = pgTable("journal_entries", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  date: varchar("date").notNull(), // YYYY-MM-DD format
-  activityId: varchar("activity_id").notNull().references(() => activities.id),
-  hoursPlayed: real("hours_played"),
-  notes: text("notes"), // Optional notes about the gaming session
-  mood: varchar("mood"), // happy, excited, frustrated, relaxed, etc.
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 // Ranking lists table (support multiple named ranking lists)
 export const rankingLists = pgTable("ranking_lists", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -291,19 +278,6 @@ export const rankingItems = pgTable("ranking_items", {
 });
 
 // Validation schemas
-export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  activityId: z.string().uuid(),
-  hoursPlayed: z.number().min(0).max(24).optional(),
-  notes: z.string().max(1000).optional(),
-  mood: z.enum(["happy", "excited", "frustrated", "relaxed", "focused", "bored", "accomplished"]).optional(),
-});
-
 export const insertRankingListSchema = createInsertSchema(rankingLists).omit({
   id: true,
   userId: true,
@@ -402,8 +376,6 @@ export type CommunityMember = typeof communityMembers.$inferSelect;
 export type InsertCommunityMember = typeof communityMembers.$inferInsert;
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
-export type JournalEntry = typeof journalEntries.$inferSelect;
-export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
 export type ActiveTimer = typeof activeTimers.$inferSelect;
 export type InsertActiveTimer = z.infer<typeof insertActiveTimerSchema>;
 export type RankingList = typeof rankingLists.$inferSelect;

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertJournalEntrySchema, insertRankingListSchema, insertRankingItemSchema, ACTIVITY_TYPES } from "@shared/schema";
+import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertRankingListSchema, insertRankingItemSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 import { guestActivities, guestSessions, guestStats } from "./guestData";
@@ -1053,71 +1053,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating task:", error);
       res.status(400).json({ message: error.message || "Failed to create task" });
-    }
-  });
-
-  // Journal API (Daily Gaming Journal)
-  app.get("/api/journal", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const entries = await storage.getJournalEntries(userId);
-      res.json(entries);
-    } catch (error) {
-      console.error("Error fetching journal entries:", error);
-      res.status(500).json({ message: "Failed to fetch journal entries" });
-    }
-  });
-
-  app.get("/api/journal/date/:date", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const { date } = req.params;
-      const entries = await storage.getJournalEntriesByDate(date, userId);
-      res.json(entries);
-    } catch (error) {
-      console.error("Error fetching journal entries by date:", error);
-      res.status(500).json({ message: "Failed to fetch journal entries" });
-    }
-  });
-
-  app.post("/api/journal", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const entryData = insertJournalEntrySchema.parse(req.body);
-      const entry = await storage.createJournalEntry(entryData, userId);
-      res.status(201).json(entry);
-    } catch (error) {
-      console.error("Error creating journal entry:", error);
-      res.status(400).json({ message: error.message || "Failed to create journal entry" });
-    }
-  });
-
-  app.put("/api/journal/:id", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const entryData = insertJournalEntrySchema.partial().parse(req.body);
-      const entry = await storage.updateJournalEntry(req.params.id, entryData, userId);
-      if (!entry) {
-        return res.status(404).json({ message: "Journal entry not found" });
-      }
-      res.json(entry);
-    } catch (error) {
-      console.error("Error updating journal entry:", error);
-      res.status(400).json({ message: error.message || "Failed to update journal entry" });
-    }
-  });
-
-  app.delete("/api/journal/:id", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const success = await storage.deleteJournalEntry(req.params.id, userId);
-      if (!success) {
-        return res.status(404).json({ message: "Journal entry not found" });
-      }
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting journal entry:", error);
-      res.status(500).json({ message: "Failed to delete journal entry" });
     }
   });
 
