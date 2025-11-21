@@ -13,7 +13,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ActivityCalendar from "@/components/activity-calendar";
 import { format, parseISO, isSameDay, startOfDay, endOfDay } from "date-fns";
 import { Clock, Calendar as CalendarIcon, Trophy, Target, Gamepad2, BookOpen, Briefcase, Activity, Star, MapPin } from "lucide-react";
-import type { JournalEntry } from "@shared/schema";
 
 interface Session {
   id: string;
@@ -87,10 +86,6 @@ export default function CalendarPage() {
     queryKey: ["/api/tasks"],
   });
 
-  const { data: journalEntries = [] } = useQuery<JournalEntry[]>({
-    queryKey: ["/api/journal"],
-  });
-
   const { data: activities = [] } = useQuery<any[]>({
     queryKey: ["/api/activities"],
   });
@@ -118,12 +113,6 @@ export default function CalendarPage() {
       })
     : [];
 
-  // Get journal entries for selected date
-  const selectedDateJournalEntries = selectedDate 
-    ? journalEntries.filter(entry => {
-        return isSameDay(parseISO(entry.date), selectedDate);
-      })
-    : [];
 
   // Create activity lookup map
   const activityMap = activities.reduce((acc: any, activity: any) => {
@@ -141,21 +130,16 @@ export default function CalendarPage() {
       if (task.dueDate && isSameDay(parseISO(task.dueDate), date)) return true;
       return false;
     });
-    const dayJournalEntries = journalEntries.filter(entry => 
-      isSameDay(parseISO(entry.date), date)
-    );
 
     const totalHours = daySessions.reduce((sum, session) => sum + session.duration, 0);
-    const journalHours = dayJournalEntries.reduce((sum, entry) => sum + (entry.hoursPlayed || 0), 0);
     const completedTasks = dayTasks.filter(task => task.status === 'completed').length;
     
     return {
-      totalHours: Math.round((totalHours + journalHours) * 10) / 10,
+      totalHours: Math.round(totalHours * 10) / 10,
       sessionCount: daySessions.length,
       taskCount: dayTasks.length,
-      journalCount: dayJournalEntries.length,
       completedTasks,
-      hasActivity: daySessions.length > 0 || dayTasks.length > 0 || dayJournalEntries.length > 0
+      hasActivity: daySessions.length > 0 || dayTasks.length > 0
     };
   };
 
@@ -170,9 +154,6 @@ export default function CalendarPage() {
         <div className="flex justify-center space-x-1">
           {data.sessionCount > 0 && (
             <div className="w-1 h-1 bg-purple-400 rounded-full"></div>
-          )}
-          {data.journalCount > 0 && (
-            <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
           )}
           {data.completedTasks > 0 && (
             <div className="w-1 h-1 bg-green-400 rounded-full"></div>
@@ -316,7 +297,7 @@ export default function CalendarPage() {
                     </div>
 
                     {/* View Details Button */}
-                    {(selectedDateSessions.length > 0 || selectedDateTasks.length > 0 || selectedDateJournalEntries.length > 0) && (
+                    {(selectedDateSessions.length > 0 || selectedDateTasks.length > 0) && (
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="w-full text-purple-400 border-purple-500/30 hover:bg-purple-500/10">
@@ -326,8 +307,7 @@ export default function CalendarPage() {
                         <DayDetailsDialog 
                           date={selectedDate} 
                           sessions={selectedDateSessions} 
-                          tasks={selectedDateTasks} 
-                          journalEntries={selectedDateJournalEntries}
+                          tasks={selectedDateTasks}
                           activityMap={activityMap}
                         />
                       </Dialog>
@@ -415,11 +395,10 @@ export default function CalendarPage() {
 }
 
 // Day Details Dialog Component
-function DayDetailsDialog({ date, sessions, tasks, journalEntries, activityMap }: { 
+function DayDetailsDialog({ date, sessions, tasks, activityMap }: { 
   date: Date; 
   sessions: Session[]; 
   tasks: Task[];
-  journalEntries: JournalEntry[];
   activityMap: any;
 }) {
   return (
@@ -535,60 +514,8 @@ function DayDetailsDialog({ date, sessions, tasks, journalEntries, activityMap }
             </div>
           )}
 
-          {/* Journal Entries */}
-          {journalEntries.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-400" />
-                Journal Entries ({journalEntries.length})
-              </h3>
-              <div className="space-y-3">
-                {journalEntries.map((entry) => {
-                  const activity = activityMap[entry.activityId];
-                  return (
-                    <div key={entry.id} className="p-4 bg-slate-700/30 rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-500/20 rounded flex items-center justify-center">
-                            <BookOpen className="h-5 w-5 text-blue-400" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-white flex items-center gap-2">
-                              {activity?.title || 'Unknown Activity'}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {activity?.type && `${activity.type} • `}
-                              {entry.hoursPlayed && `${entry.hoursPlayed} hours played`}
-                            </div>
-                            {entry.notes && (
-                              <div className="text-sm text-gray-300 mt-1">
-                                "{entry.notes}"
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end space-y-1">
-                          {activity && (
-                            <Badge className={getActivityColor(activity.type || 'other')}>
-                              {activity.type}
-                            </Badge>
-                          )}
-                          {entry.mood && (
-                            <Badge variant="outline" className="text-xs border-gray-600">
-                              {entry.mood}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* No Activity */}
-          {sessions.length === 0 && tasks.length === 0 && journalEntries.length === 0 && (
+          {sessions.length === 0 && tasks.length === 0 && (
             <div className="text-center py-8">
               <CalendarIcon className="h-12 w-12 text-gray-500 mx-auto mb-3" />
               <div className="text-gray-400">No activity recorded for this day</div>

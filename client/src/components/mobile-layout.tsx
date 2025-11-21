@@ -35,7 +35,6 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Tasks", href: "/tasks", icon: Target },
-    { name: "Journal", href: "/journal", icon: BookOpen },
     { name: "Library", href: "/library", icon: Library },
     { name: "Tier List", href: "/tier-list", icon: Trophy },
     { name: "Calendar", href: "/calendar", icon: Calendar },
