@@ -1,14 +1,34 @@
 {
-  "name": "rest-express",
+  "name": "nexusplay",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "electron:dev": "npm run build && electron .",
+    "electron:build": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.nexusplay.app",
+    "productName": "NexusPlay",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": null
+    },
+    "asar": false
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
@@ -68,9 +88,9 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^16.3.1",
     "drizzle-orm": "^0.39.1",
     "drizzle-zod": "^0.7.0",
-    "dotenv": "^16.3.1",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
@@ -118,6 +138,8 @@
     "autoprefixer": "^10.4.20",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.30.4",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
