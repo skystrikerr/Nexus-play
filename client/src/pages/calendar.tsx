@@ -174,7 +174,7 @@ export default function CalendarPage() {
 
       <main className="flex-1 overflow-auto">
         {/* Header */}
-        <header className="bg-dark-surface border-b border-slate-700 px-6 py-4">
+        <header className="bg-card border-b border-border px-6 py-4">
           <div className="flex items-center space-x-4">
             {isMobile && (
               <Button
@@ -197,7 +197,7 @@ export default function CalendarPage() {
           
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Calendar */}
-            <Card className="lg:col-span-2 bg-slate-800/50 border-slate-700">
+            <Card className="lg:col-span-2 bg-slate-800/50 border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5 text-purple-400" />
@@ -212,7 +212,7 @@ export default function CalendarPage() {
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  className="rounded-md border border-slate-600"
+                  className="rounded-md border border-border"
                   classNames={{
                     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
                     month: "space-y-4",
@@ -227,7 +227,7 @@ export default function CalendarPage() {
                     head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
                     row: "flex w-full mt-2",
                     cell: "relative h-9 w-9 text-center text-sm p-0 focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-slate-700 [&:has([aria-selected].day-outside)]:bg-slate-700/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
-                    day: "h-9 w-9 p-0 font-normal text-white hover:bg-slate-600 rounded-md transition-colors relative",
+                    day: "h-9 w-9 p-0 font-normal text-white hover:bg-muted rounded-md transition-colors relative",
                     day_range_end: "day-range-end",
                     day_selected: "bg-purple-600 text-white hover:bg-purple-600 hover:text-white focus:bg-purple-600 focus:text-white",
                     day_today: "bg-slate-700 text-white",
@@ -261,7 +261,7 @@ export default function CalendarPage() {
             </Card>
 
             {/* Selected Date Summary */}
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-slate-800/50 border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Clock className="h-5 w-5 text-blue-400" />
@@ -321,7 +321,7 @@ export default function CalendarPage() {
           {/* Recent Activity Overview */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Recent Sessions */}
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-slate-800/50 border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Activity className="h-5 w-5 text-purple-400" />
@@ -355,7 +355,7 @@ export default function CalendarPage() {
             </Card>
 
             {/* Recent Tasks */}
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-slate-800/50 border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Target className="h-5 w-5 text-green-400" />
@@ -402,7 +402,7 @@ function DayDetailsDialog({ date, sessions, tasks, activityMap }: {
   activityMap: any;
 }) {
   return (
-    <DialogContent className="max-w-2xl max-h-[80vh] bg-slate-800 border-slate-700">
+    <DialogContent className="max-w-2xl max-h-[80vh] bg-slate-800 border-border">
       <DialogHeader>
         <DialogTitle className="text-white flex items-center gap-2">
           <CalendarIcon className="h-5 w-5 text-purple-400" />

@@ -44,26 +44,26 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-dark-surface border-r border-slate-700 hidden lg:block">
+    <aside className="w-64 bg-card border-r border-border hidden lg:block">
       <div className="p-6">
         <div className="flex items-center space-x-3 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-aurora rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
             <Gamepad2 className="text-white text-lg" />
           </div>
-          <h1 className="text-xl font-bold text-white">NexusPlay</h1>
+          <h1 className="text-xl font-display font-bold text-foreground">NexusPlay</h1>
         </div>
         
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           {navigation.map((item) => {
             const isActive = location === item.href;
             return (
               <Link key={item.name} href={item.href}>
                 <div
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+                    "flex items-center space-x-3 px-3 py-2.5 rounded-lg font-medium transition-smooth cursor-pointer",
                     isActive
-                      ? "bg-primary/20 text-primary"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700"
+                      ? "nav-active-aurora text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <item.icon className="w-5 h-5" />
@@ -74,18 +74,17 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* User Profile Section */}
         {user && (
-          <div className="mt-8 pt-6 border-t border-slate-700">
+          <div className="mt-8 pt-6 border-t border-border">
             <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-8 h-8">
+              <Avatar className="w-8 h-8 ring-2 ring-primary/30">
                 <AvatarImage src={user.profileImageUrl || undefined} />
-                <AvatarFallback className="text-xs">
+                <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                   {user.firstName?.[0] || user.email?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-white truncate">
+                <div className="text-sm font-medium text-foreground truncate">
                   {user.firstName || user.lastName 
                     ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
                     : user.email?.split("@")[0] || "User"
@@ -96,7 +95,7 @@ export default function Sidebar() {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-700"
+              className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => window.location.href = "/api/logout"}
             >
               <LogOut className="w-4 h-4 mr-2" />

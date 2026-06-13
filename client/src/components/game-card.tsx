@@ -100,7 +100,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
   return (
     <>
       <div 
-        className="bg-dark-surface rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer relative group"
+        className="bg-card rounded-xl p-6 border border-border hover:border-border transition-colors cursor-pointer relative group"
         onClick={handleCardClick}
       >
         {/* Action Menu */}
@@ -110,14 +110,14 @@ export default function GameCard({ game, onClick }: GameCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-white hover:bg-muted"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-600">
+            <DropdownMenuContent align="end" className="bg-slate-800 border-border">
               <DropdownMenuItem 
-                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                className="text-muted-foreground hover:text-white hover:bg-muted cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   onClick?.();
@@ -127,7 +127,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                className="text-muted-foreground hover:text-white hover:bg-muted cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowTimeLog(true);
@@ -137,7 +137,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                 Log Time
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                className="text-muted-foreground hover:text-white hover:bg-muted cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowCompletion(true);
@@ -147,7 +147,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                 Mark Complete
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                className="text-muted-foreground hover:text-white hover:bg-muted cursor-pointer"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Write Review
@@ -172,7 +172,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           />
         ) : (
           <div className="w-16 h-20 rounded-lg bg-slate-700 flex items-center justify-center">
-            <span className="text-slate-400 text-xs">No Image</span>
+            <span className="text-muted-foreground text-xs">No Image</span>
           </div>
         )}
         
@@ -180,7 +180,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           <div className="flex items-start justify-between">
             <div>
               <h4 className="text-lg font-semibold text-white">{game.title}</h4>
-              <p className="text-slate-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {game.category} {game.subcategory && `• ${game.subcategory}`}
               </p>
               
@@ -196,7 +196,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                         )}
                       />
                     ))}
-                    <span className="text-slate-400 text-sm ml-1">{game.rating}.0</span>
+                    <span className="text-muted-foreground text-sm ml-1">{game.rating}.0</span>
                   </div>
                 )}
                 
@@ -209,9 +209,9 @@ export default function GameCard({ game, onClick }: GameCardProps) {
             <div className="flex flex-col items-end space-y-2">
               <ActivityTimer activity={game} variant="small" />
               <div className="text-right">
-                <p className="text-slate-400 text-sm">Progress</p>
+                <p className="text-muted-foreground text-sm">Progress</p>
                 <p className="text-white font-semibold">{game.progress}%</p>
-                <p className="text-slate-400 text-xs flex items-center">
+                <p className="text-muted-foreground text-xs flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
                   {game.totalHours}h total
                 </p>
@@ -233,15 +233,15 @@ export default function GameCard({ game, onClick }: GameCardProps) {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-slate-900 border-slate-700">
+        <AlertDialogContent className="bg-slate-900 border-border">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Delete Game</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               Are you sure you want to delete "{game.title}" from your library? This will also remove all associated sessions and cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600 text-slate-300 hover:bg-slate-700">
+            <AlertDialogCancel className="border-border text-muted-foreground hover:bg-muted">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 

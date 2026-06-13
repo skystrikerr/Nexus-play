@@ -43,7 +43,7 @@ export function Premium() {
   ];
 
   return (
-    <div className="min-h-screen bg-dark-bg p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -60,7 +60,7 @@ export function Premium() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {features.map((feature, index) => (
-            <Card key={index} className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+            <Card key={index} className="bg-slate-800/50 border-border hover:border-slate-600 transition-colors">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-white">
                   <feature.icon className={`h-6 w-6 ${feature.color}`} />
@@ -76,7 +76,7 @@ export function Premium() {
           ))}
         </div>
 
-        <Card className="bg-slate-800/50 border-slate-700 text-center">
+        <Card className="bg-slate-800/50 border-border text-center">
           <CardHeader>
             <CardTitle className="text-white text-2xl">Coming Soon!</CardTitle>
             <CardDescription className="text-gray-400 text-lg">

@@ -37,7 +37,7 @@ export default function GameLibrary() {
 
       <main className="flex-1 overflow-auto">
         {/* Top Bar */}
-        <header className="bg-dark-surface border-b border-slate-700 px-6 py-4">
+        <header className="bg-card border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {isMobile && (
@@ -58,11 +58,11 @@ export default function GameLibrary() {
                 <Input
                   type="text"
                   placeholder="Search games..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-80 text-white"
+                  className="bg-background border-border pl-10 w-80 text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
               </div>
               
               <Button 
@@ -87,7 +87,7 @@ export default function GameLibrary() {
                 className={
                   statusFilter === status
                     ? "bg-primary text-white"
-                    : "bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600"
+                    : "bg-muted text-muted-foreground border-border hover:bg-muted"
                 }
                 onClick={() => setStatusFilter(status)}
               >
@@ -99,13 +99,13 @@ export default function GameLibrary() {
           {/* Games Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-4">
             {isLoading ? (
-              <div className="text-slate-400">Loading games...</div>
+              <div className="text-muted-foreground">Loading games...</div>
             ) : filteredGames.length > 0 ? (
               filteredGames.map((game) => (
                 <GameCard key={game.id} game={game} />
               ))
             ) : (
-              <div className="text-slate-400 text-center py-8">
+              <div className="text-muted-foreground text-center py-8">
                 {games.length === 0 ? "No games added yet." : "No games match your filters."}
               </div>
             )}

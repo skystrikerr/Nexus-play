@@ -69,14 +69,14 @@ export default function Tasks() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-dark-bg">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       <div className="flex-1 p-6">
@@ -87,7 +87,7 @@ export default function Tasks() {
               <Target className="w-8 h-8 text-blue-400" />
 Tasks
             </h1>
-            <p className="text-slate-400 mt-2">
+            <p className="text-muted-foreground mt-2">
               Keep track of your tasks and get things done
             </p>
           </div>
@@ -103,51 +103,51 @@ Tasks
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <div className="bg-slate-900 rounded-lg p-4 border border-border">
             <div className="flex items-center gap-2 mb-2">
               <CheckSquare className="w-5 h-5 text-blue-400" />
-              <span className="text-sm text-slate-400">Total Tasks</span>
+              <span className="text-sm text-muted-foreground">Total Tasks</span>
             </div>
             <p className="text-2xl font-bold text-white">{taskStats.total}</p>
           </div>
           
-          <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <div className="bg-slate-900 rounded-lg p-4 border border-border">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-5 h-5 text-green-400" />
-              <span className="text-sm text-slate-400">Completed</span>
+              <span className="text-sm text-muted-foreground">Completed</span>
             </div>
             <p className="text-2xl font-bold text-green-400">{taskStats.completed}</p>
           </div>
           
-          <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <div className="bg-slate-900 rounded-lg p-4 border border-border">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-5 h-5 text-blue-400" />
-              <span className="text-sm text-slate-400">In Progress</span>
+              <span className="text-sm text-muted-foreground">In Progress</span>
             </div>
             <p className="text-2xl font-bold text-blue-400">{taskStats.inProgress}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700 mb-6">
+        <div className="bg-slate-900 rounded-lg p-4 border border-border mb-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-64">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-800 border-slate-600 text-white"
+                  className="pl-10 bg-slate-800 border-border text-white"
                 />
               </div>
             </div>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40 bg-slate-800 border-slate-600 text-white">
+              <SelectTrigger className="w-40 bg-slate-800 border-border text-white">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent className="bg-slate-800 border-border">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -162,7 +162,7 @@ Tasks
                 variant={viewMode === "grid" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className="border-slate-600"
+                className="border-border"
               >
                 Grid
               </Button>
@@ -170,7 +170,7 @@ Tasks
                 variant={viewMode === "list" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className="border-slate-600"
+                className="border-border"
               >
                 List
               </Button>
@@ -182,7 +182,7 @@ Tasks
         {sortedTasks.length === 0 ? (
           <div className="text-center py-12">
             <Target className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-400 mb-2">
+            <h3 className="text-xl font-semibold text-muted-foreground mb-2">
               {tasks.length === 0 ? "No tasks yet" : "No tasks match your filters"}
             </h3>
             <p className="text-slate-500 mb-6">

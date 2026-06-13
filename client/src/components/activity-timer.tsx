@@ -204,28 +204,28 @@ export default function ActivityTimer({ activity, variant = "small" }: ActivityT
           )}
           
           {(isActive || seconds > 0) && (
-            <span className="text-xs font-mono text-slate-300 min-w-[40px]">
+            <span className="text-xs font-mono text-muted-foreground min-w-[40px]">
               {formatTime(seconds)}
             </span>
           )}
         </div>
 
         <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-          <DialogContent className="bg-dark-surface border-slate-700">
+          <DialogContent className="bg-card border-border">
             <DialogHeader>
               <DialogTitle className="text-white">Session Complete</DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
               <div>
-                <p className="text-slate-300 mb-2">
+                <p className="text-muted-foreground mb-2">
                   You spent <span className="font-semibold text-primary">{formatTime(seconds)}</span> on{" "}
                   <span className="font-semibold text-white">{activity.title}</span>
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="quality" className="text-slate-300">Quality (1-5)</Label>
+                <Label htmlFor="quality" className="text-muted-foreground">Quality (1-5)</Label>
                 <Input
                   id="quality"
                   type="number"
@@ -233,29 +233,29 @@ export default function ActivityTimer({ activity, variant = "small" }: ActivityT
                   max="5"
                   value={quality}
                   onChange={(e) => setQuality(parseInt(e.target.value) || 5)}
-                  className="bg-dark-bg border-slate-600 text-white"
+                  className="bg-background border-border text-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-slate-300">Location (optional)</Label>
+                <Label htmlFor="location" className="text-muted-foreground">Location (optional)</Label>
                 <Input
                   id="location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g., Home, Office, Library"
-                  className="bg-dark-bg border-slate-600 text-white"
+                  className="bg-background border-border text-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes" className="text-slate-300">Notes (optional)</Label>
+                <Label htmlFor="notes" className="text-muted-foreground">Notes (optional)</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="How did this session go?"
-                  className="bg-dark-bg border-slate-600 text-white"
+                  className="bg-background border-border text-white"
                   rows={3}
                 />
               </div>
@@ -264,7 +264,7 @@ export default function ActivityTimer({ activity, variant = "small" }: ActivityT
                 <Button
                   variant="outline"
                   onClick={cancelSave}
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className="border-border text-muted-foreground hover:bg-muted"
                 >
                   Discard
                 </Button>

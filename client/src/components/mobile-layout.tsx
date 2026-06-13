@@ -57,7 +57,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                 "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
                 isActive
                   ? "bg-primary/20 text-primary"
-                  : "text-slate-300 hover:text-white hover:bg-slate-700"
+                  : "text-muted-foreground hover:text-white hover:bg-muted"
               )}
             >
               <item.icon className="w-5 h-5" />
@@ -69,7 +69,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
       
       {/* User Profile Section */}
       {user && (
-        <div className="mt-6 pt-6 border-t border-slate-700">
+        <div className="mt-6 pt-6 border-t border-border">
           <div className="flex items-center gap-3 mb-4 px-4">
             <Avatar className="w-10 h-10">
               <AvatarImage src={user.profileImageUrl || undefined} />
@@ -84,7 +84,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                   : user.email?.split("@")[0] || "User"
                 }
               </div>
-              <div className="text-xs text-slate-400 truncate">
+              <div className="text-xs text-muted-foreground truncate">
                 {user.email}
               </div>
             </div>
@@ -92,7 +92,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-700 mx-4"
+            className="w-full justify-start text-muted-foreground hover:text-white hover:bg-muted mx-4"
             onClick={() => window.location.href = "/api/logout"}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -106,7 +106,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black">
       {/* Mobile Header */}
-      <header className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+      <header className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -121,7 +121,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80 bg-slate-900 border-slate-700 p-0">
+            <SheetContent side="left" className="w-80 bg-slate-900 border-border p-0">
               <div className="p-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -138,7 +138,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
 
       {/* Desktop Sidebar (Hidden on mobile) */}
       <div className="hidden lg:flex">
-        <aside className="w-64 bg-dark-surface border-r border-slate-700">
+        <aside className="w-64 bg-card border-r border-border">
           <div className="p-6">
             <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -157,7 +157,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
       </main>
 
       {/* Bottom Navigation for Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-border z-50">
         <div className="grid grid-cols-5 gap-1 px-2 py-2">
           {navigation.slice(0, 5).map((item) => {
             const isActive = location === item.href;
@@ -168,7 +168,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                     "flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors cursor-pointer",
                     isActive
                       ? "text-primary"
-                      : "text-slate-400 hover:text-white"
+                      : "text-muted-foreground hover:text-white"
                   )}
                 >
                   <item.icon className="w-5 h-5 mb-1" />

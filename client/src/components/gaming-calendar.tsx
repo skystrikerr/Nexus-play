@@ -88,7 +88,7 @@ export default function GamingCalendar() {
     <div>
       <h3 className="text-xl font-bold text-white mb-6">Gaming Calendar</h3>
       
-      <div className="bg-dark-surface rounded-xl p-6 border border-slate-700">
+      <div className="bg-card rounded-xl p-6 border border-border">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-white">
             {monthNames[currentMonth]} {currentYear}
@@ -97,18 +97,18 @@ export default function GamingCalendar() {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 hover:bg-slate-700"
+              className="p-2 hover:bg-muted"
               onClick={previousMonth}
             >
-              <ChevronLeft className="w-4 h-4 text-slate-400" />
+              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 hover:bg-slate-700"
+              className="p-2 hover:bg-muted"
               onClick={nextMonth}
             >
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </Button>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function GamingCalendar() {
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
-            <div key={`weekday-${index}`} className="text-center text-xs text-slate-400 py-2 font-medium">
+            <div key={`weekday-${index}`} className="text-center text-xs text-muted-foreground py-2 font-medium">
               {day}
             </div>
           ))}
@@ -139,7 +139,7 @@ export default function GamingCalendar() {
                 className={`aspect-square flex items-center justify-center text-sm relative ${
                   isToday 
                     ? "bg-primary text-white rounded-lg font-medium" 
-                    : "text-slate-300"
+                    : "text-muted-foreground"
                 }`}
               >
                 {day}
@@ -151,7 +151,7 @@ export default function GamingCalendar() {
           })}
         </div>
         
-        <div className="mt-4 pt-4 border-t border-slate-700">
+        <div className="mt-4 pt-4 border-t border-border">
           <h5 className="text-sm font-medium text-white mb-2">Today's Sessions</h5>
           <div className="space-y-2">
             {todaySessions && todaySessions.length > 0 ? (
@@ -160,7 +160,7 @@ export default function GamingCalendar() {
                 return (
                   <div key={session.id} className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-muted-foreground">
                       {activity?.title || "Unknown Activity"}
                     </span>
                     <span className="text-xs text-slate-500 flex items-center">

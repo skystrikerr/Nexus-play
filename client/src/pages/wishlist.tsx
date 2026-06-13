@@ -37,7 +37,7 @@ export default function Wishlist() {
 
       <main className="flex-1 overflow-auto">
         {/* Top Bar */}
-        <header className="bg-dark-surface border-b border-slate-700 px-6 py-4">
+        <header className="bg-card border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {isMobile && (
@@ -61,11 +61,11 @@ export default function Wishlist() {
                 <Input
                   type="text"
                   placeholder="Search wishlist..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-80 text-white"
+                  className="bg-background border-border pl-10 w-80 text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               </div>
               
               <Button
@@ -87,31 +87,31 @@ export default function Wishlist() {
                 <Input
                   type="text"
                   placeholder="Search wishlist..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-full text-white"
+                  className="bg-background border-border pl-10 w-full text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               </div>
             </div>
           )}
 
           {/* Stats Bar */}
-          <div className="bg-dark-surface rounded-xl p-4 mb-6 border border-slate-700">
+          <div className="bg-card rounded-xl p-4 mb-6 border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <div>
-                  <p className="text-slate-400 text-sm">Total Wishlist Items</p>
+                  <p className="text-muted-foreground text-sm">Total Wishlist Items</p>
                   <p className="text-xl font-bold text-white">{wishlistActivities.length}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Games</p>
+                  <p className="text-muted-foreground text-sm">Games</p>
                   <p className="text-xl font-bold text-blue-400">
                     {wishlistActivities.filter(a => a.type === 'game').length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Other Activities</p>
+                  <p className="text-muted-foreground text-sm">Other Activities</p>
                   <p className="text-xl font-bold text-green-400">
                     {wishlistActivities.filter(a => a.type !== 'game').length}
                   </p>
@@ -125,7 +125,7 @@ export default function Wishlist() {
           {/* Activity Grid */}
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-slate-400">Loading wishlist...</div>
+              <div className="text-muted-foreground">Loading wishlist...</div>
             </div>
           ) : filteredActivities.length === 0 ? (
             <div className="text-center py-12">
@@ -133,7 +133,7 @@ export default function Wishlist() {
               <h3 className="text-xl font-semibold text-white mb-2">
                 {searchQuery ? "No results found" : "Your wishlist is empty"}
               </h3>
-              <p className="text-slate-400 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchQuery 
                   ? "Try adjusting your search terms" 
                   : "Add some activities you want to try in the future!"

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Menu, Target, CheckSquare } from "lucide-react";
+import { Search, Plus, Menu, Target, CheckSquare, Gamepad2, Clock, CalendarDays, Trophy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar";
@@ -20,7 +20,6 @@ interface Stats {
   totalHours: number;
   monthlyHours: number;
   byType: Record<string, { count: number; completed: number; hours: number }>;
-  // Backward compatibility
   totalGames: number;
   completedGames: number;
 }
@@ -45,13 +44,11 @@ export default function Dashboard() {
     queryKey: ["/api/stats"],
   });
 
-  // Filter tasks (non-game activities)
   const tasks = allActivities.filter(activity => 
     activity.type !== "game" && 
     ["work", "study", "other"].includes(activity.type)
   );
 
-  // Get urgent tasks (due soon or overdue)
   const urgentTasks = tasks.filter(task => {
     const dueDate = (task.metadata as any)?.dueDate;
     if (!dueDate || task.status === "completed") return false;
@@ -60,7 +57,7 @@ export default function Dashboard() {
     const now = new Date();
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
-    return due <= tomorrow; // Due within 24 hours or overdue
+    return due <= tomorrow;
   }).slice(0, 3);
 
   const filteredGames = games.filter(game => {
@@ -75,38 +72,26 @@ export default function Dashboard() {
     {
       title: "Total Activities",
       value: stats?.totalActivities || 0,
-      icon: "📊",
-      color: "bg-primary/20 text-primary",
+      icon: Sparkles,
+      gradient: "bg-gradient-aurora",
     },
     {
       title: "Games",
       value: games.length || 0,
-      icon: "🎮",
-      color: "bg-primary/20 text-primary",
-    },
-    {
-      title: "Tasks",
-      value: tasks.length || 0,
-      icon: "✅",
-      color: "bg-blue-500/20 text-blue-400",
+      icon: Gamepad2,
+      gradient: "bg-gradient-neutral",
     },
     {
       title: "Completed",
       value: stats?.completedActivities || 0,
-      icon: "🏆",
-      color: "bg-green-500/20 text-green-400",
+      icon: Trophy,
+      gradient: "bg-gradient-pulse",
     },
     {
-      title: "Total Hours",
-      value: stats?.totalHours || 0,
-      icon: "⏰",
-      color: "bg-yellow-500/20 text-yellow-500",
-    },
-    {
-      title: "This Month",
-      value: `${stats?.monthlyHours || 0}h`,
-      icon: "📅",
-      color: "bg-purple-500/20 text-purple-400",
+      title: "Hours Tracked",
+      value: `${stats?.totalHours || 0}h`,
+      icon: Clock,
+      gradient: "bg-gradient-solar",
     },
   ];
 
@@ -114,29 +99,27 @@ export default function Dashboard() {
     <div className="min-h-screen flex">
       <Sidebar />
       
-      {/* Mobile sidebar overlay */}
       {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20" onClick={() => setSidebarOpen(false)} />
       )}
 
       <main className="flex-1 overflow-auto">
-        {/* Top Bar */}
-        <header className="bg-dark-surface border-b border-slate-700 px-6 py-4">
+        <header className="sticky top-0 z-10 glass border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {isMobile && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 lg:hidden"
+                  className="p-2 lg:hidden text-muted-foreground hover:text-foreground"
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
               )}
               <div>
-                <h2 className="text-2xl font-bold text-white">NexusPlay Dashboard</h2>
-                <p className="text-slate-400 text-sm">Your personal time management and activity hub</p>
+                <h2 className="text-2xl font-display font-bold text-foreground">Dashboard</h2>
+                <p className="text-muted-foreground text-sm">Your personal time management and activity hub</p>
               </div>
             </div>
             
@@ -145,23 +128,23 @@ export default function Dashboard() {
                 <Input
                   type="text"
                   placeholder="Search activities..."
-                  className="bg-dark-bg border-slate-600 pl-10 w-80 text-white"
+                  className="bg-muted border-input pl-10 w-80 text-foreground placeholder:text-muted-foreground/60"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
               </div>
               
               <div className="flex gap-2">
                 <Button 
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-gradient-solar text-white hover:opacity-90 shadow-lg shadow-amber-500/20"
                   onClick={() => setShowAddTaskModal(true)}
                 >
                   <Target className="w-4 h-4 mr-2" />
                   Add Task
                 </Button>
                 <Button 
-                  className="bg-primary hover:bg-primary/80"
+                  className="bg-gradient-aurora text-white hover:opacity-90 shadow-lg shadow-cyan-500/20"
                   onClick={() => setShowAddGameModal(true)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -173,43 +156,49 @@ export default function Dashboard() {
         </header>
 
         <div className="p-6">
-          {/* Dashboard Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statCards.map((stat, index) => (
-              <div key={index} className="bg-dark-surface rounded-xl p-6 border border-slate-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-400 text-sm">{stat.title}</p>
-                    <p className="text-3xl font-bold text-white">
-                      {statsLoading ? "..." : stat.value}
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${stat.color}`}>
-                    <span className="text-2xl">{stat.icon}</span>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            {statCards.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="glass-glow rounded-xl p-6 hover-lust">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-muted-foreground text-sm font-medium">{stat.title}</p>
+                      <p className="text-3xl font-bold text-foreground font-mono mt-1">
+                        {statsLoading ? (
+                          <span className="shimmer inline-block w-16 h-8 rounded" />
+                        ) : stat.value}
+                      </p>
+                    </div>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.gradient} shadow-lg`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
+          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Urgent Tasks & Recent Games */}
+            {/* Left Column - Urgent Tasks & Recent Games */}
             <div className="xl:col-span-2 space-y-8">
-              {/* Urgent Tasks Section */}
+              {/* Urgent Tasks */}
               {urgentTasks.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <CheckSquare className="w-6 h-6 text-red-400" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-display font-semibold text-foreground flex items-center gap-2">
+                      <CheckSquare className="w-5 h-5 text-destructive" />
                       Urgent Tasks
                     </h3>
                     <Button 
                       onClick={() => window.location.href = '/tasks'}
                       variant="outline"
                       size="sm"
-                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                      className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
-                      View All Tasks
+                      View All
                     </Button>
                   </div>
                   
@@ -221,47 +210,54 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* Recent Games Section */}
+              {/* Recent Games */}
               <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">Recent Games</h3>
-                <div className="flex space-x-2">
-                  {["all", "playing", "completed"].map((status) => (
-                    <Button
-                      key={status}
-                      variant={statusFilter === status ? "default" : "outline"}
-                      size="sm"
-                      className={
-                        statusFilter === status
-                          ? "bg-primary text-white"
-                          : "bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600"
-                      }
-                      onClick={() => setStatusFilter(status)}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {gamesLoading ? (
-                  <div className="text-slate-400">Loading games...</div>
-                ) : recentGames.length > 0 ? (
-                  recentGames.map((game) => (
-                    <GameCard key={game.id} game={game} />
-                  ))
-                ) : (
-                  <div className="text-slate-400 text-center py-8">
-                    {games.length === 0 ? "No games added yet." : "No games match your filters."}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-display font-semibold text-foreground">Recent Games</h3>
+                  <div className="flex space-x-2">
+                    {["all", "playing", "completed"].map((status) => (
+                      <Button
+                        key={status}
+                        variant={statusFilter === status ? "default" : "outline"}
+                        size="sm"
+                        className={
+                          statusFilter === status
+                            ? "bg-gradient-aurora text-white shadow-lg shadow-cyan-500/20"
+                            : "bg-muted text-muted-foreground border-border hover:text-foreground hover:bg-muted/80"
+                        }
+                        onClick={() => setStatusFilter(status)}
+                      >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </Button>
+                    ))}
                   </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {gamesLoading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="shimmer rounded-xl h-24" />
+                      ))}
+                    </div>
+                  ) : recentGames.length > 0 ? (
+                    recentGames.map((game) => (
+                      <GameCard key={game.id} game={game} />
+                    ))
+                  ) : (
+                    <div className="glass-glow rounded-xl p-8 text-center">
+                      <Gamepad2 className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        {games.length === 0 ? "No games added yet. Add your first game!" : "No games match your filters."}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Timer and Calendar */}
-            <div className="space-y-8">
+            {/* Right Column - Timer & Calendar */}
+            <div className="space-y-6">
               <ActiveTimerWidget />
               <GamingCalendar />
             </div>

@@ -117,7 +117,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-white text-center">
           <UserIcon className="w-16 h-16 mx-auto mb-4 text-slate-600" />
           <p>Please log in to view your profile.</p>
@@ -127,18 +127,18 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-2">Profile Settings</h1>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             Manage your profile information and privacy settings
           </p>
         </div>
 
         {/* Profile Photo Section */}
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="bg-slate-900 border-border">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Camera className="w-5 h-5" />
@@ -178,7 +178,7 @@ export default function Profile() {
         </Card>
 
         {/* Basic Information */}
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="bg-slate-900 border-border">
           <CardHeader>
             <CardTitle className="text-white">Basic Information</CardTitle>
             <CardDescription>
@@ -193,7 +193,7 @@ export default function Profile() {
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white"
+                  className="bg-slate-800 border-border text-white"
                   placeholder="Enter your first name"
                 />
               </div>
@@ -203,7 +203,7 @@ export default function Profile() {
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white"
+                  className="bg-slate-800 border-border text-white"
                   placeholder="Enter your last name"
                 />
               </div>
@@ -215,7 +215,7 @@ export default function Profile() {
                 id="email"
                 value={user.email || ""}
                 disabled
-                className="bg-slate-800 border-slate-600 text-slate-400"
+                className="bg-slate-800 border-border text-muted-foreground"
               />
               <p className="text-xs text-slate-500 mt-1">
                 Email cannot be changed for security reasons
@@ -228,7 +228,7 @@ export default function Profile() {
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="bg-slate-800 border-slate-600 text-white min-h-[100px]"
+                className="bg-slate-800 border-border text-white min-h-[100px]"
                 placeholder="Tell others about yourself..."
                 maxLength={500}
               />
@@ -240,7 +240,7 @@ export default function Profile() {
         </Card>
 
         {/* Privacy Settings */}
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="bg-slate-900 border-border">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Shield className="w-5 h-5" />
@@ -262,7 +262,7 @@ export default function Profile() {
                   <h3 className="text-white font-medium">
                     {isPublic ? "Public Profile" : "Private Profile"}
                   </h3>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-muted-foreground">
                     {isPublic 
                       ? "Others can see your profile, activities, and progress"
                       : "Your profile is hidden from other users"
@@ -282,7 +282,7 @@ export default function Profile() {
                 <Shield className="w-5 h-5 text-yellow-400 mt-0.5" />
                 <div>
                   <h4 className="text-white font-medium">Security Notice</h4>
-                  <p className="text-sm text-slate-300 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Your profile photo and uploaded content are stored securely with encryption.
                     Only you can control who sees your information.
                   </p>
@@ -295,10 +295,10 @@ export default function Profile() {
                 <Badge variant="outline" className="border-red-500 text-red-400 mb-2">
                   Private Mode
                 </Badge>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-muted-foreground">
                   When your profile is private:
                 </p>
-                <ul className="text-sm text-slate-400 mt-2 space-y-1 ml-4">
+                <ul className="text-sm text-muted-foreground mt-2 space-y-1 ml-4">
                   <li>• Other users cannot see your profile or activities</li>
                   <li>• You won't appear in community searches</li>
                   <li>• Your game progress and stats remain hidden</li>

@@ -137,6 +137,25 @@
   --radius: 0.5rem;
 }
 
+/* Ambient background glow for dark mode */
+.dark body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(20, 184, 166, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 10%, rgba(139, 92, 246, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 85%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure main content sits above the ambient glow */
+.dark #root {
+  position: relative;
+  z-index: 1;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -148,6 +167,16 @@
   
   h1, h2, h3 {
     font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Smooth scrolling and consistent box-sizing */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Consistent focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring;
   }
 }
 
@@ -235,17 +264,27 @@
   
   /* Glassmorphism effect */
   .glass {
-    background: rgba(30, 41, 59, 0.9);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   
   .glass-light {
-    background: rgba(248, 250, 252, 0.9);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(248, 250, 252, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+  }
+  
+  /* Card glow variant */
+  .glass-glow {
+    @apply glass;
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.05);
+  }
+
+  .glass-glow:hover {
+    box-shadow: 0 0 30px rgba(20, 184, 166, 0.1);
   }
   
   /* Noise texture overlay */
@@ -289,6 +328,15 @@
     transform: translateY(-4px);
   }
   
+  /* Hover glow effect */
+  .hover-glow {
+    @apply transition-smooth;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.1);
+  }
+  
   /* Category rail (left border accent) */
   .rail-aurora {
     border-left: 4px solid var(--gradient-aurora-start);
@@ -304,6 +352,62 @@
   
   .rail-neutral {
     border-left: 4px solid var(--gradient-neutral-start);
+  }
+
+  /* Category accent gradient backgrounds for nav items */
+  .nav-active-aurora {
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-left: 3px solid var(--gradient-aurora-start);
+  }
+  
+  .nav-active-solar {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
+    border-left: 3px solid var(--gradient-solar-start);
+  }
+
+  .nav-active-pulse {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border-left: 3px solid var(--gradient-pulse-start);
+  }
+
+  .nav-active-neutral {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.1) 100%);
+    border-left: 3px solid var(--gradient-neutral-start);
+  }
+  
+  /* Subtle shimmer for loading states */
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--card) 25%,
+      hsl(217, 33%, 22%) 50%,
+      var(--card) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  
+  /* Animated gradient border for focus cards */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .border-gradient-animated {
+    border: 2px solid transparent;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-image: 
+      linear-gradient(var(--card), var(--card)),
+      linear-gradient(135deg, var(--gradient-aurora-start), var(--gradient-aurora-end), var(--gradient-solar-start));
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
   }
 }
 
