@@ -88,7 +88,7 @@ function App() {
   // Initialize Capacitor when running in native app
   React.useEffect(() => {
     if (isCapacitor) {
-      import('./utils/capacitor').then(({ initializeCapacitor }) => {
+      import("./utils/capacitor").then(({ initializeCapacitor }) => {
         initializeCapacitor();
       });
     }
