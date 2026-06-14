@@ -46,6 +46,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserBySteamId(steamId: string): Promise<User | undefined>;
+  getUserByProviderId(provider: string, providerId: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(userId: string, userData: Partial<UpsertUser>): Promise<User | undefined>;
@@ -181,6 +182,14 @@ export class DatabaseStorage implements IStorage {
 
   async getUserBySteamId(steamId: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.steamId, steamId));
+    return user;
+  }
+
+  async getUserByProviderId(provider: string, providerId: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.provider, provider), eq(users.providerId, providerId)));
     return user;
   }
 

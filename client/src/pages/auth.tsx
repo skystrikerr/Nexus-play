@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff, Mail, User, Lock, AtSign } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Lock, AtSign, Chrome } from "lucide-react";
 
 
 interface LoginData {
@@ -261,6 +261,18 @@ export function Auth() {
                 </form>
               </Card>
             )}
+
+            {/* Google Sign In */}
+            <Button
+              onClick={() => window.location.href = '/api/auth/google'}
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+            >
+              <Chrome className="mr-2 h-5 w-5" />
+              Sign in with Google
+            </Button>
+
+            <Separator className="bg-slate-600" />
 
             {/* Email/Password Forms */}
             <Tabs defaultValue="login" className="w-full">
