@@ -4,9 +4,14 @@ import { storage } from "./storage";
 
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertRankingListSchema, insertRankingItemSchema, ACTIVITY_TYPES } from "@shared/schema";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 import { guestActivities, guestSessions, guestStats } from "./guestData";
+
+const RAWG_BASE_URL = "https://api.rawg.io/api";
+
+function getRawgKey(): string | undefined {
+  return process.env.RAWG_API_KEY;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -54,39 +59,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Profile photo upload URL
-  app.post("/api/profile/photo/upload", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getProfilePhotoUploadURL(userId);
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ message: "Failed to get upload URL" });
-    }
-  });
-
-  // Update profile photo
+  // Update profile photo (image URL based)
   app.put("/api/profile/photo", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { profileImageUrl } = z.object({
-        profileImageUrl: z.string().url(),
+        profileImageUrl: z.string().url().max(2048).refine(
+          (url) => url.startsWith("https://"),
+          { message: "Photo URL must use https" }
+        ),
       }).parse(req.body);
 
-      // Normalize the object path for security
-      const objectStorageService = new ObjectStorageService();
-      const normalizedPath = objectStorageService.normalizeObjectPath(profileImageUrl);
-      
-      const user = await storage.updateUser(userId, { 
-        profileImageUrl: normalizedPath 
-      });
-      
+      const user = await storage.updateUser(userId, { profileImageUrl });
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ profileImageUrl: normalizedPath });
+      res.json({ profileImageUrl });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid photo URL", errors: error.errors });
@@ -96,32 +85,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve profile photos (with access control)
-  app.get("/objects/profile-photos/:userId/:photoId", isAuthenticated, async (req: any, res) => {
+  // RAWG game database proxy — keeps the API key server-side
+  app.get("/api/rawg/search", isAuthenticated, async (req, res) => {
     try {
-      const currentUserId = req.user.id;
-      const targetUserId = req.params.userId;
-      const photoId = req.params.photoId;
-      
-      // Check if user can access this photo
-      if (currentUserId !== targetUserId) {
-        const targetUser = await storage.getUser(targetUserId);
-        if (!targetUser || !targetUser.isPublic) {
-          return res.status(403).json({ message: "Access denied" });
-        }
+      const key = getRawgKey();
+      if (!key) {
+        return res.status(503).json({ message: "Game search is not configured (missing RAWG_API_KEY)" });
       }
-
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = `/objects/profile-photos/${targetUserId}/${photoId}`;
-      const objectFile = await objectStorageService.getProfilePhotoFile(objectPath);
-      
-      await objectStorageService.downloadProfilePhoto(objectFile, res);
+      const query = String(req.query.q || "").slice(0, 100);
+      if (query.trim().length < 2) {
+        return res.json({ count: 0, results: [] });
+      }
+      const url = `${RAWG_BASE_URL}/games?key=${key}&search=${encodeURIComponent(query)}&page_size=12&ordering=-rating,-added`;
+      const rawgRes = await fetch(url);
+      if (!rawgRes.ok) {
+        return res.status(rawgRes.status === 429 ? 429 : 502).json({ count: 0, results: [] });
+      }
+      res.json(await rawgRes.json());
     } catch (error) {
-      if (error instanceof ObjectNotFoundError) {
-        return res.status(404).json({ message: "Photo not found" });
+      console.error("RAWG search error:", error);
+      res.status(502).json({ count: 0, results: [] });
+    }
+  });
+
+  app.get("/api/rawg/games/:id", isAuthenticated, async (req, res) => {
+    try {
+      const key = getRawgKey();
+      if (!key) {
+        return res.status(503).json({ message: "Game search is not configured (missing RAWG_API_KEY)" });
       }
-      console.error("Error serving profile photo:", error);
-      res.status(500).json({ message: "Failed to serve photo" });
+      const gameId = parseInt(req.params.id, 10);
+      if (isNaN(gameId)) {
+        return res.status(400).json({ message: "Invalid game id" });
+      }
+      const rawgRes = await fetch(`${RAWG_BASE_URL}/games/${gameId}?key=${key}`);
+      if (!rawgRes.ok) {
+        return res.status(502).json({ message: "Failed to fetch game details" });
+      }
+      res.json(await rawgRes.json());
+    } catch (error) {
+      console.error("RAWG details error:", error);
+      res.status(502).json({ message: "Failed to fetch game details" });
     }
   });
 

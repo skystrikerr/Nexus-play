@@ -1,5 +1,5 @@
-const RAWG_API_KEY = "cd4d0e08df4c4eaca4158f8fbbe212f8";
-const RAWG_BASE_URL = "https://api.rawg.io/api";
+// Game data comes from the RAWG database, proxied through our own server so
+// the API key stays server-side (see /api/rawg routes in server/routes.ts).
 
 export interface RawgGame {
   id: number;
@@ -26,26 +26,13 @@ export async function searchGames(query: string): Promise<GameSearchResult> {
   }
 
   try {
-    // Try different search approaches for better results
-    const searchUrl = `${RAWG_BASE_URL}/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=12&ordering=-rating,-added`;
-    
-    const response = await fetch(searchUrl);
+    const response = await fetch(`/api/rawg/search?q=${encodeURIComponent(query)}`, {
+      credentials: "include",
+    });
 
     if (!response.ok) {
-      console.warn(`RAWG API responded with status: ${response.status}`);
-      // Still try to return the response if it's not a complete failure
-      if (response.status === 429) {
-        console.warn("Rate limited by RAWG API");
-      }
-      if (response.status < 500) {
-        try {
-          const data = await response.json();
-          return data || { count: 0, results: [] };
-        } catch {
-          return { count: 0, results: [] };
-        }
-      }
-      throw new Error(`RAWG API error: ${response.status}`);
+      console.warn(`Game search responded with status: ${response.status}`);
+      return { count: 0, results: [] };
     }
 
     const data = await response.json();
@@ -58,12 +45,12 @@ export async function searchGames(query: string): Promise<GameSearchResult> {
 
 export async function getGameDetails(gameId: number): Promise<RawgGame | null> {
   try {
-    const response = await fetch(
-      `${RAWG_BASE_URL}/games/${gameId}?key=${RAWG_API_KEY}`
-    );
+    const response = await fetch(`/api/rawg/games/${gameId}`, {
+      credentials: "include",
+    });
 
     if (!response.ok) {
-      throw new Error(`RAWG API error: ${response.status}`);
+      throw new Error(`Game details error: ${response.status}`);
     }
 
     return await response.json();

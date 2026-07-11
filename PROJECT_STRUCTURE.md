@@ -1,6 +1,6 @@
 # NexusPlay Project Structure Guide
 
-This guide explains the purpose of every file and folder in your project so you can edit the code outside of Replit.
+This guide explains the purpose of every file and folder in your project.
 
 ## 📁 Root Directory Files
 
@@ -15,13 +15,10 @@ This guide explains the purpose of every file and folder in your project so you 
 - **`components.json`** - shadcn/ui component library configuration
 
 ### Documentation Files
-- **`replit.md`** - Project overview, history, and technical architecture notes
+- **`README.md`** - Project overview, setup instructions, and scripts
 - **`design_guidelines.md`** - UI/UX design system and color guidelines (Neo Spectrum Nexus theme)
 - **`MOBILE_SETUP.md`** - Instructions for building and deploying the Android mobile app
 - **`PROJECT_STRUCTURE.md`** - This file! Complete project structure documentation
-
-### Temporary/Data Files
-- **`cookies.txt`**, **`cookies_new.txt`**, **`test_cookies.txt`** - Temporary cookie files (can be ignored/deleted)
 
 ---
 
@@ -123,9 +120,6 @@ Pre-built, customizable UI components from the shadcn/ui library:
 - **`active-timer-widget.tsx`** - Widget showing active timers
 - **`timer-button.tsx`** - Button to start/stop timers
 
-### Other Components
-- **`ObjectUploader.tsx`** - Component for uploading files to object storage
-
 ---
 
 ## 📁 `/client/src/hooks` - Custom React Hooks
@@ -176,7 +170,6 @@ The server folder contains all your Express.js backend code.
 
 ### Authentication
 - **`auth.ts`** - Authentication middleware and session management
-- **`replitAuth.ts`** - Replit-specific authentication (used if deployed on Replit)
 
 ### Database
 - **`db.ts`** - PostgreSQL database connection using Drizzle ORM
@@ -263,9 +256,9 @@ npm run db:studio    # Open Drizzle Studio (database GUI)
 
 ---
 
-## 📝 Editing Outside Replit
+## 📝 Local Development Setup
 
-To work on this project outside Replit:
+To work on this project locally:
 
 1. **Clone/download** your project files
 2. **Install Node.js** (v18 or higher)

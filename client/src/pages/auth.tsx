@@ -31,8 +31,11 @@ export function Auth() {
   const [registerData, setRegisterData] = useState<RegisterData>({ 
     email: "", password: "", username: "", firstName: "", lastName: "" 
   });
-  const [resetData, setResetData] = useState({ 
-    email: "", newPassword: "", confirmPassword: "" 
+  // Present when the user arrives from a password-reset email link (/auth?reset=TOKEN)
+  const resetToken = new URLSearchParams(window.location.search).get("reset");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetData, setResetData] = useState({
+    newPassword: "", confirmPassword: ""
   });
   const { toast } = useToast();
 
@@ -78,16 +81,38 @@ export function Auth() {
     },
   });
 
+  const requestResetMutation = useMutation({
+    mutationFn: (email: string) =>
+      apiRequest("POST", "/api/auth/request-password-reset", { email }),
+    onSuccess: () => {
+      toast({
+        title: "Check Your Email",
+        description: "If an account exists for that email, a reset link has been sent.",
+      });
+      setShowPasswordReset(false);
+      setResetEmail("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Request Failed",
+        description: error.message || "Could not request a password reset",
+        variant: "destructive",
+      });
+    },
+  });
+
   const resetPasswordMutation = useMutation({
-    mutationFn: (data: { email: string; newPassword: string; confirmPassword: string }) => 
+    mutationFn: (data: { token: string; newPassword: string; confirmPassword: string }) =>
       apiRequest("POST", "/api/auth/reset-password", data),
     onSuccess: () => {
       toast({
         title: "Password Reset Successful",
         description: "Your password has been reset. You can now log in with your new password.",
       });
-      setShowPasswordReset(false);
-      setResetData({ email: "", newPassword: "", confirmPassword: "" });
+      setResetData({ newPassword: "", confirmPassword: "" });
+      // Drop the token from the URL
+      window.history.replaceState({}, "", "/auth");
+      window.location.reload();
     },
     onError: (error: any) => {
       toast({
@@ -139,8 +164,14 @@ export function Auth() {
 
 
 
+  const handleRequestReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    requestResetMutation.mutate(resetEmail);
+  };
+
   const handlePasswordReset = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!resetToken) return;
     if (resetData.newPassword !== resetData.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -157,7 +188,7 @@ export function Auth() {
       });
       return;
     }
-    resetPasswordMutation.mutate(resetData);
+    resetPasswordMutation.mutate({ token: resetToken, ...resetData });
   };
 
   return (
@@ -190,37 +221,13 @@ export function Auth() {
           <CardContent className="space-y-4">
 
 
-            {/* Password Reset Option */}
-            <div className="text-center">
-              <Button
-                variant="link"
-                onClick={() => setShowPasswordReset(!showPasswordReset)}
-                className="text-primary hover:text-primary/80"
-              >
-                Forgot your password?
-              </Button>
-            </div>
-
-            {/* Password Reset Form */}
-            {showPasswordReset && (
+            {/* New password form — shown when arriving from a reset email link */}
+            {resetToken ? (
               <Card className="bg-muted/50 border-border p-4">
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold text-white">Reset Password</h3>
-                    <p className="text-sm text-gray-400">Enter your email and new password</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-foreground">Email</Label>
-                    <Input
-                      id="reset-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={resetData.email}
-                      onChange={(e) => setResetData({ ...resetData, email: e.target.value })}
-                      className="bg-muted border-input text-foreground"
-                      required
-                    />
+                    <h3 className="text-lg font-semibold text-foreground">Set a New Password</h3>
+                    <p className="text-sm text-muted-foreground">Choose a new password for your account</p>
                   </div>
 
                   <div className="space-y-2">
@@ -249,25 +256,73 @@ export function Auth() {
                     />
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowPasswordReset(false)}
-                      className="flex-1 border-border text-muted-foreground hover:bg-muted"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={resetPasswordMutation.isPending}
-                      className="flex-1 bg-gradient-aurora text-white hover:opacity-90"
-                    >
-                      {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    disabled={resetPasswordMutation.isPending}
+                    className="w-full bg-gradient-aurora text-white hover:opacity-90"
+                  >
+                    {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+                  </Button>
                 </form>
               </Card>
+            ) : (
+              <>
+                {/* Password Reset Option */}
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    onClick={() => setShowPasswordReset(!showPasswordReset)}
+                    className="text-primary hover:text-primary/80"
+                  >
+                    Forgot your password?
+                  </Button>
+                </div>
+
+                {/* Request Reset Link Form */}
+                {showPasswordReset && (
+                  <Card className="bg-muted/50 border-border p-4">
+                    <form onSubmit={handleRequestReset} className="space-y-4">
+                      <div className="text-center mb-4">
+                        <h3 className="text-lg font-semibold text-foreground">Reset Password</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Enter your email and we'll send you a reset link
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="reset-email" className="text-foreground">Email</Label>
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          className="bg-muted border-input text-foreground"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowPasswordReset(false)}
+                          className="flex-1 border-border text-muted-foreground hover:bg-muted"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={requestResetMutation.isPending}
+                          className="flex-1 bg-gradient-aurora text-white hover:opacity-90"
+                        >
+                          {requestResetMutation.isPending ? "Sending..." : "Send Reset Link"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Card>
+                )}
+              </>
             )}
 
             {/* Google Sign In */}

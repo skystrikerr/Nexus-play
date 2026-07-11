@@ -1,11 +1,21 @@
 import "./env";
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(
+  helmet({
+    // CSP is left off: the Vite client and inline theme scripts need a
+    // tailored policy — enable with a proper directive set when ready.
+    contentSecurityPolicy: false,
+    // Allow cross-origin game cover images (RAWG, Steam CDNs)
+    crossOriginEmbedderPolicy: false,
+  })
+);
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -44,8 +54,10 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    console.error("Unhandled request error:", err);
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
   });
 
   // importantly only setup vite in development and after

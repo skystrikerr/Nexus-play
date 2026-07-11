@@ -1,0 +1,44 @@
+# NexusPlay
+
+NexusPlay is a full-stack activity tracker: games, study sessions, work, exercise, reading, and hobbies in one library, with built-in session timers, tasks, statistics, a calendar view, and community features (posts, reviews, public profiles). Game data and cover art come from the RAWG database, and Steam/Xbox accounts can be linked for library sync.
+
+## Tech Stack
+
+- **Frontend:** React 18 + TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, wouter
+- **Backend:** Express + TypeScript, Passport (local + Google OAuth), express-session with a PostgreSQL session store
+- **Database:** PostgreSQL (Neon) via Drizzle ORM
+- **Mobile/Desktop:** Capacitor (Android) and Electron builds
+
+## Getting Started
+
+1. Install Node.js 18+ and run `npm install`
+2. Create a `.env` file:
+
+   ```
+   DATABASE_URL=postgresql://...          # required
+   SESSION_SECRET=<long random string>    # required
+   RAWG_API_KEY=<your key>                # game search (free at rawg.io/apidocs)
+   GOOGLE_CLIENT_ID=...                   # optional, Google sign-in
+   GOOGLE_CLIENT_SECRET=...               # optional, Google sign-in
+   RESEND_API_KEY=...                     # optional, password reset emails
+   EMAIL_FROM="NexusPlay <you@domain>"    # optional, reset email sender
+   APP_URL=https://yourdomain.com         # used in password reset links
+   ```
+
+3. Push the schema: `npm run db:push`
+4. Start the dev server: `npm run dev` → http://localhost:5000
+
+Without `RESEND_API_KEY`, password reset links are printed to the server console instead of emailed (development fallback).
+
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server (API + client on port 5000) |
+| `npm run build` | Production build to `dist/` |
+| `npm run start` | Run the production build |
+| `npm run check` | TypeScript type check |
+| `npm run db:push` | Apply schema changes to the database |
+| `npm run electron:build` | Windows desktop build |
+
+See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for a full tour of the codebase and [MOBILE_SETUP.md](MOBILE_SETUP.md) for the Android build.

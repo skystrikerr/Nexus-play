@@ -41,9 +41,10 @@ import { eq, and, desc, sql, gte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
+  // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByResetTokenHash(tokenHash: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserBySteamId(steamId: string): Promise<User | undefined>;
   getUserByProviderId(provider: string, providerId: string): Promise<User | undefined>;
@@ -164,9 +165,17 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations (mandatory for Replit Auth)
+  // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByResetTokenHash(tokenHash: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.resetTokenHash, tokenHash), gte(users.resetTokenExpiresAt, new Date())));
     return user;
   }
 

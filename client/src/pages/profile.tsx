@@ -10,12 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Camera, Shield, Eye, EyeOff, Save, UserIcon } from "lucide-react";
 import type { User } from "@shared/schema";
-import type { UploadResult } from "@uppy/core";
 
 export default function Profile() {
   const { user } = useAuth() as { user?: User };
@@ -88,31 +86,17 @@ export default function Profile() {
     });
   };
 
-  const handlePhotoUpload = async () => {
-    try {
-      const response = await apiRequest("POST", "/api/profile/photo/upload");
-      const data = await response.json();
-      return {
-        method: "PUT" as const,
-        url: data.uploadURL,
-      };
-    } catch (error) {
+  const handlePhotoSave = () => {
+    const url = profileImageUrl.trim();
+    if (!url.startsWith("https://")) {
       toast({
-        title: "Error",
-        description: "Failed to prepare photo upload.",
+        title: "Invalid URL",
+        description: "Please enter an https:// image URL.",
         variant: "destructive",
       });
-      throw error;
+      return;
     }
-  };
-
-  const handlePhotoComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful.length > 0) {
-      const uploadedFile = result.successful[0];
-      const photoUrl = uploadedFile.uploadURL;
-      setProfileImageUrl(photoUrl);
-      uploadPhotoMutation.mutate(photoUrl);
-    }
+    uploadPhotoMutation.mutate(url);
   };
 
   if (!user) {
@@ -145,7 +129,7 @@ export default function Profile() {
               Profile Photo
             </CardTitle>
             <CardDescription>
-              Upload a profile photo to personalize your account
+              Paste a link to an image to personalize your account
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -156,21 +140,26 @@ export default function Profile() {
                   {firstName?.[0] || lastName?.[0] || user.email?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
-              
-              <div className="space-y-3">
-                <ObjectUploader
-                  maxNumberOfFiles={1}
-                  maxFileSize={5242880} // 5MB
-                  allowedFileTypes={["image/*"]}
-                  onGetUploadParameters={handlePhotoUpload}
-                  onComplete={handlePhotoComplete}
-                  buttonClassName="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Upload Photo
-                </ObjectUploader>
-                <p className="text-xs text-slate-500">
-                  JPG, PNG or GIF up to 5MB
+
+              <div className="flex-1 space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://example.com/photo.jpg"
+                    value={profileImageUrl}
+                    onChange={(e) => setProfileImageUrl(e.target.value)}
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
+                  />
+                  <Button
+                    onClick={handlePhotoSave}
+                    disabled={uploadPhotoMutation.isPending}
+                    className="bg-gradient-aurora text-white hover:opacity-90 shrink-0"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {uploadPhotoMutation.isPending ? "Saving..." : "Save Photo"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Use a direct https image link (JPG, PNG, or GIF)
                 </p>
               </div>
             </div>

@@ -46,8 +46,10 @@ export const users = pgTable("users", {
   bio: text("bio"),
   location: varchar("location"), // user's location
   website: varchar("website"), // personal website or social link
-  provider: varchar("provider").default("local"), // 'local', 'google', 'replit'
+  provider: varchar("provider").default("local"), // 'local' or 'google'
   providerId: varchar("provider_id"), // external provider ID
+  resetTokenHash: varchar("reset_token_hash"), // sha256 of active password reset token
+  resetTokenExpiresAt: timestamp("reset_token_expires_at"), // reset token expiry
   xboxLiveId: varchar("xbox_live_id"), // Xbox Live gamertag/ID
   steamId: varchar("steam_id"), // Steam user ID
   xboxAccessToken: varchar("xbox_access_token"), // Xbox access token

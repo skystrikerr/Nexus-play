@@ -9,8 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import type { Post } from "@shared/schema";
-import { ObjectUploader } from "@/components/ObjectUploader";
-import type { UploadResult } from "@uppy/core";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PostsPage() {
@@ -62,32 +61,6 @@ export default function PostsPage() {
       imageUrl: postImageUrl || undefined,
       isPublic: 1
     });
-  };
-
-  const handleImageUpload = async () => {
-    try {
-      const response = await apiRequest("POST", "/api/objects/upload");
-      const data = await response.json();
-      return {
-        method: "PUT" as const,
-        url: data.uploadURL || ""
-      };
-    } catch (error) {
-      console.error("Failed to get upload URL:", error);
-      return {
-        method: "PUT" as const,
-        url: ""
-      };
-    }
-  };
-
-  const handleImageUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful && result.successful.length > 0) {
-      const uploadedFile = result.successful[0];
-      const uploadURL = (uploadedFile as any).uploadURL;
-      setPostImageUrl(uploadURL || "");
-      toast({ title: "Image uploaded successfully!" });
-    }
   };
 
   if (isLoading) {
@@ -159,16 +132,14 @@ export default function PostsPage() {
               )}
 
               <div className="flex items-center gap-2">
-                <ObjectUploader
-                  maxNumberOfFiles={1}
-                  maxFileSize={10485760}
-                  onGetUploadParameters={handleImageUpload}
-                  onComplete={handleImageUploadComplete}
-                  buttonClassName="flex items-center gap-2"
-                >
-                  <Image className="w-4 h-4" />
-                  Add Image
-                </ObjectUploader>
+                <Image className="w-4 h-4 text-muted-foreground shrink-0" />
+                <Input
+                  placeholder="Optional image URL (https://...)"
+                  value={postImageUrl}
+                  onChange={(e) => setPostImageUrl(e.target.value)}
+                  className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
+                  data-testid="input-post-image-url"
+                />
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">

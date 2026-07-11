@@ -8,7 +8,28 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
+import { sendPasswordResetEmail } from "./email";
+
+// Shared limiter for credential endpoints: 20 attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts. Please try again later." },
+});
+
+// Stricter limiter for account creation and password reset requests
+const sensitiveLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts. Please try again later." },
+});
 
 
 
@@ -48,25 +69,19 @@ export async function setupAuth(app: Express) {
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
-        console.log('LocalStrategy attempting login for:', email);
         const user = await storage.getUserByEmail(email);
         if (!user) {
-          console.log('User not found');
           return done(null, false, { message: 'Invalid email or password' });
         }
         
         if (!user.password) {
-          console.log('User has no password');
           return done(null, false, { message: 'Invalid email or password' });
         }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-          console.log('Password invalid for user:', email);
           return done(null, false, { message: 'Invalid email or password' });
         }
-
-        console.log('Login successful for user:', email);
         return done(null, { 
           id: user.id, 
           email: user.email, 
@@ -156,7 +171,6 @@ export async function setupAuth(app: Express) {
 
   // Passport serialization - store only user ID in session
   passport.serializeUser((user: any, done) => {
-    console.log('Serializing user:', user.id);
     done(null, user.id);
   });
 
@@ -165,7 +179,6 @@ export async function setupAuth(app: Express) {
     try {
       // Handle case where full user object was serialized instead of just ID
       const userId = typeof id === 'string' ? id : id.id;
-      console.log('Deserializing user ID:', userId);
       
       // Handle guest users - they don't exist in database
       if (userId.startsWith('guest-')) {
@@ -177,7 +190,6 @@ export async function setupAuth(app: Express) {
           provider: 'guest',
           isGuest: true
         };
-        console.log('Guest user deserialized');
         return done(null, guestUser);
       }
       
@@ -190,10 +202,8 @@ export async function setupAuth(app: Express) {
           lastName: user.lastName,
           provider: user.provider
         };
-        console.log('User deserialized successfully:', sessionUser.email);
         done(null, sessionUser);
       } else {
-        console.log('User not found during deserialization:', userId);
         done(null, false);
       }
     } catch (error) {
@@ -205,7 +215,7 @@ export async function setupAuth(app: Express) {
   // Auth Routes
   
   // Local auth routes
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', sensitiveLimiter, async (req, res) => {
     try {
       const { email, password, username, firstName, lastName } = req.body;
       
@@ -268,15 +278,13 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  app.post('/api/auth/login', (req, res, next) => {
-    console.log('Login request body:', req.body);
+  app.post('/api/auth/login', authLimiter, (req, res, next) => {
     passport.authenticate('local', (err: any, user: any, info: any) => {
       if (err) {
         console.error('Login error:', err);
         return res.status(500).json({ message: 'Login failed' });
       }
       if (!user) {
-        console.log('Login failed - no user:', info);
         return res.status(401).json({ message: info?.message || 'Invalid credentials' });
       }
       
@@ -285,7 +293,6 @@ export async function setupAuth(app: Express) {
           console.error('Session login error:', err);
           return res.status(500).json({ message: 'Session failed' });
         }
-        console.log('Login successful for user:', user.email);
         res.json({ message: 'Login successful', user });
       });
     })(req, res, next);
@@ -325,7 +332,7 @@ export async function setupAuth(app: Express) {
   );
 
   // Guest mode - browse without account
-  app.post('/api/auth/guest', async (req, res) => {
+  app.post('/api/auth/guest', authLimiter, async (req, res) => {
     try {
       // Create a temporary guest session with demo user
       const guestUser = {
@@ -342,7 +349,6 @@ export async function setupAuth(app: Express) {
           console.error('Guest session error:', err);
           return res.status(500).json({ message: 'Guest mode failed' });
         }
-        console.log('Guest mode activated');
         res.json({ message: 'Guest mode activated', user: guestUser });
       });
     } catch (error) {
@@ -358,7 +364,7 @@ export async function setupAuth(app: Express) {
 
 
   // Change password route
-  app.post('/api/auth/change-password', isAuthenticated, async (req, res) => {
+  app.post('/api/auth/change-password', authLimiter, isAuthenticated, async (req, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
       const userId = (req.user as any).id;
@@ -393,36 +399,76 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Reset password (for logged out users) 
-  app.post('/api/auth/reset-password', async (req, res) => {
+  // Step 1 of password reset: request a reset link by email.
+  // Always responds with the same message so it can't be used to probe
+  // which emails have accounts.
+  app.post('/api/auth/request-password-reset', sensitiveLimiter, async (req, res) => {
+    const genericResponse = { message: 'If an account exists for that email, a reset link has been sent.' };
     try {
-      const { email, newPassword, confirmPassword } = req.body;
-      
-      if (!email || !newPassword || !confirmPassword) {
-        return res.status(400).json({ message: 'Email, new password, and confirmation are required' });
+      const { email } = req.body;
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: 'Email is required' });
       }
-      
+
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.provider !== 'local') {
+        return res.json(genericResponse);
+      }
+
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await storage.updateUser(user.id, {
+        resetTokenHash: tokenHash,
+        resetTokenExpiresAt: expiresAt,
+      });
+
+      const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+      const resetUrl = `${baseUrl}/auth?reset=${token}`;
+      await sendPasswordResetEmail(user.email!, resetUrl);
+
+      res.json(genericResponse);
+    } catch (error) {
+      console.error('Request password reset error');
+      res.json(genericResponse);
+    }
+  });
+
+  // Step 2 of password reset: submit the token from the emailed link along
+  // with the new password.
+  app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
+    try {
+      const { token, newPassword, confirmPassword } = req.body;
+
+      if (!token || typeof token !== 'string' || !newPassword || !confirmPassword) {
+        return res.status(400).json({ message: 'Reset token, new password, and confirmation are required' });
+      }
+
       if (newPassword !== confirmPassword) {
         return res.status(400).json({ message: 'Passwords do not match' });
       }
-      
+
       if (newPassword.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters long' });
       }
-      
-      // Check if user exists
-      const user = await storage.getUserByEmail(email);
-      if (!user || user.provider !== 'local') {
-        return res.status(400).json({ message: 'No local account found with this email' });
+
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const user = await storage.getUserByResetTokenHash(tokenHash);
+      if (!user) {
+        return res.status(400).json({ message: 'This reset link is invalid or has expired. Please request a new one.' });
       }
-      
-      // Hash new password and update
+
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      await storage.updateUser(user.id, { password: hashedNewPassword });
-      
+      await storage.updateUser(user.id, {
+        password: hashedNewPassword,
+        resetTokenHash: null,
+        resetTokenExpiresAt: null,
+      });
+
       res.json({ message: 'Password reset successfully. You can now log in with your new password.' });
     } catch (error) {
-      console.error('Reset password error:', error);
+      console.error('Reset password error');
       res.status(500).json({ message: 'Failed to reset password' });
     }
   });
@@ -487,22 +533,15 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  console.log('isAuthenticated check - isAuthenticated():', req.isAuthenticated());
-  console.log('isAuthenticated check - session ID:', req.sessionID);
-  console.log('isAuthenticated check - user:', req.user);
   
   // Allow guest users
   if ((req.user as any)?.isGuest) {
-    console.log('Guest mode access allowed');
     return next();
   }
   
   if (!req.isAuthenticated() || !req.user) {
-    console.log('Authentication failed - no session or user');
     return res.status(401).json({ message: "Unauthorized" });
   }
-  
-  console.log('Authentication successful for user:', (req.user as any)?.email);
   next();
 };
 

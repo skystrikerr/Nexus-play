@@ -1,11 +1,17 @@
 # Dependencies
 node_modules/
 
-# Environment variables (DO NOT REMOVE THIS)
+# Environment variables and secrets (DO NOT REMOVE)
 .env
+.env.*
+*.env.txt
+cookies*.txt
 
 # Build outputs
 dist/
 build/
 release/
+
+# Local tooling state
+.local/
 .DS_Store
