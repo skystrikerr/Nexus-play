@@ -161,21 +161,29 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 20% 10%, rgba(20, 184, 166, 0.12) 0%, transparent 55%), radial-gradient(ellipse at 80% 90%, rgba(139, 92, 246, 0.10) 0%, transparent 55%)",
+        }}
+      />
+      <div className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            NexusPlay
+          <h1 className="text-4xl font-display font-bold tracking-tight mb-2">
+            <span className="text-foreground">Nexus</span>
+            <span className="text-gradient-aurora">Play</span>
           </h1>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             Track your activities and manage your time
           </p>
         </div>
 
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="glass border-border/60">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-white">Welcome</CardTitle>
-            <CardDescription className="text-center text-gray-400">
+            <CardTitle className="text-2xl text-center text-foreground">Welcome</CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
               Choose your preferred way to continue
             </CardDescription>
           </CardHeader>
@@ -187,7 +195,7 @@ export function Auth() {
               <Button
                 variant="link"
                 onClick={() => setShowPasswordReset(!showPasswordReset)}
-                className="text-blue-400 hover:text-blue-300"
+                className="text-primary hover:text-primary/80"
               >
                 Forgot your password?
               </Button>
@@ -195,7 +203,7 @@ export function Auth() {
 
             {/* Password Reset Form */}
             {showPasswordReset && (
-              <Card className="bg-slate-700/50 border-slate-600 p-4">
+              <Card className="bg-muted/50 border-border p-4">
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-semibold text-white">Reset Password</h3>
@@ -203,40 +211,40 @@ export function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-white">Email</Label>
+                    <Label htmlFor="reset-email" className="text-foreground">Email</Label>
                     <Input
                       id="reset-email"
                       type="email"
                       placeholder="your@email.com"
                       value={resetData.email}
                       onChange={(e) => setResetData({ ...resetData, email: e.target.value })}
-                      className="bg-slate-800 border-slate-600 text-white"
+                      className="bg-muted border-input text-foreground"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="reset-new-password" className="text-white">New Password</Label>
+                    <Label htmlFor="reset-new-password" className="text-foreground">New Password</Label>
                     <Input
                       id="reset-new-password"
                       type="password"
                       placeholder="New password (min 6 characters)"
                       value={resetData.newPassword}
                       onChange={(e) => setResetData({ ...resetData, newPassword: e.target.value })}
-                      className="bg-slate-800 border-slate-600 text-white"
+                      className="bg-muted border-input text-foreground"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="reset-confirm-password" className="text-white">Confirm New Password</Label>
+                    <Label htmlFor="reset-confirm-password" className="text-foreground">Confirm New Password</Label>
                     <Input
                       id="reset-confirm-password"
                       type="password"
                       placeholder="Confirm new password"
                       value={resetData.confirmPassword}
                       onChange={(e) => setResetData({ ...resetData, confirmPassword: e.target.value })}
-                      className="bg-slate-800 border-slate-600 text-white"
+                      className="bg-muted border-input text-foreground"
                       required
                     />
                   </div>
@@ -246,14 +254,14 @@ export function Auth() {
                       type="button"
                       variant="outline"
                       onClick={() => setShowPasswordReset(false)}
-                      className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                      className="flex-1 border-border text-muted-foreground hover:bg-muted"
                     >
                       Cancel
                     </Button>
                     <Button
                       type="submit"
                       disabled={resetPasswordMutation.isPending}
-                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      className="flex-1 bg-gradient-aurora text-white hover:opacity-90"
                     >
                       {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
                     </Button>
@@ -266,21 +274,21 @@ export function Auth() {
             <Button
               onClick={() => window.location.href = '/api/auth/google'}
               variant="outline"
-              className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <Chrome className="mr-2 h-5 w-5" />
               Sign in with Google
             </Button>
 
-            <Separator className="bg-slate-600" />
+            <Separator className="bg-border" />
 
             {/* Email/Password Forms */}
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-slate-700">
-                <TabsTrigger value="login" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-slate-600">
+              <TabsList className="grid w-full grid-cols-2 bg-muted">
+                <TabsTrigger value="login" className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background">
                   Sign In
                 </TabsTrigger>
-                <TabsTrigger value="register" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-slate-600">
+                <TabsTrigger value="register" className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background">
                   Sign Up
                 </TabsTrigger>
               </TabsList>
@@ -288,7 +296,7 @@ export function Auth() {
               <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-gray-300">Email</Label>
+                    <Label htmlFor="login-email" className="text-muted-foreground">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -297,14 +305,14 @@ export function Auth() {
                         placeholder="Enter your email"
                         value={loginData.email}
                         onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
-                        className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="pl-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                         required
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-gray-300">Password</Label>
+                    <Label htmlFor="login-password" className="text-muted-foreground">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -313,7 +321,7 @@ export function Auth() {
                         placeholder="Enter your password"
                         value={loginData.password}
                         onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                        className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="pl-10 pr-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                         required
                       />
                       <Button
@@ -334,7 +342,7 @@ export function Auth() {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="w-full bg-gradient-aurora text-white hover:opacity-90"
                     disabled={loginMutation.isPending}
                   >
                     {loginMutation.isPending ? "Signing in..." : "Sign In"}
@@ -345,7 +353,7 @@ export function Auth() {
               <TabsContent value="register" className="space-y-4">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-gray-300">Username</Label>
+                    <Label htmlFor="username" className="text-muted-foreground">Username</Label>
                     <div className="relative">
                       <AtSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -353,7 +361,7 @@ export function Auth() {
                         placeholder="Choose a unique username"
                         value={registerData.username}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }))}
-                        className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="pl-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                         required
                         minLength={3}
                         maxLength={20}
@@ -365,7 +373,7 @@ export function Auth() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="first-name" className="text-gray-300">First Name</Label>
+                      <Label htmlFor="first-name" className="text-muted-foreground">First Name</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
@@ -373,26 +381,26 @@ export function Auth() {
                           placeholder="First name"
                           value={registerData.firstName}
                           onChange={(e) => setRegisterData(prev => ({ ...prev, firstName: e.target.value }))}
-                          className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                          className="pl-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                           required
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="last-name" className="text-gray-300">Last Name</Label>
+                      <Label htmlFor="last-name" className="text-muted-foreground">Last Name</Label>
                       <Input
                         id="last-name"
                         placeholder="Last name"
                         value={registerData.lastName}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, lastName: e.target.value }))}
-                        className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-email" className="text-gray-300">Email</Label>
+                    <Label htmlFor="register-email" className="text-muted-foreground">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -401,14 +409,14 @@ export function Auth() {
                         placeholder="Enter your email"
                         value={registerData.email}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
-                        className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="pl-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                         required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-password" className="text-gray-300">Password</Label>
+                    <Label htmlFor="register-password" className="text-muted-foreground">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -417,7 +425,7 @@ export function Auth() {
                         placeholder="Create a password (min. 6 characters)"
                         value={registerData.password}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
-                        className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                        className="pl-10 pr-10 bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                         required
                         minLength={6}
                       />
@@ -439,7 +447,7 @@ export function Auth() {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="w-full bg-gradient-aurora text-white hover:opacity-90"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? "Creating account..." : "Create Account"}
@@ -449,7 +457,7 @@ export function Auth() {
             </Tabs>
 
             {/* Guest Mode */}
-            <Separator className="my-6 bg-slate-600" />
+            <Separator className="my-6 bg-border" />
             
             <div className="space-y-3">
               <p className="text-center text-sm text-gray-400">
@@ -459,7 +467,7 @@ export function Auth() {
                 onClick={() => guestMutation.mutate()}
                 disabled={guestMutation.isPending}
                 variant="outline"
-                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 data-testid="button-guest-mode"
               >
                 {guestMutation.isPending ? "Starting..." : "Try as Guest"}

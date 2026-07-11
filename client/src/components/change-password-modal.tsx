@@ -84,13 +84,13 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700">
+      <DialogContent className="sm:max-w-[425px] bg-popover border-border">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Key className="w-5 h-5" />
             Change Password
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-muted-foreground">
             Update your account password. Make sure to use a strong password.
           </DialogDescription>
         </DialogHeader>
@@ -109,12 +109,12 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                         {...field}
                         type={showCurrentPassword ? "text" : "password"}
                         placeholder="Enter your current password"
-                        className="bg-slate-800 border-slate-600 text-white pr-10"
+                        className="bg-muted border-input text-white pr-10"
                       />
                       <button
                         type="button"
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-white"
                       >
                         {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -137,12 +137,12 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                         {...field}
                         type={showNewPassword ? "text" : "password"}
                         placeholder="Enter your new password"
-                        className="bg-slate-800 border-slate-600 text-white pr-10"
+                        className="bg-muted border-input text-white pr-10"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-white"
                       >
                         {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -165,12 +165,12 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                         {...field}
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm your new password"
-                        className="bg-slate-800 border-slate-600 text-white pr-10"
+                        className="bg-muted border-input text-white pr-10"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-white"
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -186,7 +186,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 Cancel
               </Button>

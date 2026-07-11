@@ -28,25 +28,24 @@ export default function GuestModeBanner() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-red-600 to-red-800 text-white px-4 py-3 relative">
+    <div className="glass border-b border-border/60 px-4 py-2.5 relative">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="flex-1">
-            <p className="font-medium">You're in Guest Mode</p>
-            <p className="text-sm text-white/90">
-              Create a free account to save your progress and access all features!
-            </p>
-          </div>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="hidden sm:inline-flex w-2 h-2 rounded-full bg-gradient-aurora shrink-0" />
+          <p className="text-sm text-muted-foreground truncate">
+            <span className="font-medium text-foreground">Guest mode</span>
+            <span className="hidden md:inline"> — create a free account to save your progress.</span>
+          </p>
         </div>
-        
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={() => {
               logoutMutation.mutate();
             }}
             size="sm"
-            variant="outline"
-            className="bg-transparent border-white text-white hover:bg-white/20"
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
             data-testid="button-signin-from-guest"
           >
             <LogIn className="w-4 h-4 mr-2" />
@@ -57,7 +56,7 @@ export default function GuestModeBanner() {
               logoutMutation.mutate();
             }}
             size="sm"
-            className="bg-white text-red-600 hover:bg-white/90"
+            className="bg-gradient-aurora text-white hover:opacity-90"
             data-testid="button-signup-from-guest"
           >
             <UserPlus className="w-4 h-4 mr-2" />
@@ -67,7 +66,7 @@ export default function GuestModeBanner() {
             onClick={() => setDismissed(true)}
             size="sm"
             variant="ghost"
-            className="text-white hover:bg-white/20"
+            className="text-muted-foreground hover:text-foreground"
             data-testid="button-dismiss-guest-banner"
           >
             <X className="w-4 h-4" />

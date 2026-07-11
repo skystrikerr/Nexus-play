@@ -1,168 +1,99 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Menu, Heart } from "lucide-react";
+import { Search, Plus, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Sidebar from "@/components/sidebar";
+import PageHeader from "@/components/page-header";
 import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
-import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
 export default function Wishlist() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   const { data: activities = [], isLoading } = useQuery<Activity[]>({
     queryKey: ["/api/activities"],
   });
 
-  // Filter for wishlist items
   const wishlistActivities = activities.filter(activity => activity.status === "wishlist");
-  
-  const filteredActivities = wishlistActivities.filter(activity => 
+
+  const filteredActivities = wishlistActivities.filter(activity =>
     activity.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      
-      {/* Mobile sidebar overlay */}
-      {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20" onClick={() => setSidebarOpen(false)} />
-      )}
+  const gameCount = wishlistActivities.filter(a => a.type === "game").length;
+  const otherCount = wishlistActivities.length - gameCount;
 
-      <main className="flex-1 overflow-auto">
-        {/* Top Bar */}
-        <header className="bg-card border-b border-border px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 lg:hidden"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              )}
-              <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
-                <Heart className="w-6 h-6 text-red-400" />
-                <span>Wishlist</span>
-              </h2>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative hidden md:block">
-                <Input
-                  type="text"
-                  placeholder="Search wishlist..."
-                  className="bg-background border-border pl-10 w-80 text-white"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              </div>
-              
+  return (
+    <>
+      <PageHeader
+        title="Wishlist"
+        subtitle={`${wishlistActivities.length} saved · ${gameCount} games · ${otherCount} other`}
+        actions={
+          <Button
+            className="bg-gradient-aurora text-white hover:opacity-90 shadow-lg shadow-primary/20"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Activity
+          </Button>
+        }
+      />
+
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {/* Search */}
+        <div className="relative sm:w-72 mb-6">
+          <Input
+            type="text"
+            placeholder="Search wishlist..."
+            className="bg-muted border-input pl-10 text-foreground placeholder:text-muted-foreground/60"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        </div>
+
+        {/* Activity Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => <div key={i} className="shimmer rounded-xl h-32" />)}
+          </div>
+        ) : filteredActivities.length === 0 ? (
+          <div className="glass-glow rounded-xl p-12 text-center">
+            <Heart className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+            <h3 className="text-lg font-display font-semibold text-foreground mb-1">
+              {searchQuery ? "No results found" : "Your wishlist is empty"}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {searchQuery
+                ? "Try adjusting your search terms"
+                : "Add some activities you want to try in the future!"
+              }
+            </p>
+            {!searchQuery && (
               <Button
+                className="bg-gradient-aurora text-white hover:opacity-90"
                 onClick={() => setShowAddModal(true)}
-                className="bg-primary hover:bg-primary/80 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Activity
+                Add Your First Item
               </Button>
-            </div>
+            )}
           </div>
-        </header>
-
-        <div className="p-6">
-          {/* Mobile Search */}
-          {isMobile && (
-            <div className="mb-6">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search wishlist..."
-                  className="bg-background border-border pl-10 w-full text-white"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              </div>
-            </div>
-          )}
-
-          {/* Stats Bar */}
-          <div className="bg-card rounded-xl p-4 mb-6 border border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <div>
-                  <p className="text-muted-foreground text-sm">Total Wishlist Items</p>
-                  <p className="text-xl font-bold text-white">{wishlistActivities.length}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-sm">Games</p>
-                  <p className="text-xl font-bold text-blue-400">
-                    {wishlistActivities.filter(a => a.type === 'game').length}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-sm">Other Activities</p>
-                  <p className="text-xl font-bold text-green-400">
-                    {wishlistActivities.filter(a => a.type !== 'game').length}
-                  </p>
-                </div>
-              </div>
-              
-              <Heart className="w-8 h-8 text-red-400" />
-            </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredActivities.map((activity) => (
+              <GameCard key={activity.id} game={activity} />
+            ))}
           </div>
+        )}
+      </div>
 
-          {/* Activity Grid */}
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-muted-foreground">Loading wishlist...</div>
-            </div>
-          ) : filteredActivities.length === 0 ? (
-            <div className="text-center py-12">
-              <Heart className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                {searchQuery ? "No results found" : "Your wishlist is empty"}
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery 
-                  ? "Try adjusting your search terms" 
-                  : "Add some activities you want to try in the future!"
-                }
-              </p>
-              {!searchQuery && (
-                <Button
-                  onClick={() => setShowAddModal(true)}
-                  className="bg-primary hover:bg-primary/80 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Item
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredActivities.map((activity) => (
-                <GameCard key={activity.id} game={activity} />
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
-      <AddGameModal 
-        open={showAddModal} 
-        onOpenChange={setShowAddModal} 
+      <AddGameModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
       />
-    </div>
+    </>
   );
 }

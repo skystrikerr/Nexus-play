@@ -99,14 +99,14 @@ Pre-built, customizable UI components from the shadcn/ui library:
 - **Other**: `accordion.tsx`, `collapsible.tsx`, `carousel.tsx`, `command.tsx`, `drawer.tsx`, `resizable.tsx`, `scroll-area.tsx`, `skeleton.tsx`, `toggle.tsx`
 
 ### Custom Application Components
-- **`sidebar.tsx`** - Main navigation sidebar
+- **`app-layout.tsx`** - Unified app shell: desktop sidebar with grouped navigation, mobile header + bottom tab bar, and user menu
+- **`page-header.tsx`** - Shared page header (title, subtitle, action buttons) used by all pages
 - **`activity-card.tsx`** - Card displaying activity info (games, books, etc.)
 - **`game-card.tsx`** - Specialized card for game display
 - **`task-card.tsx`** - Card for displaying tasks
 - **`activity-calendar.tsx`** - Calendar component showing activities
 - **`gaming-calendar.tsx`** - Gaming-specific calendar view
-- **`guest-mode-banner.tsx`** - Banner shown to non-logged-in users
-- **`mobile-layout.tsx`** - Mobile-optimized layout wrapper
+- **`guest-mode-banner.tsx`** - Banner shown to guest users
 
 ### Modal Components
 - **`add-activity-modal.tsx`** - Form to add new activities

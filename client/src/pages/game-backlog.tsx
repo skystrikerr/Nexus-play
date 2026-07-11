@@ -119,22 +119,21 @@ export function GameBacklog() {
   const priorities = ["high", "medium", "low"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-4">
-      <div className="container mx-auto max-w-7xl py-8">
-        <div className="flex items-center justify-between mb-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pt-2">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              <Gamepad2 className="h-10 w-10 text-red-400" />
-              Game Backlog
+            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-foreground">
+              Backlog
             </h1>
-            <p className="text-gray-300">
+            <p className="text-muted-foreground text-sm mt-1">
               Plan and organize games you want to play
             </p>
           </div>
 
-          <Button 
+          <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-gradient-aurora text-white hover:opacity-90 shadow-lg shadow-primary/20"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Game
@@ -142,23 +141,23 @@ export function GameBacklog() {
         </div>
 
         {/* Filters */}
-        <Card className="bg-slate-800/50 border-slate-700 mb-6">
+        <Card className="glass border-border/60 mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-4 items-center">
               <div className="flex-1 min-w-64">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder="Search games..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
 
               <div className="flex gap-2 items-center">
-                <Filter className="h-4 w-4 text-gray-400" />
+                <Filter className="h-4 w-4 text-muted-foreground" />
                 <Select value={platformFilter} onValueChange={setPlatformFilter}>
                   <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
                     <SelectValue placeholder="Platform" />
@@ -191,38 +190,38 @@ export function GameBacklog() {
 
         {/* Game Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{games.length}</div>
-                <div className="text-sm text-gray-400">Total Games</div>
+                <div className="text-sm text-muted-foreground">Total Games</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-400">
                   {games.filter((g: Game) => g.metadata?.priority === "high").length}
                 </div>
-                <div className="text-sm text-gray-400">High Priority</div>
+                <div className="text-sm text-muted-foreground">High Priority</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400">
                   {games.filter((g: Game) => g.metadata?.priority === "medium").length}
                 </div>
-                <div className="text-sm text-gray-400">Medium Priority</div>
+                <div className="text-sm text-muted-foreground">Medium Priority</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">
@@ -230,7 +229,7 @@ export function GameBacklog() {
                     total + (game.metadata?.estimatedHours || 0), 0
                   )}h
                 </div>
-                <div className="text-sm text-gray-400">Est. Total Hours</div>
+                <div className="text-sm text-muted-foreground">Est. Total Hours</div>
               </div>
             </CardContent>
           </Card>
@@ -238,15 +237,15 @@ export function GameBacklog() {
 
         {/* Games Grid */}
         {isLoading ? (
-          <div className="text-center text-gray-400 py-12">
+          <div className="text-center text-muted-foreground py-12">
             Loading your game backlog...
           </div>
         ) : filteredGames.length === 0 ? (
-          <Card className="bg-slate-800/30 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6 text-center">
-              <Gamepad2 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+              <Gamepad2 className="h-16 w-16 text-muted-foreground/60 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">No Games Found</h3>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchTerm || platformFilter !== "all" || priorityFilter !== "all" 
                   ? "Try adjusting your filters" 
                   : "Start building your game backlog by adding games you want to play"}
@@ -254,7 +253,7 @@ export function GameBacklog() {
               {!searchTerm && platformFilter === "all" && priorityFilter === "all" && (
                 <Button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-gradient-aurora text-white hover:opacity-90"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Your First Game
@@ -265,7 +264,7 @@ export function GameBacklog() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredGames.map((game: Game) => (
-              <Card key={game.id} className="bg-slate-800/50 border-slate-700 overflow-hidden">
+              <Card key={game.id} className="glass border-border/60 overflow-hidden">
                 {game.imageUrl && (
                   <div className="aspect-video relative overflow-hidden">
                     <img 
@@ -278,7 +277,7 @@ export function GameBacklog() {
                 
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-white text-lg truncate">{game.title}</h3>
+                    <h3 className="font-semibold text-foreground text-lg truncate">{game.title}</h3>
                     {game.metadata?.priority && (
                       <Badge className={`ml-2 ${getPriorityColor(game.metadata.priority)} text-xs`}>
                         {game.metadata.priority}
@@ -287,7 +286,7 @@ export function GameBacklog() {
                   </div>
 
                   {game.description && (
-                    <p className="text-gray-400 text-sm mb-3 overflow-hidden">
+                    <p className="text-muted-foreground text-sm mb-3 overflow-hidden">
                       {game.description.length > 100 
                         ? `${game.description.substring(0, 100)}...` 
                         : game.description}
@@ -296,51 +295,53 @@ export function GameBacklog() {
 
                   <div className="space-y-2 mb-4">
                     {game.metadata?.platform && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Monitor className="h-3 w-3" />
                         {game.metadata.platform}
                       </div>
                     )}
                     
                     {game.metadata?.genre && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Star className="h-3 w-3" />
                         {game.metadata.genre}
                       </div>
                     )}
                     
                     {game.metadata?.estimatedHours && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         ~{game.metadata.estimatedHours} hours
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <Calendar className="h-3 w-3" />
-                      Added {format(new Date(game.createdAt), "MMM d, yyyy")}
-                    </div>
+                    {game.createdAt && !isNaN(new Date(game.createdAt).getTime()) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        Added {format(new Date(game.createdAt), "MMM d, yyyy")}
+                      </div>
+                    )}
                   </div>
 
                   {game.metadata?.notes && (
-                    <p className="text-gray-400 text-xs mb-3 italic">
+                    <p className="text-muted-foreground text-xs mb-3 italic">
                       "{game.metadata.notes}"
                     </p>
                   )}
 
-                  <Separator className="bg-slate-600 mb-4" />
+                  <Separator className="bg-border mb-4" />
 
                   <div className="flex gap-2">
                     <Button
                       onClick={() => startGameMutation.mutate(game.id)}
                       disabled={startGameMutation.isPending}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm"
+                      className="flex-1 bg-gradient-aurora hover:opacity-90 text-white text-sm"
                     >
                       Start Playing
                     </Button>
                     <Button
                       onClick={() => setTimeLogModal({ open: true, game })}
-                      className="bg-red-600 hover:bg-red-700 text-white text-sm px-3"
+                      className="bg-muted hover:bg-muted/80 text-foreground text-sm px-3 border border-border"
                       title="Log Time"
                     >
                       <Clock className="h-4 w-4" />
@@ -349,7 +350,7 @@ export function GameBacklog() {
                       onClick={() => removeGameMutation.mutate(game.id)}
                       disabled={removeGameMutation.isPending}
                       variant="outline"
-                      className="text-red-400 border-red-600 hover:bg-red-600 hover:text-white"
+                      className="text-destructive border-destructive/40 hover:bg-destructive hover:text-white"
                     >
                       Remove
                     </Button>

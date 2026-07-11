@@ -117,16 +117,16 @@ export default function Analytics() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-slate-700 rounded w-1/4"></div>
+          <div className="space-y-6">
+            <div className="h-8 shimmer rounded w-1/4"></div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-slate-700 rounded-lg"></div>
+                <div key={i} className="h-32 shimmer rounded-xl"></div>
               ))}
             </div>
-            <div className="h-96 bg-slate-700 rounded-lg"></div>
+            <div className="h-96 shimmer rounded-xl"></div>
           </div>
         </div>
       </div>
@@ -134,16 +134,15 @@ export default function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-6">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1">
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <BarChart3 className="w-8 h-8 text-red-400" />
-              Activity Analytics
+            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-foreground">
+              Analytics
             </h1>
-            <p className="text-slate-400 mt-1">
+            <p className="text-muted-foreground text-sm mt-1">
               Visualize your activity patterns and track your progress
             </p>
           </div>

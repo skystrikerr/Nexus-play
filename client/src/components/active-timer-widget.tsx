@@ -22,7 +22,7 @@ export function ActiveTimerWidget({ className }: ActiveTimerWidgetProps) {
 
   if (isLoading) {
     return (
-      <Card className={`bg-slate-800/50 border-slate-700 ${className}`}>
+      <Card className={`bg-card/60 border-border ${className}`}>
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="animate-spin w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full"></div>
@@ -34,7 +34,7 @@ export function ActiveTimerWidget({ className }: ActiveTimerWidgetProps) {
 
   if (!activeTimer) {
     return (
-      <Card className={`bg-slate-800/50 border-slate-700 ${className}`}>
+      <Card className={`bg-card/60 border-border ${className}`}>
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2">
             <Clock className="h-5 w-5 text-gray-400" />
@@ -57,7 +57,7 @@ export function ActiveTimerWidget({ className }: ActiveTimerWidgetProps) {
   const currentActivity = activities?.find(a => a.id === activeTimer.activityId);
 
   return (
-    <Card className={`bg-slate-800/50 border-slate-700 border-green-500/30 ${className}`}>
+    <Card className={`bg-card/60 border-border border-green-500/30 ${className}`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-white flex items-center gap-2">
           <Clock className="h-5 w-5 text-green-400 animate-pulse" />
@@ -74,8 +74,8 @@ export function ActiveTimerWidget({ className }: ActiveTimerWidgetProps) {
               className="w-12 h-12 rounded-lg object-cover"
             />
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
-              <Activity className="w-6 h-6 text-slate-300" />
+            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+              <Activity className="w-6 h-6 text-muted-foreground" />
             </div>
           )}
           <div className="flex-1 min-w-0">

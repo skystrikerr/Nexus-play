@@ -103,13 +103,13 @@ export default function DateTimeLogModal({ open, onOpenChange, task, date }: Dat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700">
+      <DialogContent className="sm:max-w-md bg-popover border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Clock className="w-5 h-5" />
             Log Time - {task.title}
           </DialogTitle>
-          <p className="text-sm text-slate-400">{formatDate(date)}</p>
+          <p className="text-sm text-muted-foreground">{formatDate(date)}</p>
         </DialogHeader>
 
         <Form {...form}>
@@ -119,7 +119,7 @@ export default function DateTimeLogModal({ open, onOpenChange, task, date }: Dat
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-300">Hours Worked</FormLabel>
+                  <FormLabel className="text-muted-foreground">Hours Worked</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -127,7 +127,7 @@ export default function DateTimeLogModal({ open, onOpenChange, task, date }: Dat
                       min="0.1"
                       max="24"
                       placeholder="0.5"
-                      className="bg-slate-800 border-slate-600 text-white"
+                      className="bg-muted border-input text-white"
                       value={field.value}
                       onChange={(e) => {
                         const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
@@ -147,11 +147,11 @@ export default function DateTimeLogModal({ open, onOpenChange, task, date }: Dat
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-300">Notes (Optional)</FormLabel>
+                  <FormLabel className="text-muted-foreground">Notes (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="What did you work on?"
-                      className="bg-slate-800 border-slate-600 text-white resize-none"
+                      className="bg-muted border-input text-white resize-none"
                       rows={3}
                       {...field}
                     />
@@ -166,7 +166,7 @@ export default function DateTimeLogModal({ open, onOpenChange, task, date }: Dat
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 Cancel
               </Button>

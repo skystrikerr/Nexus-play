@@ -100,7 +100,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
   return (
     <>
       <div 
-        className="bg-card rounded-xl p-6 border border-border hover:border-border transition-colors cursor-pointer relative group"
+        className="glass-glow rounded-xl p-5 hover-lift cursor-pointer relative group"
         onClick={handleCardClick}
       >
         {/* Action Menu */}
@@ -115,7 +115,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-slate-800 border-border">
+            <DropdownMenuContent align="end" className="bg-card border-border">
               <DropdownMenuItem 
                 className="text-muted-foreground hover:text-white hover:bg-muted cursor-pointer"
                 onClick={(e) => {
@@ -171,7 +171,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
             className="w-16 h-20 rounded-lg object-cover"
           />
         ) : (
-          <div className="w-16 h-20 rounded-lg bg-slate-700 flex items-center justify-center">
+          <div className="w-16 h-20 rounded-lg bg-muted flex items-center justify-center">
             <span className="text-muted-foreground text-xs">No Image</span>
           </div>
         )}
@@ -192,7 +192,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
                         key={star}
                         className={cn(
                           "w-4 h-4",
-                          star <= game.rating! ? "text-yellow-400 fill-current" : "text-slate-600"
+                          star <= game.rating! ? "text-yellow-400 fill-current" : "text-muted-foreground/50"
                         )}
                       />
                     ))}
@@ -220,7 +220,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </div>
           
           <div className="mt-3">
-            <div className="w-full bg-slate-700 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div 
                 className={cn("h-2 rounded-full", progressColor)} 
                 style={{ width: `${game.progress}%` }}
@@ -233,7 +233,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-slate-900 border-border">
+        <AlertDialogContent className="bg-popover border-border">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Delete Game</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">

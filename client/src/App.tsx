@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobile, useCapacitor } from "@/hooks/useMobile";
-import MobileLayout from "@/components/mobile-layout";
+import AppLayout from "@/components/app-layout";
 import GuestModeBanner from "@/components/guest-mode-banner";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
@@ -71,9 +71,9 @@ function Router() {
     return (
       <>
         <GuestModeBanner />
-        <MobileLayout>
+        <AppLayout>
           <AppContent />
-        </MobileLayout>
+        </AppLayout>
       </>
     );
   }

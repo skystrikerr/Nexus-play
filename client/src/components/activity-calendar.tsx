@@ -77,9 +77,9 @@ export default function ActivityCalendar() {
 
   return (
     <div>
-      <h3 className="text-xl font-bold text-white mb-6">Activity Calendar</h3>
-      
-      <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+      <h3 className="text-lg font-display font-semibold text-foreground mb-4">Activity Calendar</h3>
+
+      <div className="glass rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-white">
             {monthNames[currentMonth]} {currentYear}
@@ -113,7 +113,7 @@ export default function ActivityCalendar() {
           
           {calendarDays.map((day, index) => {
             if (day === null) {
-              return <div key={index} className="h-16"></div>;
+              return <div key={`empty-${index}`} className="h-16"></div>;
             }
             
             const isToday = day === today.getDate() && 
@@ -125,11 +125,11 @@ export default function ActivityCalendar() {
             
             return (
               <div
-                key={day}
+                key={`day-${day}`}
                 onClick={() => handleDayClick(day)}
                 className={cn(
-                  "h-16 p-2 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 transition-colors relative cursor-pointer",
-                  isToday && "ring-2 ring-blue-500",
+                  "h-16 p-2 rounded-lg border border-border/60 bg-muted/40 hover:bg-muted transition-colors relative cursor-pointer",
+                  isToday && "ring-2 ring-primary",
                   hasActivity && "border-emerald-500/50"
                 )}
               >

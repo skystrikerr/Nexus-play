@@ -86,7 +86,7 @@ export default function AddTaskModal({ open, onOpenChange }: AddTaskModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-popover border-border max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white text-xl flex items-center gap-2">
             <Target className="w-6 h-6 text-blue-400" />
@@ -109,7 +109,7 @@ Add Task
                       {...field}
                       value={field.value || ""}
                       placeholder="Enter task name..."
-                      className="bg-slate-800 border-slate-600 text-white"
+                      className="bg-muted border-input text-white"
                     />
                   </FormControl>
                   <FormMessage />
@@ -130,7 +130,7 @@ Add Task
                       {...field}
                       value={field.value || ""}
                       placeholder="Add any notes about this task..."
-                      className="bg-slate-800 border-slate-600 text-white min-h-[80px]"
+                      className="bg-muted border-input text-white min-h-[80px]"
                     />
                   </FormControl>
                   <FormMessage />
@@ -140,12 +140,12 @@ Add Task
 
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 Cancel
               </Button>

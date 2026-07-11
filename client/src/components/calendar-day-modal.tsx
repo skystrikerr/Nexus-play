@@ -108,13 +108,13 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl bg-popover border-border max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <Calendar className="w-5 h-5" />
               {formatDate(selectedDate)}
             </DialogTitle>
-            <div className="flex items-center gap-4 text-sm text-slate-400">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 <span>{dailyTotalTime.toFixed(1)}h total today</span>
@@ -127,11 +127,11 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
           </DialogHeader>
 
           <Tabs defaultValue="tasks" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-slate-800">
-              <TabsTrigger value="tasks" className="data-[state=active]:bg-slate-700">
+            <TabsList className="grid w-full grid-cols-2 bg-card">
+              <TabsTrigger value="tasks" className="data-[state=active]:bg-muted">
                 Tasks ({tasks.length})
               </TabsTrigger>
-              <TabsTrigger value="games" className="data-[state=active]:bg-slate-700">
+              <TabsTrigger value="games" className="data-[state=active]:bg-muted">
                 Games ({games.length})
               </TabsTrigger>
             </TabsList>
@@ -151,7 +151,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
 
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No tasks yet. Add your first task!</p>
                   </div>
@@ -161,7 +161,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                     const taskSessions = getActivitySessions(task.id);
                     
                     return (
-                      <div key={task.id} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                      <div key={task.id} className="bg-card rounded-lg p-4 border border-border">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3 flex-1">
                             <Button
@@ -173,14 +173,14 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                               {task.status === "completed" ? (
                                 <CheckCircle className="w-5 h-5 text-green-400" />
                               ) : (
-                                <Circle className="w-5 h-5 text-slate-400" />
+                                <Circle className="w-5 h-5 text-muted-foreground" />
                               )}
                             </Button>
                             
                             <div className="flex-1 min-w-0">
                               <h4 className={cn(
                                 "font-medium truncate",
-                                task.status === "completed" ? "text-slate-400 line-through" : "text-white"
+                                task.status === "completed" ? "text-muted-foreground line-through" : "text-white"
                               )}>
                                 {task.title}
                               </h4>
@@ -199,7 +199,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                               
                               {task.progress > 0 && (
                                 <div className="mt-2">
-                                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
                                     <span>Progress</span>
                                     <span>{task.progress}%</span>
                                   </div>
@@ -208,7 +208,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                               )}
                               
                               {taskSessions.length > 0 && (
-                                <div className="mt-2 text-xs text-slate-400">
+                                <div className="mt-2 text-xs text-muted-foreground">
                                   {taskSessions.length} session{taskSessions.length > 1 ? 's' : ''} today
                                 </div>
                               )}
@@ -219,7 +219,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                             variant="outline"
                             size="sm"
                             onClick={() => handleLogTime(task)}
-                            className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
+                            className="text-xs border-border text-muted-foreground hover:bg-muted"
                           >
                             + Time
                           </Button>
@@ -246,7 +246,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
 
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {games.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No games yet. Add your first game!</p>
                   </div>
@@ -256,7 +256,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                     const gameSessions = getActivitySessions(game.id);
                     
                     return (
-                      <div key={game.id} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                      <div key={game.id} className="bg-card rounded-lg p-4 border border-border">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3 flex-1">
                             {game.imageUrl && (
@@ -270,7 +270,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                             <div className="flex-1 min-w-0">
                               <h4 className={cn(
                                 "font-medium truncate",
-                                game.status === "completed" ? "text-slate-400 line-through" : "text-white"
+                                game.status === "completed" ? "text-muted-foreground line-through" : "text-white"
                               )}>
                                 {game.title}
                               </h4>
@@ -289,7 +289,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                               
                               {game.progress > 0 && (
                                 <div className="mt-2">
-                                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
                                     <span>Progress</span>
                                     <span>{game.progress}%</span>
                                   </div>
@@ -298,7 +298,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                               )}
                               
                               {gameSessions.length > 0 && (
-                                <div className="mt-2 text-xs text-slate-400">
+                                <div className="mt-2 text-xs text-muted-foreground">
                                   {gameSessions.length} session{gameSessions.length > 1 ? 's' : ''} today
                                 </div>
                               )}
@@ -309,7 +309,7 @@ export default function CalendarDayModal({ open, onOpenChange, selectedDate }: C
                             variant="outline"
                             size="sm"
                             onClick={() => handleLogTime(game)}
-                            className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
+                            className="text-xs border-border text-muted-foreground hover:bg-muted"
                           >
                             + Time
                           </Button>

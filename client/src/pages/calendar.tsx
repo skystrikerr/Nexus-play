@@ -7,9 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Menu } from "lucide-react";
-import Sidebar from "@/components/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
+import PageHeader from "@/components/page-header";
 import ActivityCalendar from "@/components/activity-calendar";
 import { format, parseISO, isSameDay, startOfDay, endOfDay } from "date-fns";
 import { Clock, Calendar as CalendarIcon, Trophy, Target, Gamepad2, BookOpen, Briefcase, Activity, Star, MapPin } from "lucide-react";
@@ -75,8 +73,6 @@ const getPriorityColor = (priority: string) => {
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   const { data: sessions = [] } = useQuery<Session[]>({
     queryKey: ["/api/sessions"],
@@ -164,34 +160,10 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      
-      {/* Mobile sidebar overlay */}
-      {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20" onClick={() => setSidebarOpen(false)} />
-      )}
+    <>
+      <PageHeader title="Calendar" subtitle="Your sessions and tasks over time" />
 
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <header className="bg-card border-b border-border px-6 py-4">
-          <div className="flex items-center space-x-4">
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2 lg:hidden"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-            )}
-            <CalendarIcon className="h-6 w-6 text-purple-400" />
-            <h1 className="text-2xl font-bold text-white">Activity Calendar</h1>
-          </div>
-        </header>
-
-        <div className="p-6 space-y-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           {/* Interactive Calendar for Adding Activities */}
           <ActivityCalendar />
           
@@ -387,10 +359,9 @@ export default function CalendarPage() {
                 </ScrollArea>
               </CardContent>
             </Card>
-          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 

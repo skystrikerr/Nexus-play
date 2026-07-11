@@ -131,26 +131,26 @@ export function GamingPlatforms() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black p-4">
-      <div className="container mx-auto max-w-4xl py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container mx-auto max-w-4xl">
+        <div className="text-center mb-8 pt-2">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-foreground mb-2">
             Gaming Platforms
           </h1>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground text-sm">
             Connect your gaming accounts to track progress and achievements
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Steam Connection */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <SiSteam className="h-8 w-8 text-red-400" />
+                <SiSteam className="h-8 w-8 text-sky-400" />
                 <div>
-                  <CardTitle className="text-white">Steam</CardTitle>
-                  <CardDescription className="text-gray-400">
+                  <CardTitle className="text-foreground">Steam</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     Connect your Steam account to sync games and achievements
                   </CardDescription>
                 </div>
@@ -159,38 +159,38 @@ export function GamingPlatforms() {
             <CardContent className="space-y-4">
               <form onSubmit={handleSteamConnect} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="steam-id" className="text-gray-300">Steam ID</Label>
+                  <Label htmlFor="steam-id" className="text-muted-foreground">Steam ID</Label>
                   <Input
                     id="steam-id"
                     placeholder="Enter your Steam ID (17-digit number)"
                     value={steamData.steamId}
                     onChange={(e) => setSteamData(prev => ({ ...prev, steamId: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                     required
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Find your Steam ID in your profile URL or use steamid.io
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="steam-api-key" className="text-gray-300">Steam API Key</Label>
+                  <Label htmlFor="steam-api-key" className="text-muted-foreground">Steam API Key</Label>
                   <Input
                     id="steam-api-key"
                     type="password"
                     placeholder="Your Steam API key"
                     value={steamData.apiKey}
                     onChange={(e) => setSteamData(prev => ({ ...prev, apiKey: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Required for accessing your game library and achievements
                   </p>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-red-600 hover:bg-red-700"
+                  className="w-full bg-gradient-aurora text-white hover:opacity-90"
                   disabled={connectSteamMutation.isPending}
                 >
                   <Link className="mr-2 h-4 w-4" />
@@ -200,7 +200,7 @@ export function GamingPlatforms() {
 
               {user?.steamId && (
                 <>
-                  <Separator className="bg-slate-600" />
+                  <Separator className="bg-border" />
                   
                   <div className="text-center space-y-3">
                     <p className="text-sm text-green-400">✓ Steam account connected</p>
@@ -208,7 +208,7 @@ export function GamingPlatforms() {
                       onClick={() => syncSteamGamesMutation.mutate()}
                       variant="outline"
                       disabled={syncSteamGamesMutation.isPending}
-                      className="w-full text-red-400 border-red-600 hover:bg-red-600 hover:text-white"
+                      className="w-full text-foreground border-border hover:bg-muted"
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       {syncSteamGamesMutation.isPending ? "Syncing..." : "Sync Steam Games"}
@@ -220,7 +220,7 @@ export function GamingPlatforms() {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open('https://steamcommunity.com/dev/apikey', '_blank')}
-                        className="text-gray-300 border-gray-600 hover:bg-slate-700"
+                        className="text-muted-foreground border-border hover:bg-muted"
                       >
                         <ExternalLink className="mr-2 h-3 w-3" />
                         Get Steam API Key
@@ -233,13 +233,13 @@ export function GamingPlatforms() {
           </Card>
 
           {/* Xbox Connection */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-border/60">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <FaXbox className="h-8 w-8 text-green-400" />
                 <div>
-                  <CardTitle className="text-white">Xbox Live</CardTitle>
-                  <CardDescription className="text-gray-400">
+                  <CardTitle className="text-foreground">Xbox Live</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     Connect your Xbox account to track gaming progress
                   </CardDescription>
                 </div>
@@ -248,29 +248,29 @@ export function GamingPlatforms() {
             <CardContent className="space-y-4">
               <form onSubmit={handleXboxConnect} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="xbox-gamertag" className="text-gray-300">Xbox Gamertag</Label>
+                  <Label htmlFor="xbox-gamertag" className="text-muted-foreground">Xbox Gamertag</Label>
                   <Input
                     id="xbox-gamertag"
                     placeholder="Enter your Xbox Gamertag"
                     value={xboxData.gamertag}
                     onChange={(e) => setXboxData(prev => ({ ...prev, gamertag: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="xbox-token" className="text-gray-300">Xbox Access Token</Label>
+                  <Label htmlFor="xbox-token" className="text-muted-foreground">Xbox Access Token</Label>
                   <Input
                     id="xbox-token"
                     type="password"
                     placeholder="Xbox Live access token"
                     value={xboxData.accessToken}
                     onChange={(e) => setXboxData(prev => ({ ...prev, accessToken: e.target.value }))}
-                    className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60"
                     required
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Required for accessing your Xbox gaming data
                   </p>
                 </div>
@@ -287,7 +287,7 @@ export function GamingPlatforms() {
 
               {user?.xboxLiveId && (
                 <>
-                  <Separator className="bg-slate-600" />
+                  <Separator className="bg-border" />
                   
                   <div className="text-center space-y-3">
                     <p className="text-sm text-green-400">✓ Xbox account connected</p>
@@ -295,7 +295,7 @@ export function GamingPlatforms() {
                       onClick={() => syncXboxGamesMutation.mutate()}
                       variant="outline"
                       disabled={syncXboxGamesMutation.isPending}
-                      className="w-full text-green-400 border-green-600 hover:bg-green-600 hover:text-white"
+                      className="w-full text-foreground border-border hover:bg-muted"
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       {syncXboxGamesMutation.isPending ? "Syncing..." : "Sync Xbox Games"}
@@ -308,13 +308,13 @@ export function GamingPlatforms() {
         </div>
 
         <div className="mt-8 text-center">
-          <Card className="bg-slate-800/30 border-slate-700">
+          <Card className="glass border-border/60">
             <CardContent className="pt-6">
-              <div className="flex items-center justify-center gap-2 text-gray-400 mb-4">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
                 <Trophy className="h-5 w-5" />
                 <span className="text-lg font-semibold">Achievement Tracking</span>
               </div>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Once connected, your games will automatically sync with achievement progress, 
                 playtime statistics, and completion status from both platforms.
               </p>

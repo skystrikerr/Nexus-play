@@ -1,20 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Menu } from "lucide-react";
+import { Search, Plus, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Sidebar from "@/components/sidebar";
+import PageHeader from "@/components/page-header";
 import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
-import { useIsMobile } from "@/hooks/use-mobile";
 import type { Activity } from "@shared/schema";
 
 export default function GameLibrary() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   const { data: games = [], isLoading } = useQuery<Activity[]>({
     queryKey: ["/api/games"],
@@ -27,58 +24,35 @@ export default function GameLibrary() {
   });
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      
-      {/* Mobile sidebar overlay */}
-      {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20" onClick={() => setSidebarOpen(false)} />
-      )}
+    <>
+      <PageHeader
+        title="Library"
+        subtitle={`${games.length} ${games.length === 1 ? "game" : "games"} in your collection`}
+        actions={
+          <Button
+            className="bg-gradient-aurora text-white hover:opacity-90 shadow-lg shadow-primary/20"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Game
+          </Button>
+        }
+      />
 
-      <main className="flex-1 overflow-auto">
-        {/* Top Bar */}
-        <header className="bg-card border-b border-border px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 lg:hidden"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              )}
-              <h2 className="text-2xl font-bold text-white">Game Library</h2>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative hidden md:block">
-                <Input
-                  type="text"
-                  placeholder="Search games..."
-                  className="bg-background border-border pl-10 w-80 text-white"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-              </div>
-              
-              <Button 
-                className="bg-primary hover:bg-primary/80"
-                onClick={() => setShowAddModal(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Game
-              </Button>
-            </div>
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {/* Search + Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <div className="relative sm:w-72">
+            <Input
+              type="text"
+              placeholder="Search games..."
+              className="bg-muted border-input pl-10 text-foreground placeholder:text-muted-foreground/60"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           </div>
-        </header>
-
-        <div className="p-6">
-          {/* Filter Tabs */}
-          <div className="flex items-center space-x-2 mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
             {["all", "playing", "completed", "wishlist", "dropped"].map((status) => (
               <Button
                 key={status}
@@ -86,8 +60,8 @@ export default function GameLibrary() {
                 size="sm"
                 className={
                   statusFilter === status
-                    ? "bg-primary text-white"
-                    : "bg-muted text-muted-foreground border-border hover:bg-muted"
+                    ? "bg-gradient-aurora text-white shadow-lg shadow-primary/20"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground hover:bg-muted/80"
                 }
                 onClick={() => setStatusFilter(status)}
               >
@@ -95,25 +69,37 @@ export default function GameLibrary() {
               </Button>
             ))}
           </div>
-
-          {/* Games Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-4">
-            {isLoading ? (
-              <div className="text-muted-foreground">Loading games...</div>
-            ) : filteredGames.length > 0 ? (
-              filteredGames.map((game) => (
-                <GameCard key={game.id} game={game} />
-              ))
-            ) : (
-              <div className="text-muted-foreground text-center py-8">
-                {games.length === 0 ? "No games added yet." : "No games match your filters."}
-              </div>
-            )}
-          </div>
         </div>
-      </main>
+
+        {/* Games Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {isLoading ? (
+            [1, 2, 3, 4].map((i) => <div key={i} className="shimmer rounded-xl h-32" />)
+          ) : filteredGames.length > 0 ? (
+            filteredGames.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))
+          ) : (
+            <div className="xl:col-span-2 glass-glow rounded-xl p-12 text-center">
+              <Gamepad2 className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-muted-foreground mb-4">
+                {games.length === 0 ? "No games added yet." : "No games match your filters."}
+              </p>
+              {games.length === 0 && (
+                <Button
+                  className="bg-gradient-aurora text-white hover:opacity-90"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Game
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       <AddGameModal open={showAddModal} onOpenChange={setShowAddModal} />
-    </div>
+    </>
   );
 }
