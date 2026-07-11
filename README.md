@@ -41,4 +41,15 @@ Without `RESEND_API_KEY`, password reset links are printed to the server console
 | `npm run db:push` | Apply schema changes to the database |
 | `npm run electron:build` | Windows desktop build |
 
+## Deploying (free)
+
+The repo includes a [render.yaml](render.yaml) blueprint for Render's free tier:
+
+1. Push this repo to GitHub
+2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repo
+3. Fill in the environment variables it asks for (`DATABASE_URL` from Neon, `RAWG_API_KEY`, and optionally the Resend/Google ones)
+4. After the first deploy, set `APP_URL` to your Render URL (e.g. `https://nexusplay.onrender.com`) so password reset links point to the right place
+
+The free tier sleeps after 15 minutes of inactivity; the first request afterwards takes up to a minute while it wakes.
+
 See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for a full tour of the codebase and [MOBILE_SETUP.md](MOBILE_SETUP.md) for the Android build.

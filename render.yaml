@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: nexusplay
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # paste your Neon connection string in the Render dashboard
+      - key: SESSION_SECRET
+        generateValue: true # Render generates a strong random value
+      - key: RAWG_API_KEY
+        sync: false
+      - key: APP_URL
+        sync: false # e.g. https://nexusplay.onrender.com (used in reset emails)
+      - key: RESEND_API_KEY
+        sync: false # optional until you set up Resend
+      - key: EMAIL_FROM
+        sync: false # optional, e.g. NexusPlay <onboarding@resend.dev>
+      - key: GOOGLE_CLIENT_ID
+        sync: false # optional, for Google sign-in
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # optional, for Google sign-in
