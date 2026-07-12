@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Activity, Clock, Target } from "lucide-react";
+import { Gamepad2, Trophy, Clock, Play, Heart, PauseCircle, XCircle } from "lucide-react";
 import PageHeader from "@/components/page-header";
+import type { Activity } from "@shared/schema";
 
 interface Stats {
   totalActivities: number;
@@ -13,14 +14,12 @@ interface Stats {
   completedGames: number;
 }
 
-const activityTypes = [
-  { type: 'game', name: 'Games', icon: '🎮', color: 'bg-gradient-aurora' },
-  { type: 'study', name: 'Study', icon: '📚', color: 'bg-gradient-solar' },
-  { type: 'work', name: 'Work', icon: '💼', color: 'bg-gradient-solar' },
-  { type: 'exercise', name: 'Exercise', icon: '💪', color: 'bg-gradient-pulse' },
-  { type: 'reading', name: 'Reading', icon: '📖', color: 'bg-gradient-neutral' },
-  { type: 'hobby', name: 'Hobbies', icon: '🎨', color: 'bg-gradient-neutral' },
-  { type: 'other', name: 'Other', icon: '📋', color: 'bg-gradient-neutral' },
+const statusMeta = [
+  { status: "in_progress", label: "Playing", icon: Play, color: "bg-gradient-aurora" },
+  { status: "completed", label: "Completed", icon: Trophy, color: "bg-gradient-neutral" },
+  { status: "wishlist", label: "Wishlist", icon: Heart, color: "bg-gradient-pulse" },
+  { status: "on_hold", label: "On Hold", icon: PauseCircle, color: "bg-gradient-solar" },
+  { status: "dropped", label: "Dropped", icon: XCircle, color: "bg-gradient-solar" },
 ];
 
 export default function Statistics() {
@@ -28,16 +27,28 @@ export default function Statistics() {
     queryKey: ["/api/stats"],
   });
 
+  const { data: games = [] } = useQuery<Activity[]>({
+    queryKey: ["/api/games"],
+  });
+
+  const gameHours = stats?.byType?.game?.hours ?? stats?.totalHours ?? 0;
+  const completed = games.filter(g => g.status === "completed").length;
+  const completionRate = games.length ? Math.round((completed / games.length) * 100) : 0;
+  const ratedGames = games.filter(g => g.rating);
+  const avgRating = ratedGames.length
+    ? (ratedGames.reduce((sum, g) => sum + (g.rating || 0), 0) / ratedGames.length).toFixed(1)
+    : "—";
+
   const overviewCards = [
-    { title: "Total Activities", value: stats?.totalActivities || 0, icon: Activity, gradient: "bg-gradient-aurora" },
-    { title: "Completed", value: stats?.completedActivities || 0, icon: Target, gradient: "bg-gradient-neutral" },
-    { title: "In Progress", value: stats?.inProgressActivities || 0, icon: TrendingUp, gradient: "bg-gradient-pulse" },
-    { title: "Total Hours", value: `${stats?.totalHours || 0}h`, icon: Clock, gradient: "bg-gradient-solar" },
+    { title: "Games Tracked", value: games.length, icon: Gamepad2, gradient: "bg-gradient-aurora" },
+    { title: "Hours Played", value: `${gameHours}h`, icon: Clock, gradient: "bg-gradient-solar" },
+    { title: "Completion Rate", value: `${completionRate}%`, icon: Trophy, gradient: "bg-gradient-neutral" },
+    { title: "Avg. Rating", value: avgRating, icon: Play, gradient: "bg-gradient-pulse" },
   ];
 
   return (
     <>
-      <PageHeader title="Statistics" subtitle="Your tracking totals by activity type" />
+      <PageHeader title="Statistics" subtitle="Your gaming life in numbers" />
 
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Overview Stats */}
@@ -62,41 +73,28 @@ export default function Statistics() {
           })}
         </div>
 
-        {/* Activity Breakdown */}
+        {/* Status Breakdown */}
         <div className="glass rounded-xl p-6">
-          <h3 className="text-lg font-display font-semibold text-foreground mb-6">Activity Breakdown</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {activityTypes.map((activityType) => {
-              const typeStats = stats?.byType?.[activityType.type] || { count: 0, completed: 0, hours: 0 };
-              const completion = typeStats.count > 0 ? (typeStats.completed / typeStats.count) * 100 : 0;
+          <h3 className="text-lg font-display font-semibold text-foreground mb-6">Library Breakdown</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {statusMeta.map(({ status, label, icon: Icon, color }) => {
+              const inStatus = games.filter(g => g.status === status);
+              const share = games.length ? (inStatus.length / games.length) * 100 : 0;
               return (
-                <div key={activityType.type} className="bg-background/40 rounded-xl p-4 border border-border/60">
+                <div key={status} className="bg-background/40 rounded-xl p-4 border border-border/60">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-10 h-10 ${activityType.color} rounded-xl flex items-center justify-center text-lg shadow-lg`}>
-                      {activityType.icon}
+                    <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">{activityType.name}</h4>
-                      <p className="text-muted-foreground text-sm">{typeStats.count} activities</p>
+                      <h4 className="font-semibold text-foreground">{label}</h4>
+                      <p className="text-muted-foreground text-sm">
+                        {inStatus.length} {inStatus.length === 1 ? "game" : "games"}
+                      </p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Completed</span>
-                      <span className="text-foreground font-mono">{typeStats.completed}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Hours</span>
-                      <span className="text-foreground font-mono">{typeStats.hours}h</span>
-                    </div>
-                    {typeStats.count > 0 && (
-                      <div className="w-full bg-muted rounded-full h-2 mt-1">
-                        <div
-                          className={`h-2 rounded-full ${activityType.color}`}
-                          style={{ width: `${completion}%` }}
-                        />
-                      </div>
-                    )}
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className={`h-2 rounded-full ${color}`} style={{ width: `${share}%` }} />
                   </div>
                 </div>
               );
@@ -113,10 +111,8 @@ export default function Statistics() {
               <p className="text-3xl font-bold font-mono text-gradient-aurora">{stats?.monthlyHours || 0}h</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-sm mb-2">Completion Rate</p>
-              <p className="text-3xl font-bold font-mono text-gradient-neutral">
-                {stats?.totalActivities ? Math.round((stats.completedActivities / stats.totalActivities) * 100) : 0}%
-              </p>
+              <p className="text-muted-foreground text-sm mb-2">Games Completed All-Time</p>
+              <p className="text-3xl font-bold font-mono text-gradient-neutral">{completed}</p>
             </div>
           </div>
         </div>

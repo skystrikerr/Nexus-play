@@ -9,6 +9,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import type { Post } from "@shared/schema";
+
+type FeedPost = Post & {
+  author?: { username: string | null; displayName: string | null; profileImageUrl: string | null };
+};
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,7 +25,7 @@ export default function PostsPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch all public posts
-  const { data: posts, isLoading } = useQuery<Post[]>({
+  const { data: posts, isLoading } = useQuery<FeedPost[]>({
     queryKey: ["/api/posts"],
   });
 
@@ -170,13 +174,15 @@ export default function PostsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src="/default-avatar.png" />
+                        <AvatarImage src={post.author?.profileImageUrl || undefined} />
                         <AvatarFallback>
-                          {post.userId.slice(0, 2).toUpperCase()}
+                          {(post.author?.displayName || post.author?.username || "?").slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">User {post.userId.slice(0, 8)}</p>
+                        <p className="font-semibold">
+                          {post.author?.displayName || post.author?.username || "Former member"}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {post.createdAt ? format(new Date(post.createdAt), "MMM d, yyyy 'at' h:mm a") : ""}
                         </p>

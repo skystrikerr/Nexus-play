@@ -13,44 +13,44 @@ import {
 const features = [
   {
     icon: Sparkles,
-    title: "Track Everything",
+    title: "Your Game Library",
     description:
-      "Games, study, work, exercise, reading, hobbies — one library for everything you spend time on.",
+      "Every game you're playing, finished, or dreaming about — searchable from a 500,000+ game database with cover art.",
     gradient: "bg-gradient-aurora",
   },
   {
-    icon: Timer,
-    title: "Built-in Timers",
+    icon: Trophy,
+    title: "Tier List Maker",
     description:
-      "Start a session with one click, rate its quality, and keep notes on how it went.",
+      "Rank your collection S through F and settle the debate about which games actually deserve the crown.",
     gradient: "bg-gradient-solar",
   },
   {
-    icon: BarChart3,
-    title: "Insights & Analytics",
+    icon: Calendar,
+    title: "Release Calendar",
     description:
-      "Color-coded charts and statistics show where your hours actually go.",
+      "See what's dropping in the next three months and wishlist upcoming games in one click.",
     gradient: "bg-gradient-pulse",
   },
   {
-    icon: Calendar,
-    title: "Calendar View",
+    icon: Timer,
+    title: "Play Session Tracking",
     description:
-      "Every session and task laid out over time, so streaks and gaps are obvious at a glance.",
+      "Built-in timers and playtime logs show exactly where your gaming hours go.",
     gradient: "bg-gradient-neutral",
   },
   {
-    icon: Trophy,
-    title: "Game Backlog & Tiers",
+    icon: BarChart3,
+    title: "Backlog & Stats",
     description:
-      "Plan what to play next, sync your Steam and Xbox libraries, and rank your favorites.",
+      "Plan what to play next, sync Steam and Xbox playtime, and watch your completion rate climb.",
     gradient: "bg-gradient-aurora",
   },
   {
     icon: Users,
     title: "Community",
     description:
-      "Share progress, write reviews, and see what other members are playing and working on.",
+      "Share posts and reviews, and see what other members are playing right now.",
     gradient: "bg-gradient-solar",
   },
 ];
@@ -95,14 +95,14 @@ export function Landing() {
             Free while in beta
           </div>
           <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight text-foreground mb-6">
-            Your games and goals,
+            Track your games.
             <br />
-            <span className="text-gradient-aurora">all in one place.</span>
+            <span className="text-gradient-aurora">Rank everything.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            NexusPlay tracks your play sessions, study time, workouts, and
-            everything in between — with timers, stats, and a community that
-            keeps you going.
+            NexusPlay is your game library, backlog, tier list maker, and
+            release calendar in one place — with a community of players
+            tracking right alongside you.
           </p>
           <div className="flex items-center justify-center gap-3">
             <Button

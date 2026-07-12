@@ -112,6 +112,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upcoming game releases for the next ~3 months
+  app.get("/api/rawg/releases", isAuthenticated, async (req, res) => {
+    try {
+      const key = getRawgKey();
+      if (!key) {
+        return res.status(503).json({ message: "Release calendar is not configured (missing RAWG_API_KEY)" });
+      }
+      const today = new Date();
+      const end = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+      const fmt = (d: Date) => d.toISOString().split("T")[0];
+      const url = `${RAWG_BASE_URL}/games?key=${key}&dates=${fmt(today)},${fmt(end)}&ordering=released&page_size=40`;
+      const rawgRes = await fetch(url);
+      if (!rawgRes.ok) {
+        return res.status(rawgRes.status === 429 ? 429 : 502).json({ count: 0, results: [] });
+      }
+      const data = await rawgRes.json();
+      delete data.next;
+      delete data.previous;
+      res.json(data);
+    } catch (error) {
+      console.error("RAWG releases error:", error);
+      res.status(502).json({ count: 0, results: [] });
+    }
+  });
+
   app.get("/api/rawg/games/:id", isAuthenticated, async (req, res) => {
     try {
       const key = getRawgKey();
@@ -274,6 +299,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games routes (backward compatibility)
   app.get("/api/games", isAuthenticated, async (req: any, res) => {
     try {
+      // Demo games for guest users
+      if (req.user.isGuest) {
+        return res.json(guestActivities.filter(a => a.type === "game"));
+      }
       const userId = req.user.id;
       const games = await storage.getGames(userId);
       res.json(games);

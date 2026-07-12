@@ -37,7 +37,7 @@ import {
   type InsertRankingItem,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql, gte } from "drizzle-orm";
+import { eq, and, desc, sql, gte, inArray } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -708,7 +708,24 @@ export class DatabaseStorage implements IStorage {
     return post;
   }
 
-  async getPosts(userId?: string): Promise<Post[]> {
+  async getPosts(userId?: string): Promise<(Post & { author?: { username: string | null; displayName: string | null; profileImageUrl: string | null } })[]> {
+    const withAuthors = async (rows: Post[]) => {
+      const authorIds = Array.from(new Set(rows.map(p => p.userId)));
+      const authors = authorIds.length
+        ? await db.select({
+            id: users.id,
+            username: users.username,
+            displayName: users.displayName,
+            profileImageUrl: users.profileImageUrl,
+          }).from(users).where(inArray(users.id, authorIds))
+        : [];
+      const byId = new Map(authors.map(a => [a.id, a]));
+      return rows.map(p => ({ ...p, author: byId.get(p.userId) || undefined }));
+    };
+    return this._getPostsRaw(userId).then(withAuthors);
+  }
+
+  private async _getPostsRaw(userId?: string): Promise<Post[]> {
     if (userId) {
       // Get user's own posts (including private ones)
       return await db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.createdAt));

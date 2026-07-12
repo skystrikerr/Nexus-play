@@ -22,7 +22,7 @@ import {
   Heart,
   Users,
   Settings,
-  CheckSquare,
+  CalendarClock,
   TrendingUp,
   LogOut,
   Menu,
@@ -50,20 +50,20 @@ const navSections: NavSection[] = [
     items: [{ name: "Dashboard", href: "/", icon: LayoutDashboard }],
   },
   {
-    label: "Track",
+    label: "Games",
     items: [
       { name: "Library", href: "/library", icon: Library },
-      { name: "Tasks", href: "/tasks", icon: CheckSquare },
+      { name: "Backlog", href: "/game-backlog", icon: ListTodo },
+      { name: "Wishlist", href: "/wishlist", icon: Heart },
+      { name: "Releases", href: "/releases", icon: CalendarClock },
       { name: "Calendar", href: "/calendar", icon: Calendar },
     ],
   },
   {
-    label: "Games",
+    label: "Rank",
     items: [
-      { name: "Backlog", href: "/game-backlog", icon: ListTodo },
-      { name: "Wishlist", href: "/wishlist", icon: Heart },
       { name: "Tier Lists", href: "/tier-list", icon: Trophy },
-      { name: "Platforms", href: "/gaming-platforms", icon: Gamepad2 },
+      { name: "Reviews", href: "/reviews", icon: Star },
     ],
   },
   {
@@ -78,7 +78,6 @@ const navSections: NavSection[] = [
     items: [
       { name: "Feed", href: "/posts", icon: MessageCircle },
       { name: "Members", href: "/users", icon: Users },
-      { name: "Reviews", href: "/reviews", icon: Star },
     ],
   },
 ];
@@ -86,9 +85,9 @@ const navSections: NavSection[] = [
 const bottomNavItems: NavItem[] = [
   { name: "Home", href: "/", icon: LayoutDashboard },
   { name: "Library", href: "/library", icon: Library },
-  { name: "Tasks", href: "/tasks", icon: CheckSquare },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
-  { name: "Stats", href: "/stats", icon: BarChart3 },
+  { name: "Backlog", href: "/game-backlog", icon: ListTodo },
+  { name: "Releases", href: "/releases", icon: CalendarClock },
+  { name: "Tiers", href: "/tier-list", icon: Trophy },
 ];
 
 function Logo({ size = "md" }: { size?: "sm" | "md" }) {
@@ -142,6 +141,12 @@ function UserMenu({ user }: { user?: User }) {
           <DropdownMenuItem className="cursor-pointer">
             <UserIcon className="w-4 h-4 mr-2" />
             Profile
+          </DropdownMenuItem>
+        </Link>
+        <Link href="/gaming-platforms">
+          <DropdownMenuItem className="cursor-pointer">
+            <Gamepad2 className="w-4 h-4 mr-2" />
+            Platforms
           </DropdownMenuItem>
         </Link>
         <Link href="/settings">
