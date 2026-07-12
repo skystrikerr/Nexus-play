@@ -101,7 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!rawgRes.ok) {
         return res.status(rawgRes.status === 429 ? 429 : 502).json({ count: 0, results: [] });
       }
-      res.json(await rawgRes.json());
+      const data = await rawgRes.json();
+      // RAWG embeds the API key in its pagination URLs — don't leak them to the client
+      delete data.next;
+      delete data.previous;
+      res.json(data);
     } catch (error) {
       console.error("RAWG search error:", error);
       res.status(502).json({ count: 0, results: [] });
