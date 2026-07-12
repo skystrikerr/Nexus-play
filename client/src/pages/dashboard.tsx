@@ -181,7 +181,9 @@ export default function Dashboard() {
                       <ListTodo className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-foreground font-medium">{backlogged} games waiting in your backlog</p>
+                      <p className="text-foreground font-medium">
+                        {backlogged} {backlogged === 1 ? "game" : "games"} waiting in your backlog
+                      </p>
                       <p className="text-muted-foreground text-sm">Plan what to play next</p>
                     </div>
                   </div>
