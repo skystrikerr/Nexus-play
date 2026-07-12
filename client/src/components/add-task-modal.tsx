@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ interface AddTaskModalProps {
 
 export default function AddTaskModal({ open, onOpenChange }: AddTaskModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const form = useForm<TaskFormData>({
@@ -81,6 +83,13 @@ export default function AddTaskModal({ open, onOpenChange }: AddTaskModalProps) 
 
 
   const onSubmit = (data: TaskFormData) => {
+    if ((user as any)?.isGuest) {
+      toast({
+        title: "Guest mode is read-only",
+        description: "Create a free account to save tasks and track your time!",
+      });
+      return;
+    }
     createTaskMutation.mutate(data);
   };
 

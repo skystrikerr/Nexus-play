@@ -102,8 +102,8 @@ export default function Profile() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-white text-center">
-          <UserIcon className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+        <div className="text-foreground text-center">
+          <UserIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
           <p>Please log in to view your profile.</p>
         </div>
       </div>
@@ -115,16 +115,16 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Profile Settings</h1>
           <p className="text-muted-foreground">
             Manage your profile information and privacy settings
           </p>
         </div>
 
         {/* Profile Photo Section */}
-        <Card className="bg-slate-900 border-border">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <Camera className="w-5 h-5" />
               Profile Photo
             </CardTitle>
@@ -152,7 +152,7 @@ export default function Profile() {
                   <Button
                     onClick={handlePhotoSave}
                     disabled={uploadPhotoMutation.isPending}
-                    className="bg-gradient-aurora text-white hover:opacity-90 shrink-0"
+                    className="bg-gradient-aurora text-foreground hover:opacity-90 shrink-0"
                   >
                     <Camera className="w-4 h-4 mr-2" />
                     {uploadPhotoMutation.isPending ? "Saving..." : "Save Photo"}
@@ -167,9 +167,9 @@ export default function Profile() {
         </Card>
 
         {/* Basic Information */}
-        <Card className="bg-slate-900 border-border">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Basic Information</CardTitle>
+            <CardTitle className="text-foreground">Basic Information</CardTitle>
             <CardDescription>
               Update your personal details
             </CardDescription>
@@ -177,51 +177,51 @@ export default function Profile() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName" className="text-white">First Name</Label>
+                <Label htmlFor="firstName" className="text-foreground">First Name</Label>
                 <Input
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="bg-slate-800 border-border text-white"
+                  className="bg-muted border-border text-foreground"
                   placeholder="Enter your first name"
                 />
               </div>
               <div>
-                <Label htmlFor="lastName" className="text-white">Last Name</Label>
+                <Label htmlFor="lastName" className="text-foreground">Last Name</Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="bg-slate-800 border-border text-white"
+                  className="bg-muted border-border text-foreground"
                   placeholder="Enter your last name"
                 />
               </div>
             </div>
             
             <div>
-              <Label htmlFor="email" className="text-white">Email</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <Input
                 id="email"
                 value={user.email || ""}
                 disabled
-                className="bg-slate-800 border-border text-muted-foreground"
+                className="bg-muted border-border text-muted-foreground"
               />
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 Email cannot be changed for security reasons
               </p>
             </div>
 
             <div>
-              <Label htmlFor="bio" className="text-white">Bio</Label>
+              <Label htmlFor="bio" className="text-foreground">Bio</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="bg-slate-800 border-border text-white min-h-[100px]"
+                className="bg-muted border-border text-foreground min-h-[100px]"
                 placeholder="Tell others about yourself..."
                 maxLength={500}
               />
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 {bio.length}/500 characters
               </p>
             </div>
@@ -229,9 +229,9 @@ export default function Profile() {
         </Card>
 
         {/* Privacy Settings */}
-        <Card className="bg-slate-900 border-border">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
               Privacy & Security
             </CardTitle>
@@ -240,7 +240,7 @@ export default function Profile() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
               <div className="flex items-center gap-3">
                 {isPublic ? (
                   <Eye className="w-5 h-5 text-green-400" />
@@ -248,7 +248,7 @@ export default function Profile() {
                   <EyeOff className="w-5 h-5 text-red-400" />
                 )}
                 <div>
-                  <h3 className="text-white font-medium">
+                  <h3 className="text-foreground font-medium">
                     {isPublic ? "Public Profile" : "Private Profile"}
                   </h3>
                   <p className="text-sm text-muted-foreground">
@@ -266,11 +266,11 @@ export default function Profile() {
               />
             </div>
 
-            <div className="p-4 bg-slate-800 rounded-lg border border-yellow-500/20">
+            <div className="p-4 bg-muted rounded-lg border border-yellow-500/20">
               <div className="flex items-start gap-3">
                 <Shield className="w-5 h-5 text-yellow-400 mt-0.5" />
                 <div>
-                  <h4 className="text-white font-medium">Security Notice</h4>
+                  <h4 className="text-foreground font-medium">Security Notice</h4>
                   <p className="text-sm text-muted-foreground mt-1">
                     Your profile photo and uploaded content are stored securely with encryption.
                     Only you can control who sees your information.
@@ -303,7 +303,7 @@ export default function Profile() {
           <Button
             onClick={handleSave}
             disabled={updateProfileMutation.isPending}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-foreground"
           >
             <Save className="w-4 h-4 mr-2" />
             {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}

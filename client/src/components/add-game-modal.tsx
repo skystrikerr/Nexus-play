@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,7 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
   const [isSearching, setIsSearching] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
@@ -154,11 +156,17 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
   });
 
   const onSubmit = (data: FormData) => {
+    if ((user as any)?.isGuest) {
+      toast({
+        title: "Guest mode is read-only",
+        description: "Create a free account to save games and track your progress!",
+      });
+      return;
+    }
     const submitData = {
       ...data,
       rating: selectedRating || undefined,
     };
-    console.log("Submitting activity data:", submitData); // Debug log
     createGameMutation.mutate(submitData);
   };
 

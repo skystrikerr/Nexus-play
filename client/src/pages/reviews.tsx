@@ -31,7 +31,7 @@ export default function Reviews() {
           className={`w-4 h-4 ${
             star <= rating
               ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
+              : 'text-muted-foreground'
           }`}
         />
       ))}
@@ -61,14 +61,14 @@ export default function Reviews() {
       <div className="p-6">
         <div className="animate-pulse space-y-4">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="border-slate-700">
+            <Card key={i} className="border-border">
               <CardHeader>
-                <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="h-3 bg-slate-700 rounded"></div>
-                  <div className="h-3 bg-slate-700 rounded w-5/6"></div>
+                  <div className="h-3 bg-muted rounded"></div>
+                  <div className="h-3 bg-muted rounded w-5/6"></div>
                 </div>
               </CardContent>
             </Card>
@@ -83,8 +83,8 @@ export default function Reviews() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">My Reviews</h1>
-            <p className="text-slate-400 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">My Reviews</h1>
+            <p className="text-muted-foreground mt-1">
               Your thoughts and ratings on completed activities
             </p>
           </div>
@@ -96,12 +96,12 @@ export default function Reviews() {
         {/* Search and Filter */}
         <div className="flex gap-4 items-center">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search reviews..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 text-white"
+              className="pl-10 text-foreground"
             />
           </div>
           <div className="flex gap-2">
@@ -127,11 +127,11 @@ export default function Reviews() {
       </div>
 
       {filteredReviews.length === 0 ? (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-border bg-card/60">
           <CardContent className="py-12 text-center">
-            <Star className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No Reviews Yet</h3>
-            <p className="text-slate-400 mb-4">
+            <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Reviews Yet</h3>
+            <p className="text-muted-foreground mb-4">
               Complete some activities and write reviews to share your experience!
             </p>
             <Button className="bg-primary hover:bg-primary/90">
@@ -142,22 +142,22 @@ export default function Reviews() {
       ) : (
         <div className="grid gap-6">
           {filteredReviews.map((review) => (
-            <Card key={review.id} className="border-slate-700 bg-slate-800/50">
+            <Card key={review.id} className="border-border bg-card/60">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <CardTitle className="text-white">{review.title}</CardTitle>
+                    <CardTitle className="text-foreground">{review.title}</CardTitle>
                     <div className="flex items-center gap-4">
                       {renderStars(review.rating)}
                       {review.difficulty && (
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-400">Difficulty:</span>
+                          <span className="text-sm text-muted-foreground">Difficulty:</span>
                           {renderDifficultyStars(review.difficulty)}
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="text-right text-sm text-slate-400">
+                  <div className="text-right text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       {format(new Date(review.createdAt), 'MMM d, yyyy')}
@@ -171,10 +171,10 @@ export default function Reviews() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-slate-300 leading-relaxed">{review.content}</p>
+                <p className="text-muted-foreground leading-relaxed">{review.content}</p>
                 
                 {/* Stats */}
-                <div className="flex gap-6 text-sm text-slate-400">
+                <div className="flex gap-6 text-sm text-muted-foreground">
                   {review.hoursSpent && (
                     <div>⏱️ {review.hoursSpent}h spent</div>
                   )}
@@ -192,7 +192,7 @@ export default function Reviews() {
                         <h4 className="font-medium text-green-400 mb-2">👍 Pros</h4>
                         <ul className="space-y-1">
                           {review.pros.map((pro, index) => (
-                            <li key={index} className="text-sm text-slate-300">
+                            <li key={index} className="text-sm text-muted-foreground">
                               • {pro}
                             </li>
                           ))}
@@ -204,7 +204,7 @@ export default function Reviews() {
                         <h4 className="font-medium text-red-400 mb-2">👎 Cons</h4>
                         <ul className="space-y-1">
                           {review.cons.map((con, index) => (
-                            <li key={index} className="text-sm text-slate-300">
+                            <li key={index} className="text-sm text-muted-foreground">
                               • {con}
                             </li>
                           ))}

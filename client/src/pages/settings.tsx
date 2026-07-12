@@ -158,7 +158,7 @@ export default function Settings() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-8">
         <SettingsIcon className="w-8 h-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
+        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -173,8 +173,8 @@ export default function Settings() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === tab.id
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      ? "bg-blue-600 text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -192,13 +192,13 @@ export default function Settings() {
               
               {/* Profile Settings */}
               {activeTab === "profile" && (
-                <Card className="bg-slate-900 border-slate-700">
+                <Card className="glass border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <User className="w-5 h-5" />
                       Profile Information
                     </CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardDescription className="text-muted-foreground">
                       Update your personal information and bio
                     </CardDescription>
                   </CardHeader>
@@ -209,12 +209,12 @@ export default function Settings() {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-white">First Name</FormLabel>
+                            <FormLabel className="text-foreground">First Name</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder="Your first name"
-                                className="bg-slate-800 border-slate-600 text-white"
+                                className="bg-muted border-input text-foreground"
                               />
                             </FormControl>
                             <FormMessage />
@@ -226,12 +226,12 @@ export default function Settings() {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-white">Last Name</FormLabel>
+                            <FormLabel className="text-foreground">Last Name</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder="Your last name"
-                                className="bg-slate-800 border-slate-600 text-white"
+                                className="bg-muted border-input text-foreground"
                               />
                             </FormControl>
                             <FormMessage />
@@ -244,12 +244,12 @@ export default function Settings() {
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-white">Bio</FormLabel>
+                          <FormLabel className="text-foreground">Bio</FormLabel>
                           <FormControl>
                             <Textarea
                               {...field}
                               placeholder="Tell others about yourself..."
-                              className="bg-slate-800 border-slate-600 text-white"
+                              className="bg-muted border-input text-foreground"
                               rows={4}
                             />
                           </FormControl>
@@ -263,13 +263,13 @@ export default function Settings() {
 
               {/* Appearance Settings */}
               {activeTab === "appearance" && (
-                <Card className="bg-slate-900 border-slate-700">
+                <Card className="glass border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <Palette className="w-5 h-5" />
                       Appearance
                     </CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardDescription className="text-muted-foreground">
                       Customize the look and feel of NexusPlay
                     </CardDescription>
                   </CardHeader>
@@ -279,7 +279,7 @@ export default function Settings() {
                       name="theme"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-white">Theme</FormLabel>
+                          <FormLabel className="text-foreground">Theme</FormLabel>
                           <Select 
                             onValueChange={(value) => {
                               field.onChange(value);
@@ -288,11 +288,11 @@ export default function Settings() {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                              <SelectTrigger className="bg-muted border-input text-foreground">
                                 <SelectValue placeholder="Select theme" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-slate-800 border-slate-600">
+                            <SelectContent className="bg-muted border-input">
                               <SelectItem value="light" className="flex items-center">
                                 <div className="flex items-center gap-2">
                                   <Sun className="w-4 h-4" />
@@ -320,16 +320,16 @@ export default function Settings() {
                     
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center">
-                        <div className="w-20 h-12 bg-slate-800 border-2 border-blue-600 rounded-lg mb-2 mx-auto"></div>
-                        <p className="text-sm text-slate-400">Dark (Current)</p>
+                        <div className="w-20 h-12 bg-muted border-2 border-blue-600 rounded-lg mb-2 mx-auto"></div>
+                        <p className="text-sm text-muted-foreground">Dark (Current)</p>
                       </div>
                       <div className="text-center">
                         <div className="w-20 h-12 bg-white border-2 border-slate-300 rounded-lg mb-2 mx-auto"></div>
-                        <p className="text-sm text-slate-400">Light</p>
+                        <p className="text-sm text-muted-foreground">Light</p>
                       </div>
                       <div className="text-center">
                         <div className="w-20 h-12 bg-gradient-to-r from-white to-slate-800 border-2 border-slate-500 rounded-lg mb-2 mx-auto"></div>
-                        <p className="text-sm text-slate-400">System</p>
+                        <p className="text-sm text-muted-foreground">System</p>
                       </div>
                     </div>
                   </CardContent>
@@ -338,13 +338,13 @@ export default function Settings() {
 
               {/* Notification Settings */}
               {activeTab === "notifications" && (
-                <Card className="bg-slate-900 border-slate-700">
+                <Card className="glass border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <Bell className="w-5 h-5" />
                       Notifications
                     </CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardDescription className="text-muted-foreground">
                       Manage your notification preferences
                     </CardDescription>
                   </CardHeader>
@@ -355,8 +355,8 @@ export default function Settings() {
                       render={({ field }) => (
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-white">Achievement Notifications</FormLabel>
-                            <p className="text-sm text-slate-400">
+                            <FormLabel className="text-foreground">Achievement Notifications</FormLabel>
+                            <p className="text-sm text-muted-foreground">
                               Get notified when you complete games or reach milestones
                             </p>
                           </div>
@@ -375,8 +375,8 @@ export default function Settings() {
                       render={({ field }) => (
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-white">Activity Reminders</FormLabel>
-                            <p className="text-sm text-slate-400">
+                            <FormLabel className="text-foreground">Activity Reminders</FormLabel>
+                            <p className="text-sm text-muted-foreground">
                               Remind you to log your activity sessions
                             </p>
                           </div>
@@ -395,8 +395,8 @@ export default function Settings() {
                       render={({ field }) => (
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-white">Social Updates</FormLabel>
-                            <p className="text-sm text-slate-400">
+                            <FormLabel className="text-foreground">Social Updates</FormLabel>
+                            <p className="text-sm text-muted-foreground">
                               Get notified about friend activities and community updates
                             </p>
                           </div>
@@ -415,13 +415,13 @@ export default function Settings() {
 
               {/* Privacy Settings */}
               {activeTab === "privacy" && (
-                <Card className="bg-slate-900 border-slate-700">
+                <Card className="glass border-border/60">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <Shield className="w-5 h-5" />
                       Privacy & Security
                     </CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardDescription className="text-muted-foreground">
                       Control your privacy and data sharing preferences
                     </CardDescription>
                   </CardHeader>
@@ -432,8 +432,8 @@ export default function Settings() {
                       render={({ field }) => (
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-white">Public Profile</FormLabel>
-                            <p className="text-sm text-slate-400">
+                            <FormLabel className="text-foreground">Public Profile</FormLabel>
+                            <p className="text-sm text-muted-foreground">
                               {field.value 
                                 ? "Your profile is visible to everyone. Other users can see your activities, sessions, and reviews."
                                 : "Your profile is private. You won't appear in community searches and only you can see your data."}
@@ -451,30 +451,30 @@ export default function Settings() {
                     
                     {/* Password Management - only for local accounts */}
                     {(user as any)?.provider === 'local' && (
-                      <div className="p-4 bg-slate-800 rounded-lg border border-slate-600">
-                        <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                      <div className="p-4 bg-muted rounded-lg border border-border">
+                        <h4 className="text-foreground font-medium mb-2 flex items-center gap-2">
                           <Key className="w-4 h-4" />
                           Password Management
                         </h4>
-                        <p className="text-sm text-slate-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                           Change your account password for better security
                         </p>
                         <Button 
                           onClick={() => setShowChangePassword(true)}
                           variant="outline" 
-                          className="border-slate-600 text-white hover:bg-slate-700"
+                          className="border-border text-foreground hover:bg-muted"
                         >
                           Change Password
                         </Button>
                       </div>
                     )}
 
-                    <div className="p-4 bg-slate-800 rounded-lg border border-slate-600">
-                      <h4 className="text-white font-medium mb-2">Data Export</h4>
-                      <p className="text-sm text-slate-400 mb-4">
+                    <div className="p-4 bg-muted rounded-lg border border-border">
+                      <h4 className="text-foreground font-medium mb-2">Data Export</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
                         Download a copy of all your NexusPlay data
                       </p>
-                      <Button variant="outline" className="border-slate-600 text-white hover:bg-slate-700">
+                      <Button variant="outline" className="border-border text-foreground hover:bg-muted">
                         Download My Data
                       </Button>
                     </div>
@@ -486,7 +486,7 @@ export default function Settings() {
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-gradient-aurora hover:opacity-90 text-foreground"
                   disabled={updateSettingsMutation.isPending}
                 >
                   {updateSettingsMutation.isPending ? "Saving..." : "Save Settings"}

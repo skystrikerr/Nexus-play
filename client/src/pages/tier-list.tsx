@@ -103,15 +103,15 @@ function SortableRankItem({ activity, rank, onRemove }: { activity: Activity; ra
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                <GripVertical className="w-5 h-5 text-slate-400" />
+                <GripVertical className="w-5 h-5 text-muted-foreground" />
               </div>
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-white font-bold text-xl">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-foreground font-bold text-xl">
                 {rank}
               </div>
             </div>
 
             {activity.imageUrl && (
-              <div className="w-16 h-16 rounded overflow-hidden bg-slate-700 flex-shrink-0">
+              <div className="w-16 h-16 rounded overflow-hidden bg-muted flex-shrink-0">
                 <img
                   src={activity.imageUrl}
                   alt={activity.title}
@@ -121,10 +121,10 @@ function SortableRankItem({ activity, rank, onRemove }: { activity: Activity; ra
             )}
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-white truncate">
+              <h3 className="text-lg font-semibold text-foreground truncate">
                 {activity.title}
               </h3>
-              <div className="flex items-center gap-4 text-sm text-slate-400">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 {activity.category && (
                   <span>{activity.category}</span>
                 )}
@@ -413,7 +413,7 @@ export default function TierList() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Trophy className="w-8 h-8 text-teal-500" />
-          <h1 className="text-3xl font-bold text-white">Game Rankings</h1>
+          <h1 className="text-3xl font-bold text-foreground">Game Rankings</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -431,8 +431,8 @@ export default function TierList() {
       {isGuest && (
         <Alert className="bg-[#1E293B] border-[#334155] mb-6">
           <UserPlus className="h-5 w-5 text-teal-500" />
-          <AlertDescription className="text-slate-300 ml-2">
-            <span className="font-semibold text-white">Sign up for free</span> to create and manage your personal game ranking lists!
+          <AlertDescription className="text-muted-foreground ml-2">
+            <span className="font-semibold text-foreground">Sign up for free</span> to create and manage your personal game ranking lists!
             <Button
               size="sm"
               onClick={() => window.location.href = "/auth"}
@@ -450,13 +450,13 @@ export default function TierList() {
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <Label className="text-slate-300 mb-2 block">Select Ranking List</Label>
+                <Label className="text-muted-foreground mb-2 block">Select Ranking List</Label>
                 <Select
                   value={selectedListId || undefined}
                   onValueChange={setSelectedListId}
                   disabled={rankingLists.length === 0}
                 >
-                  <SelectTrigger className="bg-[#0F172A] border-[#94A3B8] text-white">
+                  <SelectTrigger className="bg-[#0F172A] border-[#94A3B8] text-foreground">
                     <SelectValue placeholder="Select a ranking list" />
                   </SelectTrigger>
                   <SelectContent>
@@ -479,10 +479,10 @@ export default function TierList() {
                     New List
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#1E293B] border-[#334155] text-white">
+                <DialogContent className="bg-[#1E293B] border-[#334155] text-foreground">
                   <DialogHeader>
                     <DialogTitle>Create New Ranking List</DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogDescription className="text-muted-foreground">
                       Create a new list to rank your favorite games.
                     </DialogDescription>
                   </DialogHeader>
@@ -494,7 +494,7 @@ export default function TierList() {
                         placeholder="e.g., Top 10 Racing Games"
                         value={newListName}
                         onChange={(e) => setNewListName(e.target.value)}
-                        className="bg-[#0F172A] border-[#94A3B8] text-white"
+                        className="bg-[#0F172A] border-[#94A3B8] text-foreground"
                         data-testid="input-list-name"
                       />
                     </div>
@@ -505,7 +505,7 @@ export default function TierList() {
                         placeholder="Describe your ranking list..."
                         value={newListDescription}
                         onChange={(e) => setNewListDescription(e.target.value)}
-                        className="bg-[#0F172A] border-[#94A3B8] text-white"
+                        className="bg-[#0F172A] border-[#94A3B8] text-foreground"
                         data-testid="input-list-description"
                       />
                     </div>
@@ -524,7 +524,7 @@ export default function TierList() {
               </Dialog>
             </div>
             {selectedList && selectedList.description && (
-              <p className="text-sm text-slate-400 mt-2">{selectedList.description}</p>
+              <p className="text-sm text-muted-foreground mt-2">{selectedList.description}</p>
             )}
           </CardContent>
         </Card>
@@ -536,12 +536,12 @@ export default function TierList() {
           <CardContent className="p-4">
             <div className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <Input
                   placeholder="Search games to add to your ranking..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10 bg-[#1E293B] border-[#94A3B8] text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="pl-10 bg-[#1E293B] border-[#94A3B8] text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   data-testid="input-search-games"
                 />
                 {searchQuery && (
@@ -550,7 +550,7 @@ export default function TierList() {
                       setSearchQuery("");
                       setSearchResults([]);
                     }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -577,8 +577,8 @@ export default function TierList() {
                             />
                           )}
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-medium truncate">{game.name}</h4>
-                            <p className="text-sm text-slate-400">
+                            <h4 className="text-foreground font-medium truncate">{game.name}</h4>
+                            <p className="text-sm text-muted-foreground">
                               {game.genres?.[0]?.name || "Game"} • ★ {game.rating}
                             </p>
                           </div>
@@ -607,9 +607,9 @@ export default function TierList() {
       {!isGuest && !selectedListId && rankingLists.length === 0 && (
         <Card className="bg-[#1E293B] border-[#334155]">
           <CardContent className="p-12">
-            <div className="text-center text-slate-400">
-              <List className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No Ranking Lists Yet</h3>
+            <div className="text-center text-muted-foreground">
+              <List className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-xl font-semibold mb-2 text-foreground">No Ranking Lists Yet</h3>
               <p>
                 Create your first ranking list to start organizing your favorite games.
               </p>
@@ -628,9 +628,9 @@ export default function TierList() {
       {!isGuest && selectedListId && rankedActivities.length === 0 ? (
         <Card className="bg-[#1E293B] border-[#334155]">
           <CardContent className="p-12">
-            <div className="text-center text-slate-400">
-              <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No Games Yet</h3>
+            <div className="text-center text-muted-foreground">
+              <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-xl font-semibold mb-2 text-foreground">No Games Yet</h3>
               <p>
                 Search for games above to add them to this ranking list.
               </p>
@@ -667,13 +667,13 @@ export default function TierList() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
-                      <GripVertical className="w-5 h-5 text-slate-400" />
-                      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-white font-bold text-xl">
+                      <GripVertical className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-teal-500 to-violet-500 text-foreground font-bold text-xl">
                         {rankedActivities.findIndex(a => a.id === activeId) + 1}
                       </div>
                     </div>
                     {activeActivity.imageUrl && (
-                      <div className="w-16 h-16 rounded overflow-hidden bg-slate-700">
+                      <div className="w-16 h-16 rounded overflow-hidden bg-muted">
                         <img
                           src={activeActivity.imageUrl}
                           alt={activeActivity.title}
@@ -682,7 +682,7 @@ export default function TierList() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-foreground">
                         {activeActivity.title}
                       </h3>
                     </div>
