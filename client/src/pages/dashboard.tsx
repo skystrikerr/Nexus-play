@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Plus, Gamepad2, Clock, Trophy, Play, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/page-header";
+import GameSymbolsBackdrop from "@/components/game-symbols-backdrop";
 import AddGameModal from "@/components/add-game-modal";
 import GameCard from "@/components/game-card";
 import GamingCalendar from "@/components/gaming-calendar";
@@ -72,7 +73,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <>
+    <div className="relative">
+      <GameSymbolsBackdrop />
+      <div className="relative">
       <PageHeader
         title="Dashboard"
         subtitle="Your games at a glance"
@@ -197,6 +200,7 @@ export default function Dashboard() {
       </div>
 
       <AddGameModal open={showAddGameModal} onOpenChange={setShowAddGameModal} />
-    </>
+      </div>
+    </div>
   );
 }

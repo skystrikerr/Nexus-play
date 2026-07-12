@@ -275,6 +275,7 @@ export const rankingItems = pgTable("ranking_items", {
   rankingListId: varchar("ranking_list_id").notNull().references(() => rankingLists.id, { onDelete: "cascade" }),
   activityId: varchar("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
   position: integer("position").notNull(), // 1-based position in the ranking
+  tier: text("tier"), // S, A, B, C, D, F — null for unranked pool
   notes: text("notes"), // Optional notes about why this item is ranked here
   createdAt: timestamp("created_at").defaultNow(),
 });

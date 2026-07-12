@@ -375,6 +375,21 @@
     border-left: 3px solid var(--gradient-neutral-start);
   }
   
+  /* Floating game symbols (dashboard backdrop) */
+  @keyframes float-drift-a {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(14px, -22px) rotate(8deg); }
+    50% { transform: translate(-8px, -36px) rotate(-6deg); }
+    75% { transform: translate(-18px, -12px) rotate(4deg); }
+  }
+
+  @keyframes float-drift-b {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    30% { transform: translate(-16px, -18px) rotate(-9deg); }
+    60% { transform: translate(10px, -32px) rotate(7deg); }
+    80% { transform: translate(20px, -8px) rotate(-3deg); }
+  }
+
   /* Subtle shimmer for loading states */
   @keyframes shimmer {
     0% { background-position: 200% 0; }

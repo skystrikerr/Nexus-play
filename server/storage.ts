@@ -146,7 +146,7 @@ export interface IStorage {
   getRankingItems(rankingListId: string, userId: string): Promise<RankingItem[]>;
   updateRankingItemPosition(id: string, position: number, userId: string): Promise<RankingItem | undefined>;
   removeRankingItem(id: string, userId: string): Promise<boolean>;
-  reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number }[], userId: string): Promise<boolean>;
+  reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number; tier?: string | null }[], userId: string): Promise<boolean>;
 
   // Channels
   createChannel(channel: InsertChannel, userId: string): Promise<Channel>;
@@ -949,7 +949,7 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
-  async reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number }[], userId: string): Promise<boolean> {
+  async reorderRankingItems(rankingListId: string, itemPositions: { id: string; position: number; tier?: string | null }[], userId: string): Promise<boolean> {
     // Verify the ranking list belongs to the user
     const list = await this.getRankingListById(rankingListId, userId);
     if (!list) {
@@ -973,12 +973,12 @@ export class DatabaseStorage implements IStorage {
     }
     
     try {
-      // Update each item's position in a transaction
+      // Update each item's position (and tier, when provided) in a transaction
       await db.transaction(async (tx) => {
-        for (const { id, position } of itemPositions) {
+        for (const { id, position, tier } of itemPositions) {
           await tx
             .update(rankingItems)
-            .set({ position })
+            .set(tier === undefined ? { position } : { position, tier })
             .where(and(eq(rankingItems.id, id), eq(rankingItems.rankingListId, rankingListId)));
         }
       });
