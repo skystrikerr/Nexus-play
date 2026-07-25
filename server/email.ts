@@ -66,6 +66,24 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   console.log(`[email] Body:\n${html}`);
 }
 
+export async function sendVerificationEmail(to: string, verifyUrl: string): Promise<void> {
+  await sendEmail(
+    to,
+    "Confirm your NexusPlay email",
+    `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+      <h2>Welcome to NexusPlay 🎮</h2>
+      <p>Confirm this email address to secure your account. The link expires in 24 hours.</p>
+      <p style="margin: 24px 0;">
+        <a href="${verifyUrl}" style="background: linear-gradient(135deg, #14B8A6, #8B5CF6); color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Confirm Email</a>
+      </p>
+      <p style="color: #64748B; font-size: 13px;">If the button doesn't work, paste this into your browser:<br>${verifyUrl}</p>
+      <p style="color: #64748B; font-size: 13px;">If you didn't create a NexusPlay account, you can safely ignore this email.</p>
+    </div>
+    `
+  );
+}
+
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
   await sendEmail(
     to,

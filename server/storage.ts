@@ -45,6 +45,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByResetTokenHash(tokenHash: string): Promise<User | undefined>;
+  getUserByVerifyTokenHash(tokenHash: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserBySteamId(steamId: string): Promise<User | undefined>;
   getUserByProviderId(provider: string, providerId: string): Promise<User | undefined>;
@@ -176,6 +177,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(and(eq(users.resetTokenHash, tokenHash), gte(users.resetTokenExpiresAt, new Date())));
+    return user;
+  }
+
+  async getUserByVerifyTokenHash(tokenHash: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.verifyTokenHash, tokenHash), gte(users.verifyTokenExpiresAt, new Date())));
     return user;
   }
 

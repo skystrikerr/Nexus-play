@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMobile, useCapacitor } from "@/hooks/useMobile";
 import AppLayout from "@/components/app-layout";
 import GuestModeBanner from "@/components/guest-mode-banner";
+import VerifyEmailBanner from "@/components/verify-email-banner";
 import { Landing } from "@/pages/landing";
 import { Auth } from "@/pages/auth";
 import { GamingPlatforms } from "@/pages/gaming-platforms";
@@ -23,6 +24,7 @@ import { UserProfile } from "@/pages/user-profile";
 import Settings from "@/pages/settings";
 import Releases from "@/pages/releases";
 import Terms from "@/pages/terms";
+import VerifyEmail from "@/pages/verify-email";
 import Privacy from "@/pages/privacy";
 import Analytics from "@/pages/analytics";
 import Reviews from "@/pages/reviews";
@@ -39,6 +41,7 @@ function Router() {
     <Switch>
       <Route path="/auth" component={Auth} />
       <Route path="/terms" component={Terms} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/gaming-platforms" component={GamingPlatforms} />
       <Route path="/game-backlog" component={GameBacklog} />
@@ -71,6 +74,7 @@ function Router() {
     return (
       <>
         <GuestModeBanner />
+        <VerifyEmailBanner />
         <AppLayout>
           <AppContent />
         </AppLayout>

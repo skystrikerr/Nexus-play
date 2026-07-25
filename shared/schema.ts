@@ -50,6 +50,9 @@ export const users = pgTable("users", {
   providerId: varchar("provider_id"), // external provider ID
   resetTokenHash: varchar("reset_token_hash"), // sha256 of active password reset token
   resetTokenExpiresAt: timestamp("reset_token_expires_at"), // reset token expiry
+  emailVerified: integer("email_verified").default(0), // 1 once the email address is confirmed
+  verifyTokenHash: varchar("verify_token_hash"), // sha256 of active email verification token
+  verifyTokenExpiresAt: timestamp("verify_token_expires_at"), // verification token expiry
   xboxLiveId: varchar("xbox_live_id"), // Xbox Live gamertag/ID
   steamId: varchar("steam_id"), // Steam user ID
   xboxAccessToken: varchar("xbox_access_token"), // Xbox access token

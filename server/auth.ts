@@ -11,7 +11,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./email";
 
 // Shared limiter for credential endpoints: 20 attempts per 15 minutes per IP
 const authLimiter = rateLimit({
@@ -32,6 +32,25 @@ const sensitiveLimiter = rateLimit({
 });
 
 
+
+/** Issue a fresh email-verification token and send the confirmation email. */
+async function issueVerificationEmail(user: { id: string; email: string | null }, baseUrl: string) {
+  if (!user.email) return;
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  await storage.updateUser(user.id, {
+    verifyTokenHash: tokenHash,
+    verifyTokenExpiresAt: expiresAt,
+  });
+
+  await sendVerificationEmail(user.email, `${baseUrl}/verify-email?token=${token}`);
+}
+
+function appBaseUrl(req: any): string {
+  return process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+}
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -153,6 +172,7 @@ export async function setupAuth(app: Express) {
           profileImageUrl: profile.photos?.[0]?.value,
           password: undefined,
           isPublic: 0,
+          emailVerified: 1, // Google already confirmed this address
         });
 
         return done(null, {
@@ -200,7 +220,8 @@ export async function setupAuth(app: Express) {
           email: user.email, 
           firstName: user.firstName,
           lastName: user.lastName,
-          provider: user.provider
+          provider: user.provider,
+          emailVerified: user.emailVerified ?? 0
         };
         done(null, sessionUser);
       } else {
@@ -257,6 +278,11 @@ export async function setupAuth(app: Express) {
         provider: 'local',
         isPublic: 0, // Private by default for security
       });
+
+      // Send the confirmation email, but never fail signup over it
+      issueVerificationEmail(user, appBaseUrl(req)).catch((err) =>
+        console.error('Verification email failed to send:', err)
+      );
 
       // Log in the user
       req.login({ 
@@ -396,6 +422,55 @@ export async function setupAuth(app: Express) {
     } catch (error) {
       console.error('Change password error:', error);
       res.status(500).json({ message: 'Failed to change password' });
+    }
+  });
+
+  // Confirm an email address using the token from the verification email
+  app.post('/api/auth/verify-email', authLimiter, async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: 'Verification token is required' });
+      }
+
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const user = await storage.getUserByVerifyTokenHash(tokenHash);
+      if (!user) {
+        return res.status(400).json({ message: 'This link is invalid or has expired. Request a new one from your account.' });
+      }
+
+      await storage.updateUser(user.id, {
+        emailVerified: 1,
+        verifyTokenHash: null,
+        verifyTokenExpiresAt: null,
+      });
+
+      res.json({ message: 'Email confirmed. Thanks!' });
+    } catch (error) {
+      console.error('Verify email error:', error);
+      res.status(500).json({ message: 'Failed to verify email' });
+    }
+  });
+
+  // Send a fresh confirmation email to the logged-in user
+  app.post('/api/auth/resend-verification', sensitiveLimiter, isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.isGuest) {
+        return res.status(400).json({ message: 'Guests do not have an email address to verify' });
+      }
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      if (user.emailVerified) {
+        return res.json({ message: 'Your email is already confirmed.' });
+      }
+
+      await issueVerificationEmail(user, appBaseUrl(req));
+      res.json({ message: 'Confirmation email sent — check your inbox.' });
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      res.status(500).json({ message: 'Could not send the confirmation email. Please try again later.' });
     }
   });
 
