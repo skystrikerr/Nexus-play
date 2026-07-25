@@ -1,18 +1,47 @@
-// Minimal email sender. Uses Resend (https://resend.com) when RESEND_API_KEY is
-// set; otherwise logs the message to the server console so the flow still works
-// in local development.
+// Transactional email (password resets).
+//
+// Two providers are supported so there is a $0 path that can email ANY user:
+//
+//   * Brevo   — set BREVO_API_KEY. Free tier (300/day) can send to any
+//               recipient once you verify a single sender address (no domain
+//               purchase required). Preferred when both are configured.
+//   * Resend  — set RESEND_API_KEY. Free tier can only email the account
+//               owner until you verify a domain you own.
+//
+// With neither configured, messages are logged to the server console so the
+// flow still works in local development.
 
 const FROM_ADDRESS = process.env.EMAIL_FROM || "NexusPlay <onboarding@resend.dev>";
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
+/** Split "Name <addr@example.com>" into its parts */
+function parseFrom(value: string): { name: string; email: string } {
+  const match = value.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (match) return { name: match[1] || "NexusPlay", email: match[2] };
+  return { name: "NexusPlay", email: value.trim() };
+}
 
-  if (!apiKey) {
-    console.log(`[email] RESEND_API_KEY not set — would have sent to ${to}: ${subject}`);
-    console.log(`[email] Body:\n${html}`);
-    return;
+async function sendViaBrevo(apiKey: string, to: string, subject: string, html: string) {
+  const from = parseFrom(FROM_ADDRESS);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: from.name, email: from.email },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Brevo send failed (${res.status}): ${await res.text()}`);
   }
+}
 
+async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -21,11 +50,20 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
     },
     body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
   });
-
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Email send failed (${res.status}): ${body}`);
+    throw new Error(`Resend send failed (${res.status}): ${await res.text()}`);
   }
+}
+
+async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+  const brevoKey = process.env.BREVO_API_KEY;
+  const resendKey = process.env.RESEND_API_KEY;
+
+  if (brevoKey) return sendViaBrevo(brevoKey, to, subject, html);
+  if (resendKey) return sendViaResend(resendKey, to, subject, html);
+
+  console.log(`[email] No email provider configured — would have sent to ${to}: ${subject}`);
+  console.log(`[email] Body:\n${html}`);
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
@@ -39,6 +77,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
       <p style="margin: 24px 0;">
         <a href="${resetUrl}" style="background: linear-gradient(135deg, #14B8A6, #8B5CF6); color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Reset Password</a>
       </p>
+      <p style="color: #64748B; font-size: 13px;">If the button doesn't work, paste this into your browser:<br>${resetUrl}</p>
       <p style="color: #64748B; font-size: 13px;">If you didn't request this, you can safely ignore this email — your password won't change.</p>
     </div>
     `

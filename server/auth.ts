@@ -430,7 +430,9 @@ export async function setupAuth(app: Express) {
 
       res.json(genericResponse);
     } catch (error) {
-      console.error('Request password reset error');
+      // Still return the generic response (no email enumeration), but log the
+      // real reason so delivery problems are debuggable from server logs.
+      console.error('Request password reset error:', error);
       res.json(genericResponse);
     }
   });

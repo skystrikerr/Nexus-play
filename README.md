@@ -20,8 +20,9 @@ NexusPlay is a full-stack activity tracker: games, study sessions, work, exercis
    RAWG_API_KEY=<your key>                # game search (free at rawg.io/apidocs)
    GOOGLE_CLIENT_ID=...                   # optional, Google sign-in
    GOOGLE_CLIENT_SECRET=...               # optional, Google sign-in
-   RESEND_API_KEY=...                     # optional, password reset emails
-   EMAIL_FROM="NexusPlay <you@domain>"    # optional, reset email sender
+   BREVO_API_KEY=...                      # email provider (any recipient, free)
+   RESEND_API_KEY=...                     # alt email provider (owner-only until domain verified)
+   EMAIL_FROM="NexusPlay <you@domain>"    # sender shown on reset emails
    APP_URL=https://yourdomain.com         # used in password reset links
    ```
 
