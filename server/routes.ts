@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertSessionSchema, insertGameSchema, insertReviewSchema, insertPostSchema, insertTaskSchema, insertCommunitySchema, insertChannelSchema, insertRankingListSchema, insertRankingItemSchema, ACTIVITY_TYPES } from "@shared/schema";
 import { z } from "zod";
-import { guestActivities, guestSessions, guestStats } from "./guestData";
+import { getSandbox, createGuestActivity, guestStatsFor } from "./guestData";
 
 const RAWG_BASE_URL = "https://api.rawg.io/api";
 
@@ -204,9 +204,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const { type } = req.query;
       
-      // Return demo data for guest users
+      // Guests get their own private in-memory sandbox
       if (req.user.isGuest) {
-        let activities = [...guestActivities];
+        let activities = [...getSandbox(userId).activities];
         if (type && typeof type === 'string') {
           activities = activities.filter(a => a.type === type);
         }
@@ -229,6 +229,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        const activity = getSandbox(userId).activities.find(a => a.id === req.params.id);
+        if (!activity) return res.status(404).json({ message: "Activity not found" });
+        return res.json(activity);
+      }
       const activity = await storage.getActivityById(req.params.id, userId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
@@ -243,6 +248,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const activityData = insertActivitySchema.parse(req.body);
+      if (req.user.isGuest) {
+        const activity = createGuestActivity(getSandbox(userId), userId, activityData);
+        return res.status(201).json(activity);
+      }
       const activity = await storage.createActivity(activityData, userId);
       res.status(201).json(activity);
     } catch (error) {
@@ -257,6 +266,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const activityData = insertActivitySchema.partial().parse(req.body);
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const activity = box.activities.find(a => a.id === req.params.id);
+        if (!activity) return res.status(404).json({ message: "Activity not found" });
+        Object.assign(activity, activityData, { updatedAt: new Date() });
+        return res.json(activity);
+      }
       const activity = await storage.updateActivity(req.params.id, activityData, userId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
@@ -273,6 +289,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/activities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const before = box.activities.length;
+        box.activities = box.activities.filter(a => a.id !== req.params.id);
+        box.sessions = box.sessions.filter(sess => sess.activityId !== req.params.id);
+        box.rankingItems = box.rankingItems.filter(i => i.activityId !== req.params.id);
+        if (box.activities.length === before) {
+          return res.status(404).json({ message: "Activity not found" });
+        }
+        return res.status(204).send();
+      }
       const success = await storage.deleteActivity(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Activity not found" });
@@ -299,9 +326,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Games routes (backward compatibility)
   app.get("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      // Demo games for guest users
       if (req.user.isGuest) {
-        return res.json(guestActivities.filter(a => a.type === "game"));
+        return res.json(getSandbox(req.user.id).activities.filter(a => a.type === "game"));
       }
       const userId = req.user.id;
       const games = await storage.getGames(userId);
@@ -374,9 +400,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const { activityId, gameId, date, startDate, endDate } = req.query;
       
-      // Return demo data for guest users
       if (req.user.isGuest) {
-        let sessions = [...guestSessions];
+        const box = getSandbox(userId);
+        let sessions = [...box.sessions];
         if (activityId) {
           sessions = sessions.filter(s => s.activityId === activityId);
         } else if (gameId) {
@@ -385,9 +411,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sessions = sessions.filter(s => s.date === date);
         }
         
-        // Enhance with activity details
         const enhancedSessions = sessions.map(session => {
-          const activity = guestActivities.find(a => a.id === session.activityId);
+          const activity = box.activities.find(a => a.id === session.activityId);
           return {
             ...session,
             activity: activity ? {
@@ -446,6 +471,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const sessionData = insertSessionSchema.parse(req.body);
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const session = { id: "guest-" + Date.now(), userId, ...sessionData, createdAt: new Date() };
+        box.sessions.push(session);
+        const activity = box.activities.find(a => a.id === sessionData.activityId);
+        if (activity) {
+          activity.totalHours = (activity.totalHours || 0) + (sessionData.duration || 0);
+          activity.updatedAt = new Date();
+        }
+        return res.status(201).json(session);
+      }
       const session = await storage.createSession(sessionData, userId);
       res.status(201).json(session);
     } catch (error) {
@@ -490,6 +526,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/timer", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        return res.json(getSandbox(userId).activeTimer);
+      }
       const activeTimer = await storage.getActiveTimer(userId);
       res.json(activeTimer);
     } catch (error) {
@@ -505,6 +544,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activityId: z.string(),
       }).parse(req.body);
 
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        if (box.activeTimer) {
+          return res.status(409).json({ message: "Timer already running" });
+        }
+        box.activeTimer = { id: "guest-timer", activityId, startedAt: Date.now() };
+        return res.status(201).json({ ...box.activeTimer, startTime: new Date(box.activeTimer.startedAt) });
+      }
       const timer = await storage.startTimer(activityId, userId);
       res.status(201).json(timer);
     } catch (error) {
@@ -526,6 +573,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activityId: z.string(),
       }).parse(req.body);
 
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        if (!box.activeTimer || box.activeTimer.activityId !== activityId) {
+          return res.status(404).json({ message: "No active timer found for this activity" });
+        }
+        const duration = Math.max(0.01, (Date.now() - box.activeTimer.startedAt) / 3600000);
+        const session = {
+          id: "guest-" + Date.now(),
+          userId,
+          activityId,
+          date: new Date().toISOString().split("T")[0],
+          duration: Math.round(duration * 100) / 100,
+          notes: null,
+          quality: null,
+          location: null,
+          createdAt: new Date(),
+        };
+        box.sessions.push(session);
+        const activity = box.activities.find(a => a.id === activityId);
+        if (activity) {
+          activity.totalHours = (activity.totalHours || 0) + session.duration;
+        }
+        box.activeTimer = null;
+        return res.json(session);
+      }
       const session = await storage.stopTimer(activityId, userId);
       if (!session) {
         return res.status(404).json({ message: "No active timer found for this activity" });
@@ -640,9 +712,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       
-      // Return demo stats for guest users
       if (req.user.isGuest) {
-        return res.json(guestStats);
+        return res.json(guestStatsFor(getSandbox(userId)));
       }
       
       const { type } = req.query;
@@ -1096,6 +1167,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ranking Lists API
   app.get("/api/ranking-lists", isAuthenticated, async (req: any, res) => {
     try {
+      if (req.user.isGuest) {
+        return res.json(getSandbox(req.user.id).rankingLists);
+      }
       const userId = req.user.id;
       const { type } = req.query;
       const lists = type 
@@ -1124,6 +1198,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ranking-lists", isAuthenticated, async (req: any, res) => {
     try {
+      if (req.user.isGuest) {
+        const box = getSandbox(req.user.id);
+        const list = {
+          id: "guest-list-" + Date.now(),
+          userId: req.user.id,
+          name: String(req.body.name || "My Tier List").slice(0, 200),
+          description: req.body.description ? String(req.body.description).slice(0, 500) : null,
+          type: "game",
+          isPublic: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        box.rankingLists.push(list);
+        return res.status(201).json(list);
+      }
       const userId = req.user.id;
       const listData = insertRankingListSchema.parse(req.body);
       const list = await storage.createRankingList(listData, userId);
@@ -1152,6 +1241,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/ranking-lists/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const before = box.rankingLists.length;
+        box.rankingLists = box.rankingLists.filter(l => l.id !== req.params.id);
+        box.rankingItems = box.rankingItems.filter(i => i.rankingListId !== req.params.id);
+        if (box.rankingLists.length === before) {
+          return res.status(404).json({ message: "Ranking list not found" });
+        }
+        return res.status(204).send();
+      }
       const success = await storage.deleteRankingList(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Ranking list not found" });
@@ -1167,6 +1266,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ranking-lists/:listId/items", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        const items = getSandbox(userId).rankingItems
+          .filter(i => i.rankingListId === req.params.listId)
+          .sort((a, b) => a.position - b.position);
+        return res.json(items);
+      }
       const items = await storage.getRankingItems(req.params.listId, userId);
       res.json(items);
     } catch (error) {
@@ -1179,6 +1284,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const itemData = insertRankingItemSchema.parse(req.body);
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const item = { id: "guest-item-" + Date.now(), ...itemData, tier: itemData.tier ?? null, notes: null, createdAt: new Date() };
+        box.rankingItems.push(item);
+        return res.status(201).json(item);
+      }
       const item = await storage.addRankingItem(itemData, userId);
       res.status(201).json(item);
     } catch (error) {
@@ -1190,6 +1301,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/ranking-items/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        const before = box.rankingItems.length;
+        box.rankingItems = box.rankingItems.filter(i => i.id !== req.params.id);
+        if (box.rankingItems.length === before) {
+          return res.status(404).json({ message: "Ranking item not found" });
+        }
+        return res.status(204).send();
+      }
       const success = await storage.removeRankingItem(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Ranking item not found" });
@@ -1205,6 +1325,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const { items } = req.body;
+      if (req.user.isGuest) {
+        const box = getSandbox(userId);
+        for (const it of items || []) {
+          const existing = box.rankingItems.find(i => i.id === it.id && i.rankingListId === req.params.listId);
+          if (existing) {
+            existing.position = it.position;
+            if (it.tier !== undefined) existing.tier = it.tier;
+          }
+        }
+        return res.status(200).json({ message: "Items reordered successfully" });
+      }
       const success = await storage.reorderRankingItems(req.params.listId, items, userId);
       if (!success) {
         return res.status(500).json({ message: "Failed to reorder ranking items" });

@@ -156,13 +156,6 @@ export default function AddGameModal({ open, onOpenChange }: AddGameModalProps) 
   });
 
   const onSubmit = (data: FormData) => {
-    if ((user as any)?.isGuest) {
-      toast({
-        title: "Guest mode is read-only",
-        description: "Create a free account to save games and track your progress!",
-      });
-      return;
-    }
     const submitData = {
       ...data,
       rating: selectedRating || undefined,

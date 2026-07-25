@@ -226,19 +226,17 @@ export default function TierList() {
 
   const { data: rankingListsData, isLoading: listsLoading } = useQuery<RankingList[]>({
     queryKey: ["/api/ranking-lists"],
-    enabled: !isGuest,
   });
   const rankingLists = rankingListsData ?? [];
 
   const { data: activitiesData } = useQuery<Activity[]>({
     queryKey: ["/api/activities"],
-    enabled: !isGuest,
   });
   const activities = activitiesData ?? [];
 
   const { data: rankingItemsData } = useQuery<RankingItem[]>({
     queryKey: ["/api/ranking-lists", selectedListId, "items"],
-    enabled: !isGuest && !!selectedListId,
+    enabled: !!selectedListId,
   });
   const rankingItems = rankingItemsData ?? [];
 
@@ -470,7 +468,7 @@ export default function TierList() {
         title="Tier Lists"
         subtitle={selectedList ? `${selectedList.name} · ${totalOnBoard} games` : "Rank your games, S through F"}
         actions={
-          !isGuest && (
+          (
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-aurora text-white hover:opacity-90 shadow-lg shadow-primary/20">
@@ -523,12 +521,13 @@ export default function TierList() {
       />
 
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-        {/* Guest user message */}
+        {/* Guests can build lists in their private sandbox; nudge them to save */}
         {isGuest && (
           <Alert className="glass border-border/60">
             <UserPlus className="h-5 w-5 text-primary" />
             <AlertDescription className="text-muted-foreground ml-2">
-              <span className="font-semibold text-foreground">Sign up for free</span> to build drag-and-drop tier lists of your games!
+              You're in guest mode — your tier lists live only in this session.{" "}
+              <span className="font-semibold text-foreground">Sign up free</span> to keep them forever.
               <Button
                 size="sm"
                 onClick={() => (window.location.href = "/auth")}
@@ -540,14 +539,14 @@ export default function TierList() {
           </Alert>
         )}
 
-        {!isGuest && listsLoading && (
+        {listsLoading && (
           <div className="space-y-3">
             {[1, 2, 3].map(i => <div key={i} className="shimmer rounded-xl h-24" />)}
           </div>
         )}
 
         {/* No lists yet */}
-        {!isGuest && !listsLoading && rankingLists.length === 0 && (
+        {!listsLoading && rankingLists.length === 0 && (
           <div className="glass-glow rounded-xl p-12 text-center">
             <Gamepad2 className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
             <h3 className="text-lg font-display font-semibold text-foreground mb-1">No Tier Lists Yet</h3>
@@ -564,7 +563,7 @@ export default function TierList() {
           </div>
         )}
 
-        {!isGuest && rankingLists.length > 0 && (
+        {rankingLists.length > 0 && (
           <>
             {/* List picker + search row */}
             <div className="flex flex-col lg:flex-row gap-3">

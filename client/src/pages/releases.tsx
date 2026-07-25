@@ -69,13 +69,6 @@ export default function Releases() {
   });
 
   const handleWishlist = (game: RawgGame) => {
-    if ((user as any)?.isGuest) {
-      toast({
-        title: "Guest mode is read-only",
-        description: "Create a free account to build your wishlist!",
-      });
-      return;
-    }
     addToWishlistMutation.mutate(game);
   };
 

@@ -1,164 +1,117 @@
-// Demo data for guest mode users — a gaming showroom
-export const guestActivities: any[] = [
-  {
-    id: "demo-game-1",
-    userId: "guest",
-    type: "game",
-    title: "Elden Ring",
-    category: "RPG",
-    subcategory: "Action RPG",
-    status: "in_progress",
-    progress: 65,
-    rating: 5,
-    totalHours: 87,
-    tier: "S",
-    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg",
-    description: "An epic dark fantasy adventure",
-    tags: ["souls-like", "open-world", "challenging"],
-    metadata: {},
-    externalId: null,
-    isPublic: 1,
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(),
-  },
-  {
-    id: "demo-game-2",
-    userId: "guest",
-    type: "game",
-    title: "Baldur's Gate 3",
-    category: "RPG",
-    subcategory: "Turn-Based",
-    status: "completed",
-    progress: 100,
-    rating: 5,
-    totalHours: 156,
-    tier: "S",
-    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/1086940/header.jpg",
-    description: "The best D&D adventure in gaming",
-    tags: ["d&d", "story-rich", "multiplayer"],
-    metadata: {},
-    externalId: null,
-    isPublic: 1,
-    createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(),
-  },
-  {
-    id: "demo-game-3",
-    userId: "guest",
-    type: "game",
-    title: "Hollow Knight",
-    category: "Metroidvania",
-    subcategory: "Platformer",
-    status: "wishlist",
-    progress: 0,
-    rating: null,
-    totalHours: 0,
-    tier: null,
-    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/367520/header.jpg",
-    description: "Beautiful hand-drawn metroidvania",
-    tags: ["metroidvania", "indie", "challenging"],
-    metadata: { priority: "high", estimatedHours: 40 },
-    externalId: null,
-    isPublic: 1,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(),
-  },
-  {
-    id: "demo-game-4",
-    userId: "guest",
-    type: "game",
-    title: "Hades II",
-    category: "Roguelike",
-    subcategory: "Action",
-    status: "in_progress",
-    progress: 40,
-    rating: 4,
-    totalHours: 32,
-    tier: "A",
-    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/1145350/header.jpg",
-    description: "Escape the Underworld — again",
-    tags: ["roguelike", "indie", "mythology"],
-    metadata: {},
-    externalId: null,
-    isPublic: 1,
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(),
-  },
-  {
-    id: "demo-game-5",
-    userId: "guest",
-    type: "game",
-    title: "Stardew Valley",
-    category: "Simulation",
-    subcategory: "Farming",
-    status: "completed",
-    progress: 100,
-    rating: 5,
-    totalHours: 210,
-    tier: "S",
-    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/413150/header.jpg",
-    description: "The coziest farm in gaming",
-    tags: ["cozy", "indie", "farming"],
-    metadata: {},
-    externalId: null,
-    isPublic: 1,
-    createdAt: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(),
-  },
-];
+// Per-guest in-memory sandboxes.
+//
+// Every guest session gets its own empty, fully-usable workspace: they can
+// add games, log sessions, and build tier lists, and nobody else ever sees
+// it. Data lives only in server memory — it disappears when the server
+// restarts or the sandbox goes stale, which is exactly the pitch of guest
+// mode ("create a free account to keep your progress").
 
-export const guestSessions: any[] = [
-  {
-    id: "demo-session-1",
-    activityId: "demo-game-1",
-    userId: "guest",
-    date: new Date().toISOString().split('T')[0], // Today
-    duration: 2.5,
-    notes: "Finally beat Malenia!",
-    quality: 5,
-    location: null,
-  },
-  {
-    id: "demo-session-2",
-    activityId: "demo-game-4",
-    userId: "guest",
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Yesterday
-    duration: 1.5,
-    notes: "New personal best run",
-    quality: 4,
-    location: null,
-  },
-  {
-    id: "demo-session-3",
-    activityId: "demo-game-1",
-    userId: "guest",
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
-    duration: 4.0,
-    notes: "Exploring the Mountaintops of the Giants",
-    quality: 5,
-    location: null,
-  },
-  {
-    id: "demo-session-4",
-    activityId: "demo-game-2",
-    userId: "guest",
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5 days ago
-    duration: 8.0,
-    notes: "Final boss battle and ending — what an amazing journey!",
-    quality: 5,
-    location: null,
-  },
-];
+import { randomUUID } from "crypto";
 
-export const guestStats = {
-  totalActivities: 5,
-  completedActivities: 2,
-  inProgressActivities: 2,
-  totalHours: 485,
-  monthlyHours: 42.5,
-  totalGames: 5,
-  completedGames: 2,
-  byType: {
-    game: { count: 5, completed: 2, hours: 485 },
-  },
-};
+export interface GuestSandbox {
+  activities: any[];
+  sessions: any[];
+  rankingLists: any[];
+  rankingItems: any[];
+  activeTimer: { id: string; activityId: string; startedAt: number } | null;
+  lastAccess: number;
+}
+
+const SANDBOX_TTL_MS = 6 * 60 * 60 * 1000; // forget sandboxes idle > 6h
+const MAX_SANDBOXES = 2000; // hard cap so memory can't grow unbounded
+
+const sandboxes = new Map<string, GuestSandbox>();
+
+function sweep() {
+  const now = Date.now();
+  sandboxes.forEach((box, id) => {
+    if (now - box.lastAccess > SANDBOX_TTL_MS) {
+      sandboxes.delete(id);
+    }
+  });
+  // Still over cap? Drop the oldest.
+  if (sandboxes.size > MAX_SANDBOXES) {
+    const oldest = Array.from(sandboxes.entries()).sort((a, b) => a[1].lastAccess - b[1].lastAccess);
+    for (let i = 0; i < oldest.length - MAX_SANDBOXES; i++) {
+      sandboxes.delete(oldest[i][0]);
+    }
+  }
+}
+
+export function getSandbox(guestId: string): GuestSandbox {
+  let box = sandboxes.get(guestId);
+  if (!box) {
+    if (sandboxes.size >= MAX_SANDBOXES) sweep();
+    box = {
+      activities: [],
+      sessions: [],
+      rankingLists: [],
+      rankingItems: [],
+      activeTimer: null,
+      lastAccess: Date.now(),
+    };
+    sandboxes.set(guestId, box);
+  }
+  box.lastAccess = Date.now();
+  return box;
+}
+
+export function newId(): string {
+  return "guest-" + randomUUID();
+}
+
+/** Create an activity in the sandbox with sane defaults */
+export function createGuestActivity(box: GuestSandbox, guestId: string, data: any) {
+  const activity = {
+    id: newId(),
+    userId: guestId,
+    title: data.title,
+    type: data.type || "game",
+    category: data.category ?? null,
+    subcategory: data.subcategory ?? null,
+    status: data.status || "wishlist",
+    rating: data.rating ?? null,
+    progress: data.progress ?? 0,
+    totalHours: data.totalHours ?? 0,
+    tier: data.tier ?? null,
+    imageUrl: data.imageUrl ?? null,
+    externalId: data.externalId ?? null,
+    description: data.description ?? null,
+    tags: data.tags ?? [],
+    metadata: data.metadata ?? {},
+    isPublic: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  box.activities.push(activity);
+  return activity;
+}
+
+/** Compute the /api/stats payload from a sandbox */
+export function guestStatsFor(box: GuestSandbox) {
+  const activities = box.activities;
+  const totalHours = activities.reduce((sum, a) => sum + (a.totalHours || 0), 0);
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const monthlyHours = box.sessions
+    .filter((s) => String(s.date).startsWith(currentMonth))
+    .reduce((sum, s) => sum + (s.duration || 0), 0);
+
+  const games = activities.filter((a) => a.type === "game");
+  return {
+    totalActivities: activities.length,
+    completedActivities: activities.filter((a) => a.status === "completed").length,
+    inProgressActivities: activities.filter((a) => a.status === "in_progress").length,
+    totalHours: Math.round(totalHours),
+    monthlyHours: Math.round(monthlyHours * 10) / 10,
+    byType: {
+      game: {
+        count: games.length,
+        completed: games.filter((a) => a.status === "completed").length,
+        hours: games.reduce((sum, a) => sum + (a.totalHours || 0), 0),
+      },
+    },
+    totalGames: games.length,
+    completedGames: games.filter((a) => a.status === "completed").length,
+  };
+}
