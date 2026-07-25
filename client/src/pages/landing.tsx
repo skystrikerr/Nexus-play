@@ -158,6 +158,15 @@ export function Landing() {
             Explore NexusPlay
           </Button>
         </section>
+
+        {/* Footer */}
+        <footer className="border-t border-border/60 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} NexusPlay</span>
+          <div className="flex gap-6">
+            <a href="/terms" className="hover:text-foreground">Terms of Use</a>
+            <a href="/privacy" className="hover:text-foreground">Privacy Policy</a>
+          </div>
+        </footer>
       </div>
     </div>
   );

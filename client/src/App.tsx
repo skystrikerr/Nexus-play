@@ -22,6 +22,8 @@ import { Users } from "@/pages/users";
 import { UserProfile } from "@/pages/user-profile";
 import Settings from "@/pages/settings";
 import Releases from "@/pages/releases";
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
 import Analytics from "@/pages/analytics";
 import Reviews from "@/pages/reviews";
 import Profile from "@/pages/profile";
@@ -36,6 +38,8 @@ function Router() {
   const AppContent = () => (
     <Switch>
       <Route path="/auth" component={Auth} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/gaming-platforms" component={GamingPlatforms} />
       <Route path="/game-backlog" component={GameBacklog} />
       {isLoading || !isAuthenticated ? (

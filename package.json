@@ -27,7 +27,8 @@
       "target": [
         "nsis",
         "portable"
-      ]
+      ],
+      "icon": "electron/icon.ico"
     },
     "asar": true
   },

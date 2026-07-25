@@ -207,7 +207,7 @@ export function Auth() {
             <span className="text-gradient-aurora">Play</span>
           </h1>
           <p className="text-muted-foreground">
-            Track your activities and manage your time
+            Track your games. Rank everything.
           </p>
         </div>
 
@@ -507,6 +507,12 @@ export function Auth() {
                   >
                     {registerMutation.isPending ? "Creating account..." : "Create Account"}
                   </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    By creating an account you agree to our{" "}
+                    <a href="/terms" className="text-primary hover:underline">Terms of Use</a> and{" "}
+                    <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+                  </p>
                 </form>
               </TabsContent>
             </Tabs>
