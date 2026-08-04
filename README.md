@@ -54,3 +54,7 @@ The repo includes a [render.yaml](render.yaml) blueprint for Render's free tier:
 The free tier sleeps after 15 minutes of inactivity; the first request afterwards takes up to a minute while it wakes.
 
 See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for a full tour of the codebase and [MOBILE_SETUP.md](MOBILE_SETUP.md) for the Android build.
+
+## Other apps in this repo
+
+- [apps/project-tracker](apps/project-tracker) — a standalone project tracker with progress bars. Its own React/Vite app with its own dependencies; no server or database, and no code shared with NexusPlay.
