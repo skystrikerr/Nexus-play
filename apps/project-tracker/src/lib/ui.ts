@@ -3,22 +3,30 @@ export function cn(...values: Array<string | false | null | undefined>): string 
 }
 
 export const buttonBase =
-  "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-solid)] disabled:opacity-40 disabled:pointer-events-none";
 
-export const buttonPrimary = `${buttonBase} bg-blue-600 px-3.5 py-2 text-white hover:bg-blue-500`;
+/** Gradient fill + glow: the one loud button on the page. */
+export const buttonPrimary = `${buttonBase} bg-gradient-to-r from-violet-600 via-indigo-500 to-sky-500 px-4 py-2.5 text-white shadow-[0_10px_30px_-10px_rgba(124,58,237,0.85)] hover:shadow-[0_14px_36px_-10px_rgba(124,58,237,0.95)] hover:-translate-y-0.5`;
 
-export const buttonGhost = `${buttonBase} px-3 py-2 text-[var(--muted)] hover:bg-[var(--panel-2)] hover:text-[var(--text)]`;
+export const buttonGhost = `${buttonBase} px-3 py-2.5 text-[var(--muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text)]`;
 
-export const buttonOutline = `${buttonBase} border border-[var(--border)] bg-[var(--panel)] px-3 py-2 hover:bg-[var(--panel-2)]`;
+export const buttonOutline = `${buttonBase} glass px-4 py-2.5 text-[var(--text)] hover:bg-[var(--glass-hover)]`;
 
-export const buttonDanger = `${buttonBase} bg-rose-600 px-3.5 py-2 text-white hover:bg-rose-500`;
+export const buttonDanger = `${buttonBase} bg-gradient-to-r from-rose-600 to-red-500 px-4 py-2.5 text-white shadow-[0_10px_30px_-12px_rgba(244,63,94,0.9)] hover:-translate-y-0.5`;
 
-/** Shared field chrome; `inputBase` fills its container, `selectBase` hugs its content. */
+export const iconButton =
+  "inline-flex h-9 w-9 items-center justify-center rounded-xl text-[var(--muted)] transition-all duration-200 hover:bg-[var(--glass-hover)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70";
+
 const fieldBase =
-  "rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--muted)] focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/25";
+  "rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3.5 py-2.5 text-sm text-[var(--text)] backdrop-blur-xl transition placeholder:text-[var(--faint)] focus:border-violet-400/60 focus:outline-none focus:ring-4 focus:ring-violet-500/15";
 
 export const inputBase = `${fieldBase} w-full`;
 
 export const selectBase = fieldBase;
 
-export const labelBase = "mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]";
+export const labelBase =
+  "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--faint)]";
+
+/** Small glass pill used for meta chips (due date, task counts). */
+export const chipBase =
+  "inline-flex items-center gap-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass)] px-2.5 py-1 text-xs font-medium text-[var(--muted)]";

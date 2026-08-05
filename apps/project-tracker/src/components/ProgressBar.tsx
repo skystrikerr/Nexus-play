@@ -10,10 +10,11 @@ interface ProgressBarProps {
 
 export function ProgressBar({ value, accent = "blue", size = "md", label }: ProgressBarProps) {
   const { from, to } = ACCENT_HEX[accent];
+  const height = size === "sm" ? 7 : 12;
   return (
     <div
-      className="w-full overflow-hidden rounded-full bg-[var(--track)]"
-      style={{ height: size === "sm" ? 6 : 10 }}
+      className="relative w-full overflow-hidden rounded-full bg-[var(--track)] ring-1 ring-inset ring-white/5"
+      style={{ height }}
       role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}
@@ -21,13 +22,15 @@ export function ProgressBar({ value, accent = "blue", size = "md", label }: Prog
       aria-label={label}
     >
       <div
-        className="h-full rounded-full transition-[width] duration-500 ease-out"
+        className="relative h-full overflow-hidden rounded-full transition-[width] duration-700 ease-out"
         style={{
           width: `${value}%`,
           backgroundImage: `linear-gradient(90deg, ${from}, ${to})`,
-          boxShadow: value > 0 ? `0 0 12px ${from}55` : undefined,
+          boxShadow: value > 0 ? `0 0 18px -2px ${from}aa, inset 0 1px 0 rgba(255,255,255,0.35)` : undefined,
         }}
-      />
+      >
+        {value > 0 && value < 100 ? <span className="shimmer absolute inset-0" /> : null}
+      </div>
     </div>
   );
 }

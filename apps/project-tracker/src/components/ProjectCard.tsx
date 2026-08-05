@@ -13,7 +13,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { TaskList } from "@/components/TaskList";
 import { daysUntil, formatDueDate, formatRelativeTime } from "@/lib/format";
 import { isTaskDriven, projectProgress, taskCounts } from "@/lib/progress";
-import { cn } from "@/lib/ui";
+import { chipBase, cn, iconButton } from "@/lib/ui";
 import { ACCENT_HEX, STATUS_META, type Project } from "@/types";
 
 interface ProjectCardProps {
@@ -49,28 +49,42 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "animate-fade-up group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)] shadow-sm transition hover:shadow-md",
+        "glass glass-sheen group relative flex flex-col overflow-hidden rounded-2xl p-5 shadow-[var(--shadow)] transition-all duration-300 hover:-translate-y-1",
         project.archived && "opacity-60",
       )}
     >
+      {/* Accent glow, tinted per project, sitting behind the content. */}
       <div
-        className="h-1 w-full"
-        style={{ backgroundImage: `linear-gradient(90deg, ${accent.from}, ${accent.to})` }}
+        className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full opacity-25 blur-3xl transition-opacity duration-300 group-hover:opacity-40"
+        style={{ backgroundColor: accent.from }}
+        aria-hidden
       />
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="relative flex flex-1 flex-col gap-3.5">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold" title={project.name}>
-              {project.name}
-            </h3>
-            {project.description ? (
-              <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">{project.description}</p>
-            ) : null}
+          <div className="flex min-w-0 items-start gap-3">
+            <span
+              className="mt-1 h-9 w-1.5 shrink-0 rounded-full"
+              style={{
+                backgroundImage: `linear-gradient(180deg, ${accent.from}, ${accent.to})`,
+                boxShadow: `0 0 14px -2px ${accent.from}`,
+              }}
+              aria-hidden
+            />
+            <div className="min-w-0">
+              <h3 className="truncate text-[17px] font-semibold tracking-tight" title={project.name}>
+                {project.name}
+              </h3>
+              {project.description ? (
+                <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-[var(--muted)]">
+                  {project.description}
+                </p>
+              ) : null}
+            </div>
           </div>
           <span
             className={cn(
-              "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset",
+              "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset",
               status.chip,
             )}
           >
@@ -79,54 +93,73 @@ export function ProjectCard({
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-baseline justify-between gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+          <div className="mb-2 flex items-end justify-between gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--faint)]">
               {taskDriven ? `${done} of ${total} tasks` : "Progress"}
             </span>
-            <span className="text-lg font-semibold tabular-nums">{progress}%</span>
+            <span
+              className="text-2xl font-bold leading-none tabular-nums"
+              style={{
+                backgroundImage: `linear-gradient(120deg, ${accent.from}, ${accent.to})`,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              {progress}%
+            </span>
           </div>
           <ProgressBar value={progress} accent={project.accent} label={`${project.name} progress`} />
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--muted)]">
+        <div className="flex flex-wrap items-center gap-1.5">
           {project.dueDate ? (
-            <span className={cn("inline-flex items-center gap-1", overdue && "text-rose-500")}>
-              <CalendarDays size={13} />
+            <span
+              className={cn(
+                chipBase,
+                overdue && "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400",
+              )}
+            >
+              <CalendarDays size={12} />
               {formatDueDate(project.dueDate)}
             </span>
           ) : null}
           {total > 0 ? (
-            <span className="inline-flex items-center gap-1">
-              <ListChecks size={13} />
+            <span className={chipBase}>
+              <ListChecks size={12} />
               {done}/{total}
             </span>
-          ) : null}
-          <span className="inline-flex items-center gap-1">
-            {taskDriven ? null : <SlidersHorizontal size={13} />}
-            Updated {formatRelativeTime(project.updatedAt)}
+          ) : (
+            <span className={chipBase}>
+              <SlidersHorizontal size={12} />
+              Manual
+            </span>
+          )}
+          <span className="px-1 text-xs text-[var(--faint)]">
+            {formatRelativeTime(project.updatedAt)}
           </span>
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-[var(--glass-border)] pt-3">
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
             aria-expanded={expanded}
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-[var(--muted)] transition hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--text)]"
           >
             <ChevronDown
               size={15}
-              className={cn("transition-transform", expanded && "rotate-180")}
+              className={cn("transition-transform duration-300", expanded && "rotate-180")}
             />
-            {expanded ? "Hide details" : total > 0 ? "Tasks" : "Details"}
+            {expanded ? "Hide" : total > 0 ? "Tasks" : "Details"}
           </button>
 
-          <div className="flex items-center gap-0.5 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
+          <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
             <button
               type="button"
               onClick={onEdit}
               aria-label={`Edit ${project.name}`}
-              className="rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+              className={cn(iconButton, "h-8 w-8")}
             >
               <Pencil size={15} />
             </button>
@@ -134,7 +167,7 @@ export function ProjectCard({
               type="button"
               onClick={onArchiveToggle}
               aria-label={project.archived ? `Restore ${project.name}` : `Archive ${project.name}`}
-              className="rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+              className={cn(iconButton, "h-8 w-8")}
             >
               {project.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
             </button>
@@ -142,7 +175,7 @@ export function ProjectCard({
               type="button"
               onClick={onDelete}
               aria-label={`Delete ${project.name}`}
-              className="rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-rose-500/10 hover:text-rose-500"
+              className={cn(iconButton, "h-8 w-8 hover:bg-rose-500/15 hover:text-rose-400")}
             >
               <Trash2 size={15} />
             </button>
@@ -150,10 +183,10 @@ export function ProjectCard({
         </div>
 
         {expanded ? (
-          <div className="animate-fade-up space-y-3 border-t border-[var(--border)] pt-3">
+          <div className="animate-fade-up space-y-3 border-t border-[var(--glass-border)] pt-3">
             {project.progressMode === "manual" || total === 0 ? (
               <div>
-                <div className="mb-1 flex items-center justify-between text-sm">
+                <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="text-[var(--muted)]">
                     {project.progressMode === "manual"
                       ? "Manual progress"
@@ -168,7 +201,7 @@ export function ProjectCard({
                   step={5}
                   value={project.manualProgress}
                   onChange={(event) => onManualProgress(Number(event.target.value))}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-violet-500"
                   aria-label={`${project.name} percentage complete`}
                 />
               </div>

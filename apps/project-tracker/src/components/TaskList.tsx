@@ -30,7 +30,7 @@ export function TaskList({ tasks, onToggle, onDelete, onAdd }: TaskListProps) {
           {tasks.map((task) => (
             <li
               key={task.id}
-              className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-[var(--panel-2)]"
+              className="group flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition hover:bg-[var(--glass-hover)]"
             >
               <button
                 type="button"
@@ -41,8 +41,8 @@ export function TaskList({ tasks, onToggle, onDelete, onAdd }: TaskListProps) {
                 className={cn(
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
                   task.done
-                    ? "border-emerald-500 bg-emerald-500 text-white"
-                    : "border-[var(--border)] hover:border-emerald-500",
+                    ? "border-transparent bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-[0_0_12px_-2px_rgba(16,185,129,0.9)]"
+                    : "border-[var(--glass-border)] hover:border-emerald-400",
                 )}
               >
                 {task.done ? <Check size={13} strokeWidth={3} /> : null}
@@ -86,7 +86,10 @@ export function TaskList({ tasks, onToggle, onDelete, onAdd }: TaskListProps) {
           onClick={submit}
           disabled={!title.trim()}
           aria-label="Add task"
-          className={cn(buttonBase, "shrink-0 bg-blue-600 px-3 text-white hover:bg-blue-500")}
+          className={cn(
+            buttonBase,
+            "shrink-0 bg-gradient-to-br from-violet-600 to-indigo-500 px-3.5 text-white shadow-[0_8px_20px_-8px_rgba(124,58,237,0.9)]",
+          )}
         >
           <Plus size={16} />
         </button>

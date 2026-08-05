@@ -8,6 +8,7 @@ import {
   Sparkles,
   Sun,
   Upload,
+  Zap,
 } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ProjectDialog } from "@/components/ProjectDialog";
@@ -18,11 +19,10 @@ import { daysUntil } from "@/lib/format";
 import { projectProgress } from "@/lib/progress";
 import {
   buttonDanger,
-  buttonGhost,
   buttonOutline,
   buttonPrimary,
   cn,
-  inputBase,
+  iconButton,
   selectBase,
 } from "@/lib/ui";
 import {
@@ -159,41 +159,49 @@ export default function App() {
     return counts;
   }, [projects, showArchived]);
 
+
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3.5 sm:px-6">
+      {/* Opaque, with its own gradient wash: translucency let card text read through when scrolled. */}
+      <header className="sticky top-0 z-30 border-b border-[var(--glass-border)] bg-[var(--bg-solid)]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-violet-500/10 via-transparent to-sky-500/10"
+          aria-hidden
+        />
+        <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 text-white">
-              <Sparkles size={17} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-500 to-sky-500 text-white shadow-[0_10px_26px_-10px_rgba(124,58,237,0.95)]">
+              <Sparkles size={18} />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold leading-tight">Project Tracker</h1>
-              <p className="text-xs text-[var(--muted)]">
-                {activeProjects.length} project{activeProjects.length === 1 ? "" : "s"} in flight
+            <div className="leading-tight max-sm:sr-only">
+              <h1 className="whitespace-nowrap text-[15px] font-bold tracking-tight">
+                Project Tracker
+              </h1>
+              <p className="text-xs text-[var(--faint)]">
+                {activeProjects.length} in flight
               </p>
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex items-center gap-1">
             <button
               type="button"
-              className={buttonGhost}
+              className={iconButton}
               onClick={() => exportProjects(projects)}
               title="Download a JSON backup"
+              aria-label="Export"
               disabled={projects.length === 0}
             >
-              <Download size={16} />
-              <span className="max-sm:hidden">Export</span>
+              <Download size={17} />
             </button>
             <button
               type="button"
-              className={buttonGhost}
+              className={iconButton}
               onClick={() => fileInputRef.current?.click()}
               title="Import a JSON backup"
+              aria-label="Import"
             >
-              <Upload size={16} />
-              <span className="max-sm:hidden">Import</span>
+              <Upload size={17} />
             </button>
             <input
               ref={fileInputRef}
@@ -208,37 +216,52 @@ export default function App() {
             />
             <button
               type="button"
-              className={buttonGhost}
+              className={iconButton}
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
             </button>
-            <button type="button" className={buttonPrimary} onClick={openCreate}>
+            <button type="button" className={cn(buttonPrimary, "ml-1.5")} onClick={openCreate}>
               <Plus size={16} />
-              New project
+              <span className="whitespace-nowrap">
+                New<span className="max-sm:hidden"> project</span>
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+        <section className="animate-fade-up">
+          <span className="glass inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-[var(--muted)]">
+            <Zap size={12} className="text-violet-400" />
+            Saved in your browser — no account, no sync, no cost
+          </span>
+          <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+            Everything you&rsquo;re <span className="text-gradient">building</span>
+          </h2>
+          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[var(--muted)]">
+            One place for every project, with a bar that fills itself in as you check tasks off.
+          </p>
+        </section>
+
         {importError ? (
-          <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-500">
+          <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-sm text-rose-400">
             {importError}
           </p>
         ) : null}
 
         <StatsRow projects={activeProjects} />
 
-        <section className="flex flex-wrap items-center gap-2">
+        <section className="glass glass-sheen relative flex flex-wrap items-center gap-2 rounded-2xl p-2 shadow-[var(--shadow)]">
           <div className="relative min-w-[200px] flex-1">
             <Search
-              size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]"
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--faint)]"
             />
             <input
-              className={cn(inputBase, "pl-9")}
+              className="w-full rounded-xl bg-transparent py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-[var(--faint)]"
               value={search}
               placeholder="Search projects and tasks…"
               onChange={(event) => setSearch(event.target.value)}
@@ -259,7 +282,10 @@ export default function App() {
           {archivedCount > 0 || showArchived ? (
             <button
               type="button"
-              className={cn(buttonOutline, showArchived && "border-blue-500 bg-blue-500/10")}
+              className={cn(
+                buttonOutline,
+                showArchived && "border-violet-400/70 bg-violet-500/15 text-[var(--text)]",
+              )}
               onClick={() => setShowArchived((value) => !value)}
             >
               Archived ({archivedCount})
@@ -267,17 +293,17 @@ export default function App() {
           ) : null}
         </section>
 
-        <section className="flex flex-wrap gap-1.5">
+        <section className="flex flex-wrap gap-2">
           {(["all", ...PROJECT_STATUSES] as StatusFilter[]).map((status) => (
             <button
               key={status}
               type="button"
               onClick={() => setStatusFilter(status)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                "rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all duration-200",
                 statusFilter === status
-                  ? "bg-[var(--text)] text-[var(--bg)]"
-                  : "text-[var(--muted)] hover:bg-[var(--panel-2)] hover:text-[var(--text)]",
+                  ? "bg-gradient-to-r from-violet-600 to-indigo-500 text-white shadow-[0_10px_24px_-12px_rgba(124,58,237,0.95)]"
+                  : "glass text-[var(--muted)] hover:-translate-y-0.5 hover:text-[var(--text)]",
               )}
             >
               {status === "all" ? "All" : STATUS_META[status].label}
@@ -294,23 +320,28 @@ export default function App() {
           />
         ) : (
           <section className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((project) => (
-              <ProjectCard
+            {visible.map((project, index) => (
+              <div
                 key={project.id}
-                project={project}
-                onEdit={() => openEdit(project)}
-                onDelete={() => setPendingDelete(project)}
-                onArchiveToggle={() => setArchived(project.id, !project.archived)}
-                onManualProgress={(value) => setManualProgress(project.id, value)}
-                onAddTask={(title) => addTask(project.id, title)}
-                onToggleTask={(taskId) => toggleTask(project.id, taskId)}
-                onDeleteTask={(taskId) => deleteTask(project.id, taskId)}
-              />
+                className="animate-fade-up"
+                style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+              >
+                <ProjectCard
+                  project={project}
+                  onEdit={() => openEdit(project)}
+                  onDelete={() => setPendingDelete(project)}
+                  onArchiveToggle={() => setArchived(project.id, !project.archived)}
+                  onManualProgress={(value) => setManualProgress(project.id, value)}
+                  onAddTask={(title) => addTask(project.id, title)}
+                  onToggleTask={(taskId) => toggleTask(project.id, taskId)}
+                  onDeleteTask={(taskId) => deleteTask(project.id, taskId)}
+                />
+              </div>
             ))}
           </section>
         )}
 
-        <p className="pt-2 text-center text-xs text-[var(--muted)]">
+        <p className="pt-2 text-center text-xs text-[var(--faint)]">
           Everything is saved in this browser. Use Export for a backup you can move between devices.
         </p>
       </main>
@@ -375,19 +406,23 @@ function EmptyState({
   onLoadSamples: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[var(--border)] px-6 py-14 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--panel-2)] text-[var(--muted)]">
-        <FolderPlus size={22} />
+    <div className="glass glass-sheen relative flex flex-col items-center gap-3 overflow-hidden rounded-3xl border-dashed px-6 py-16 text-center">
+      <div
+        className="pointer-events-none absolute -top-16 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-violet-500/20 blur-3xl"
+        aria-hidden
+      />
+      <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-500 to-sky-500 text-white shadow-[0_14px_30px_-12px_rgba(124,58,237,0.95)]">
+        <FolderPlus size={24} />
       </div>
-      <h2 className="text-lg font-semibold">
+      <h3 className="relative text-xl font-bold tracking-tight">
         {hasProjects ? "Nothing matches those filters" : "No projects yet"}
-      </h2>
-      <p className="max-w-sm text-sm text-[var(--muted)]">
+      </h3>
+      <p className="relative max-w-sm text-sm leading-relaxed text-[var(--muted)]">
         {hasProjects
           ? "Try a different search, status, or clear the archived view."
           : "Add the things you're working on and watch the bars fill up as you check tasks off."}
       </p>
-      <div className="mt-1 flex flex-wrap justify-center gap-2">
+      <div className="relative mt-1 flex flex-wrap justify-center gap-2">
         <button type="button" className={buttonPrimary} onClick={onCreate}>
           <Plus size={16} />
           New project

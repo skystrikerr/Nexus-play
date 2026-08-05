@@ -172,7 +172,7 @@ export function ProjectDialog({ open, project, onClose, onSubmit }: ProjectDialo
                 aria-pressed={draft.accent === accent}
                 onClick={() => setDraft({ ...draft, accent })}
                 className={cn(
-                  "h-8 w-8 rounded-full ring-offset-2 ring-offset-[var(--panel)] transition",
+                  "h-9 w-9 rounded-full ring-offset-2 ring-offset-[var(--bg-solid)] transition",
                   draft.accent === accent ? "ring-2 ring-[var(--text)]" : "hover:scale-110",
                 )}
                 style={{
@@ -183,7 +183,7 @@ export function ProjectDialog({ open, project, onClose, onSubmit }: ProjectDialo
           </div>
         </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--panel-2)] p-3">
+        <div className="rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)] p-3.5">
           <span className={labelBase}>Progress</span>
           <div className="grid grid-cols-2 gap-2">
             {(
@@ -197,10 +197,10 @@ export function ProjectDialog({ open, project, onClose, onSubmit }: ProjectDialo
                 type="button"
                 onClick={() => setDraft({ ...draft, progressMode: mode })}
                 className={cn(
-                  "rounded-lg border px-3 py-2 text-left transition",
+                  "rounded-xl border px-3 py-2.5 text-left transition",
                   draft.progressMode === mode
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-[var(--border)] hover:bg-[var(--panel)]",
+                    ? "border-violet-400/70 bg-violet-500/15 shadow-[0_0_24px_-10px_rgba(139,92,246,0.9)]"
+                    : "border-[var(--glass-border)] hover:bg-[var(--glass-hover)]",
                 )}
               >
                 <span className="block text-sm font-medium">{label}</span>
@@ -230,7 +230,7 @@ export function ProjectDialog({ open, project, onClose, onSubmit }: ProjectDialo
                 onChange={(event) =>
                   setDraft({ ...draft, manualProgress: Number(event.target.value) })
                 }
-                className="w-full accent-blue-600"
+                className="w-full accent-violet-500"
                 aria-label="Percentage complete"
               />
               <div className="mt-2">

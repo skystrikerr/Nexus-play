@@ -66,5 +66,14 @@ src/
   lib/progress.ts      the tasks-vs-manual percentage rules
   lib/storage.ts       localStorage read/write, validation, export/import, samples
   lib/format.ts        due-date and relative-time formatting
-  components/          ProjectCard, ProjectDialog, TaskList, ProgressBar, StatsRow, Modal
+  lib/ui.ts            shared button/field/chip class strings
+  components/          ProjectCard, ProjectDialog, TaskList, ProgressBar, RingProgress,
+                       StatsRow, Modal
 ```
+
+### Theming
+
+Colors are CSS custom properties on `:root` / `.dark` in `src/index.css` — `--glass`,
+`--glass-border`, `--text`, `--muted`, `--track`, and friends. The gradient blobs behind the page
+are `background-image` on `body`, and the frosted-panel look is the `.glass` / `.glass-strong`
+component classes. Retheme by editing those variables; nothing else hardcodes a background color.
