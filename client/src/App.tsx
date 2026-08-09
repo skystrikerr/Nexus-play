@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -33,9 +33,28 @@ import PostsPage from "@/pages/posts";
 import TierList from "@/pages/tier-list";
 import NotFound from "@/pages/not-found";
 
+// The colony sim pulls in three.js — keep it out of the main bundle.
+const Thronglets = React.lazy(() => import("@/pages/thronglets"));
+
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useMobile();
+  const [location] = useLocation();
+
+  // The colony sim owns the whole viewport — render it outside the app chrome.
+  if (location === "/thronglets") {
+    return (
+      <React.Suspense
+        fallback={
+          <div className="flex h-[100dvh] items-center justify-center bg-[#0a1030] text-sm tracking-widest text-white/40">
+            waking the colony…
+          </div>
+        }
+      >
+        <Thronglets />
+      </React.Suspense>
+    );
+  }
 
   const AppContent = () => (
     <Switch>

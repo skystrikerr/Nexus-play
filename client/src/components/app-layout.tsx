@@ -32,6 +32,7 @@ import {
   ListTodo,
   UserIcon,
   ChevronsUpDown,
+  Sparkles,
 } from "lucide-react";
 
 interface NavItem {
@@ -79,6 +80,10 @@ const navSections: NavSection[] = [
       { name: "Feed", href: "/posts", icon: MessageCircle },
       { name: "Members", href: "/users", icon: Users },
     ],
+  },
+  {
+    label: "Lab",
+    items: [{ name: "Thronglets", href: "/thronglets", icon: Sparkles }],
   },
 ];
 
