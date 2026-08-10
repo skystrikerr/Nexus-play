@@ -59,6 +59,15 @@ command overhead (`6B`), a launcher (`3C`), air normals (`j.A/j.B/j.C`), a dash
 attack and one or two EX specials. Copy an existing file and you get the shape
 for free.
 
+### Resources
+
+A fighter can carry one resource bar next to their health: the Roman's pila,
+the gunslinger's rounds, the samurai's Ki, the Spartan's Aegis, the soldier's
+magazine, the Viking's Fury. Moves declare `resourceCost` / `resourceMin` /
+`resourceGain`, and the bar itself can `regen` passively, only while idle, or
+fill from the fight through `gainOnHit`, `gainOnTakeHit` and `gainOnBlocked` -
+which is how Fury works: she powers up by being in a fight she is losing.
+
 ## Adding a fighter
 
 1. Copy `fighters/roman.ts` to `fighters/<name>.ts`.
@@ -116,7 +125,7 @@ the wakeup animation.
 
 ## Stages
 
-Eight arenas, each a few parallax layers plus optional ambient weather:
+Nine arenas, each a few parallax layers plus optional ambient weather:
 
 | Stage | Weather |
 | --- | --- |
@@ -128,6 +137,7 @@ Eight arenas, each a few parallax layers plus optional ambient weather:
 | Frozen Pass | snow under an aurora |
 | Ember Forge | rising embers |
 | Cloudbreak Temple | drifting motes |
+| Monsoon Delta | monsoon rain |
 
 Pick one on the select screen or leave it on Random. To add a stage: add a key
 to `StageTheme`, an entry to `STAGE_THEMES` (sky, ground, accent, ambient) and a

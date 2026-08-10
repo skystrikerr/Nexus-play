@@ -158,7 +158,9 @@ for (const def of ROSTER) contract(def);
     for (const move of def.moves.filter(isSpecial)) {
       const m = newMatch(def.id, "roman");
       const self = m.fighters[0];
+      // This check is about the input, not the economy: pay for everything.
       self.meter = 200;
+      self.resource = def.resource?.max ?? 0;
       const script = scriptFor(move);
       let fired = false;
       for (let i = 0; i < 90; i++) {

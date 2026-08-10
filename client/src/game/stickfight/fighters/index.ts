@@ -20,10 +20,12 @@ import type { FighterDef } from "../types";
 import { PIRATE } from "./pirate";
 import { ROMAN } from "./roman";
 import { SAMURAI } from "./samurai";
+import { SOLDIER } from "./soldier";
 import { SPARTAN } from "./spartan";
+import { VIKING } from "./viking";
 import { WESTERN } from "./western";
 
-export const ROSTER: FighterDef[] = [ROMAN, SPARTAN, PIRATE, SAMURAI, WESTERN];
+export const ROSTER: FighterDef[] = [ROMAN, SPARTAN, VIKING, PIRATE, SAMURAI, WESTERN, SOLDIER];
 
 export const ROSTER_BY_ID: Record<string, FighterDef> = Object.fromEntries(
   ROSTER.map((f) => [f.id, f]),
@@ -33,4 +35,4 @@ export function getFighter(id: string): FighterDef {
   return ROSTER_BY_ID[id] ?? ROSTER[0];
 }
 
-export { ROMAN, SPARTAN, PIRATE, SAMURAI, WESTERN };
+export { ROMAN, SPARTAN, VIKING, PIRATE, SAMURAI, WESTERN, SOLDIER };

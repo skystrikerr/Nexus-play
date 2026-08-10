@@ -453,6 +453,12 @@ export interface ResourceDef {
   regen?: number;
   /** Regeneration only while grounded and not attacking. */
   regenIdleOnly?: boolean;
+  /** Gained each time one of this fighter's attacks connects. */
+  gainOnHit?: number;
+  /** Gained each time this fighter is hit - rage that feeds on punishment. */
+  gainOnTakeHit?: number;
+  /** Gained when one of this fighter's attacks is blocked. */
+  gainOnBlocked?: number;
   color: string;
   /** Rendered as discrete pips (bullets) instead of a bar. */
   pips?: boolean;

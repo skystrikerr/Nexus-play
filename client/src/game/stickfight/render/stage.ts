@@ -19,7 +19,8 @@ export type StageTheme =
   | "neon"
   | "tundra"
   | "forge"
-  | "skyward";
+  | "skyward"
+  | "delta";
 
 export type AmbientKind = "none" | "rain" | "snow" | "petal" | "ember" | "dust";
 
@@ -112,6 +113,14 @@ export const STAGE_THEMES: Record<StageTheme, StageDef> = {
     ground: "#3b2b2b",
     accent: "#ff8a3c",
     ambient: { kind: "ember", count: 46, colors: ["#ffb648", "#ff6a2c", "#ffe6a8"], speed: -1.5, wind: 0.5, size: [3, 6], opacity: 0.9 },
+  },
+  delta: {
+    name: "Monsoon Delta",
+    blurb: "Flooded paddy, low cloud, and the treeline too close.",
+    sky: ["#1d2a24", "#7f8f66"],
+    ground: "#4a5340",
+    accent: "#a7d16a",
+    ambient: { kind: "rain", count: 80, colors: ["#b7cfa8", "#dfe9cf"], speed: 12, wind: -1.8, size: [1.3, 20], opacity: 0.42 },
   },
   skyward: {
     name: "Cloudbreak Temple",
@@ -360,6 +369,9 @@ export class Stage {
         break;
       case "skyward":
         this.buildSkyward();
+        break;
+      case "delta":
+        this.buildDelta();
         break;
     }
 
@@ -730,6 +742,59 @@ export class Stage {
     this.addLayer(near, 0.9);
   }
 
+  private buildDelta() {
+    const far = new THREE.Group();
+    // Low monsoon cloud over a flat horizon.
+    for (let i = -4; i <= 4; i++) {
+      far.add(disc(i * 230, 300 + ((i * 53) % 60), 88, "#2c3a2f", 2, 0.8));
+      far.add(disc(i * 230 + 70, 270 + ((i * 37) % 40), 64, "#354535", 2, 0.7));
+    }
+    far.add(ridge(
+      [
+        [-900, 0],
+        [-700, 130],
+        [-420, 90],
+        [-140, 150],
+        [180, 100],
+        [470, 160],
+        [760, 96],
+        [900, 130],
+        [900, 0],
+      ],
+      "#22301f",
+      2,
+    ));
+    this.addLayer(far, 0.22);
+
+    const mid = new THREE.Group();
+    // Treeline: trunks with heavy fronds.
+    for (let i = -7; i <= 7; i++) {
+      const x = i * 128 + ((i * 41) % 36);
+      const h = 96 + ((i * 61) % 54);
+      mid.add(rect(x, 0, 9, h, "#3c3324", 3));
+      for (let f = 0; f < 5; f++) {
+        const a = -60 + f * 30;
+        const frond = tri(x + Math.sin((a * Math.PI) / 180) * 26, h - 6, 62, 20, f % 2 ? "#2f5333" : "#3a6b3c", 4, 0.95);
+        frond.rotation.z = (a * Math.PI) / 180;
+        mid.add(frond);
+      }
+    }
+    // Flooded paddy behind the fighting line.
+    mid.add(rect(0, 0, 1800, 34, "#3f5344", 5));
+    mid.add(rect(0, 24, 1800, 6, "#6e8a68", 6, 0.75));
+    this.addLayer(mid, 0.55);
+
+    const near = new THREE.Group();
+    // Sandbag berm and a few reeds at the camera line.
+    near.add(rect(0, 0, 1800, 14, "#5b6248", 6));
+    for (let i = -8; i <= 8; i++) {
+      near.add(disc(i * 110, 12, 13, "#6b7355", 6));
+      near.add(rect(i * 110 + 46, 0, 3, 34, "#57683f", 7, 0.85));
+      near.add(rect(i * 110 + 52, 0, 3, 26, "#4c5c36", 7, 0.85));
+    }
+    this.addLayer(near, 0.9);
+  }
+
   // ------------------------------------------------------------------ update
 
   /** Applies parallax and advances ambient weather. */
@@ -758,6 +823,10 @@ export function themeForFighter(id: string): StageTheme {
       return "frontier";
     case "samurai":
       return "dojo";
+    case "viking":
+      return "tundra";
+    case "soldier":
+      return "delta";
     case "spartan":
       return "colosseum";
     default:

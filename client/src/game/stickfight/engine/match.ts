@@ -400,6 +400,7 @@ export class Match {
       attacker.vx = -dirSign * (hit.selfPushX ?? 2);
       defender.addMeter(COMBAT.meterOnBlock);
       attacker.addMeter(COMBAT.meterOnBlock * 0.6);
+      attacker.addResource(attacker.def.resource?.gainOnBlocked ?? 0);
       attacker.hitstop = Math.max(2, (hit.hitstop ?? 6) - 2);
       defender.hitstop = Math.max(2, (hit.hitstop ?? 6) - 2);
       this.shake = Math.max(this.shake, 1.4);
@@ -446,6 +447,9 @@ export class Match {
 
     attacker.addMeter((hit.meterGain ?? COMBAT.meterOnHit) * (counter ? 1.3 : 1));
     defender.addMeter(hit.meterGainDefender ?? COMBAT.meterOnTakeHit);
+    // Rage-style resources feed on the exchange itself.
+    attacker.addResource(attacker.def.resource?.gainOnHit ?? 0);
+    defender.addResource(defender.def.resource?.gainOnTakeHit ?? 0);
 
     const kd = hit.knockdown ?? "none";
     const airborne = !defender.grounded || kd === "launch" || hit.launch;

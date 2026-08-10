@@ -860,6 +860,11 @@ export class Fighter {
     this.meter = Math.min(COMBAT.maxMeter, this.meter + amount);
   }
 
+  addResource(amount: number) {
+    if (!amount || !this.def.resource) return;
+    this.resource = Math.max(0, Math.min(this.def.resource.max, this.resource + amount));
+  }
+
   // -------------------------------------------------------------------------
   // Move selection
   // -------------------------------------------------------------------------

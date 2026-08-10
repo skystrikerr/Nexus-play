@@ -244,6 +244,35 @@ export class GameRenderer {
         add(fuse);
         break;
       }
+      case "axe": {
+        // Throwing axe: haft with a broad head, spinning end over end.
+        add(new THREE.Mesh(new THREE.PlaneGeometry(44, 3.4), flat("#6d4a2c")));
+        const head = new THREE.Mesh(new THREE.PlaneGeometry(16, 22), flat(color));
+        head.position.x = 16;
+        add(head, 56);
+        const beard = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), flat(color));
+        beard.position.set(14, -14);
+        add(beard, 56);
+        break;
+      }
+      case "rifle": {
+        // Tracer: a bright core with a long thin streak behind it.
+        const core = new THREE.Mesh(new THREE.CircleGeometry(3.4, 10), flat(color));
+        add(core, 57);
+        const streak = new THREE.Mesh(new THREE.PlaneGeometry(46, 2.2), flat(color, 0.6));
+        streak.position.x = -24;
+        add(streak);
+        break;
+      }
+      case "grenade": {
+        add(new THREE.Mesh(new THREE.CircleGeometry(8, 12), flat(color)));
+        const ridge = new THREE.Mesh(new THREE.PlaneGeometry(16, 2), flat("#2f3a24"));
+        add(ridge, 56);
+        const spoon = new THREE.Mesh(new THREE.PlaneGeometry(4, 9), flat("#8d8560"));
+        spoon.position.set(6, 7);
+        add(spoon, 56);
+        break;
+      }
       case "aspis": {
         // A spinning bronze shield: rim, face and the painted lambda.
         add(new THREE.Mesh(new THREE.CircleGeometry(21, 20), flat(color)));
