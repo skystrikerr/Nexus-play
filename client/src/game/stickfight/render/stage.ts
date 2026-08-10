@@ -756,6 +756,10 @@ export function themeForFighter(id: string): StageTheme {
       return "deck";
     case "western":
       return "frontier";
+    case "samurai":
+      return "dojo";
+    case "spartan":
+      return "colosseum";
     default:
       return "colosseum";
   }

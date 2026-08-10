@@ -18,6 +18,7 @@ game/stickfight/
 
   engine/         pure simulation, no three.js
     input.ts      key/pad state -> facing-relative directions, buffer, motions
+    physics.ts    momentum, bounces and the verlet ragdoll
     fighter.ts    one fighter: state machine, move selection, physics
     match.ts      collision, hit resolution, projectiles, rounds, effects queue
     ai.ts         CPU opponent - emits the same RawInput a human would
@@ -88,6 +89,30 @@ lead limb (nearer the opponent), `B` the back limb.
 
 Hitboxes live in facing space too: `bx(x, y, w, h)` with `x` forward from the
 fighter and `y` up from the ground.
+
+## Physics
+
+Movement is momentum-based: walking accelerates towards its target speed and
+sheds it again through ground drag, air control has drag and a terminal
+velocity, and landing keeps part of your horizontal speed.
+
+Launched bodies bounce. A hit tagged `groundbounce` or `wallbounce` gives the
+victim one bounce, so a hard enough slam skips them off the floor or peels them
+out of the corner - which is what the Spartan's kick and the samurai's EX draw
+are built around. Thrown objects have their own restitution and drag: the
+gunslinger's dynamite skips twice before it detonates.
+
+When a fighter is knocked down or knocked out, the animated pose is handed to a
+**verlet ragdoll** (`engine/physics.ts`): thirteen mass points, bone-length
+constraints plus a few loose braces, gravity, floor collision with restitution
+and friction. It produces a `Skeleton` exactly like an animation does, so the
+renderer draws it with no special cases, and props keep following their joints.
+
+Gameplay position stays authoritative - the ragdoll's hips are leashed to the
+fighter's simulated x/y, easing in over the first 24 frames so the initial
+tumble still comes from the hit. Physics changes how a body looks as it falls,
+never where the game thinks it is. Getting up drops the ragdoll and returns to
+the wakeup animation.
 
 ## Stages
 

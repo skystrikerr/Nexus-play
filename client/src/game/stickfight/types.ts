@@ -220,6 +220,12 @@ export interface ProjectileSpawn {
   hits?: number;
   /** Destroyed when it collides with an enemy projectile. */
   clashes?: boolean;
+  /** Energy kept when it hits the floor (0 = no bounce). */
+  bounce?: number;
+  /** How many times it may bounce before it settles or detonates. */
+  bounces?: number;
+  /** Air resistance per frame, 0..1. */
+  drag?: number;
   fx?: HitFx;
   hitstop?: number;
   meterGain?: number;

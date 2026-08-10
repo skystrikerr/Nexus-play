@@ -37,10 +37,12 @@ Without `RESEND_API_KEY`, password reset links are printed to the server console
 different eras, motion-input specials, combos, supers, best-of-three matches
 against the CPU or a second player on the same keyboard (or two gamepads).
 
-Three fighters ship today — a Roman legionary, a pirate captain and a
-gunslinger — each with five specials, EX versions, a super, a character skill,
-throws, a block, a dodge roll and a full set of normals, across eight arenas
-with their own weather (rain, snow, embers, petals). The roster is data:
+Five fighters ship today — a Roman legionary, a Spartan hoplite, a pirate
+captain, a ronin and a gunslinger — each with five specials, EX versions, a
+super, a character skill, throws, a block, a dodge roll and a full set of
+normals, across eight arenas with their own weather (rain, snow, embers,
+petals). Movement carries momentum, hard knockdowns bounce off the floor and
+walls, and downed fighters collapse into a verlet ragdoll. The roster is data:
 see [client/src/game/stickfight/README.md](client/src/game/stickfight/README.md)
 for the fighter contract and how to add more.
 

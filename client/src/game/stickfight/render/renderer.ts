@@ -119,10 +119,21 @@ export class GameRenderer {
     // Fighters.
     for (let i = 0; i < 2; i++) {
       const f = match.fighters[i];
-      const { pose, grounded } = f.pose();
-      const sk = buildSkeleton(pose, grounded, 1);
+      // A downed fighter is driven by the physics body instead of a clip.
+      let sk;
+      if (f.ragdoll) {
+        sk = f.ragdoll.toSkeleton(f.x, f.y, f.facing);
+      } else {
+        const { pose, grounded } = f.pose();
+        sk = buildSkeleton(pose, grounded, 1);
+      }
       const visible = new Set(f.move?.showProps ?? []);
       const hidden = new Set(f.move?.hideProps ?? []);
+      // A prop that is currently flying around as a projectile (the Spartan's
+      // aspis) stays off the fighter until it is gone.
+      for (const p of match.projectiles) {
+        if (p.owner === i) hidden.add(p.kind);
+      }
       // Whoever is swinging renders in front, so weapons never disappear
       // inside the other fighter.
       const depth = (f.state === "move" ? 3 : 0) + i * 0.5;
@@ -231,6 +242,15 @@ export class GameRenderer {
         const fuse = new THREE.Mesh(new THREE.CircleGeometry(3.2, 10), flat("#ffcf6b"));
         fuse.position.y = 14;
         add(fuse);
+        break;
+      }
+      case "aspis": {
+        // A spinning bronze shield: rim, face and the painted lambda.
+        add(new THREE.Mesh(new THREE.CircleGeometry(21, 20), flat(color)));
+        const face = new THREE.Mesh(new THREE.CircleGeometry(15, 20), flat("#9e2b2b"));
+        add(face, 56);
+        const boss = new THREE.Mesh(new THREE.CircleGeometry(5, 12), flat("#f0e6d2"));
+        add(boss, 57);
         break;
       }
       case "shock": {

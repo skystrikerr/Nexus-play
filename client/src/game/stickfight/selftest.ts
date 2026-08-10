@@ -251,6 +251,59 @@ function scriptFor(move: MoveDef): RawInput[] {
 }
 
 {
+  // Ragdoll physics: a knockdown hands the pose to a physics body that
+  // settles on the floor without drifting away from the fighter.
+  const m = newMatch();
+  m.fighters[0].x = -40;
+  m.fighters[1].x = 20;
+  run(m, 26, (f) => inp({ C: f < 3 })); // 5C knocks down hard
+  const victim = m.fighters[1];
+  check("knockdown starts a ragdoll", victim.ragdoll !== null, `state=${victim.state}`);
+
+  const before = victim.ragdoll!.toSkeleton(victim.x, victim.y, victim.facing);
+  run(m, 8, () => inp());
+  const during = victim.ragdoll!.toSkeleton(victim.x, victim.y, victim.facing);
+  const moved = Math.abs(during.head.x - before.head.x) + Math.abs(during.head.y - before.head.y);
+  check("ragdoll joints are in motion", moved > 0.5, `moved=${moved.toFixed(2)}`);
+
+  run(m, 60, () => inp());
+  const settled = victim.ragdoll ?? null;
+  if (settled) {
+    const sk = settled.toSkeleton(victim.x, victim.y, victim.facing);
+    const lowest = Math.min(sk.footF.y, sk.footB.y, sk.head.y, sk.pelvis.y);
+    check("ragdoll does not sink through the floor", lowest > -6, `lowest=${lowest.toFixed(1)}`);
+    check("ragdoll stays with the fighter", Math.abs(sk.pelvis.x) < 90, `dx=${sk.pelvis.x.toFixed(1)}`);
+  }
+
+  // Getting up drops the physics body.
+  run(m, 90, () => inp());
+  check("wakeup clears the ragdoll", m.fighters[1].ragdoll === null, `state=${m.fighters[1].state}`);
+}
+
+{
+  // A KO leaves a ragdoll on the floor for the round-end camera.
+  const m = newMatch();
+  m.fighters[1].health = 20;
+  m.fighters[0].x = -40;
+  m.fighters[1].x = 20;
+  run(m, 30, (f) => inp({ C: f < 3 }));
+  check("KO drops the loser into a ragdoll", m.fighters[1].ragdoll !== null, `phase=${m.phase}`);
+}
+
+{
+  // Momentum: walking builds up speed rather than snapping to it.
+  const m = newMatch();
+  const f = m.fighters[0];
+  m.step([inp({ right: true }), inp()]);
+  const firstFrame = Math.abs(f.vx);
+  run(m, 12, () => inp({ right: true }));
+  const settledSpeed = Math.abs(f.vx);
+  check("walking accelerates instead of snapping", firstFrame < settledSpeed, `${firstFrame.toFixed(2)} -> ${settledSpeed.toFixed(2)}`);
+  run(m, 10, () => inp());
+  check("releasing the stick sheds speed", Math.abs(f.vx) < 0.2, `vx=${f.vx.toFixed(2)}`);
+}
+
+{
   // Rounds and matches resolve.
   const m = newMatch();
   for (let round = 0; round < 2; round++) {

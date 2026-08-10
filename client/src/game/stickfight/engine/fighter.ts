@@ -7,7 +7,8 @@
 
 import { clipFor } from "../clips";
 import { COMBAT, GROUND_Y, HURTBOX, STAGE_HALF_WIDTH } from "../constants";
-import { sampleClip, sampleFrames } from "../skeleton";
+import { buildSkeleton, sampleClip, sampleFrames } from "../skeleton";
+import { PHYSICS, Ragdoll } from "./physics";
 import type {
   Box,
   ClipName,
@@ -131,6 +132,10 @@ export class Fighter {
 
   parrySuccess = 0;
   wins = 0;
+  /** Physics body that takes over the pose while down or knocked out. */
+  ragdoll: Ragdoll | null = null;
+  /** Bounces left for the current launch (wall/ground splats). */
+  bouncesLeft = 0;
   /** Frames of "just got hit" flash, used by the renderer. */
   flash = 0;
   /** Counter-hit state: true whenever this fighter is in attack startup. */
@@ -260,6 +265,7 @@ export class Fighter {
 
   setState(state: StateName) {
     if (this.state === state) return;
+    if (state !== "knockdown" && state !== "ko" && state !== "wakeup") this.ragdoll = null;
     this.state = state;
     this.stateFrame = 0;
     if (state !== "move") {
@@ -396,6 +402,8 @@ export class Fighter {
         return;
 
       case "wakeup":
+        // The physics body is dropped the moment they start getting up.
+        this.ragdoll = null;
         if (this.stateFrame >= COMBAT.wakeupFrames) {
           this.endCombo();
           this.setState("idle");
@@ -474,19 +482,23 @@ export class Fighter {
 
     if (guarding || (holdingBack && this.threatened(opponent))) {
       this.setState("block");
-      this.vx = holdingBack ? -this.facing * s.walkB : this.vx * COMBAT.friction;
+      if (holdingBack) this.accelerate(-this.facing * s.walkB);
+      else this.vx *= PHYSICS.groundDrag;
       return;
     }
 
+    // Walking accelerates towards its target instead of snapping to it, so
+    // fighters carry a little momentum in and out of every step.
     if (this.input.holdingForward()) {
       this.setState("walkF");
-      this.vx = this.facing * s.walkF;
+      this.accelerate(this.facing * s.walkF);
     } else if (holdingBack) {
       this.setState("walkB");
-      this.vx = -this.facing * s.walkB;
+      this.accelerate(-this.facing * s.walkB);
     } else {
       this.setState("idle");
-      this.vx *= COMBAT.friction;
+      this.vx *= PHYSICS.groundDrag;
+      if (Math.abs(this.vx) < 0.12) this.vx = 0;
     }
   }
 
@@ -542,8 +554,8 @@ export class Fighter {
       return;
     }
     // Running: holding forward keeps the dash alive.
-    this.vx = this.facing * s.dashSpeed;
-    if (this.stateFrame > s.dashFrames * 3) this.vx = this.facing * s.dashSpeed * 0.9;
+    this.accelerate(this.facing * s.dashSpeed, PHYSICS.walkAccel * 3);
+    if (this.stateFrame > s.dashFrames * 3) this.accelerate(this.facing * s.dashSpeed * 0.9);
   }
 
   private launchJump() {
@@ -705,6 +717,13 @@ export class Fighter {
     }
   }
 
+  /** Moves `vx` towards `target` at a fixed acceleration. */
+  private accelerate(target: number, accel = PHYSICS.walkAccel) {
+    const diff = target - this.vx;
+    if (Math.abs(diff) <= accel) this.vx = target;
+    else this.vx += Math.sign(diff) * accel;
+  }
+
   private integrate() {
     const s = this.def.stats;
     const airborne = !this.grounded || this.vy > 0;
@@ -712,29 +731,55 @@ export class Fighter {
     if (airborne) {
       const holdingDown = this.input.holdingDown();
       this.vy -= s.gravity * (holdingDown && this.state === "air" ? 1 + COMBAT.fastFall : 1);
-      this.vx *= COMBAT.airFriction;
+      this.vx *= PHYSICS.airDrag;
+      if (this.vy < -PHYSICS.terminalVelocity) this.vy = -PHYSICS.terminalVelocity;
     }
 
     this.x += this.vx;
     this.y += this.vy;
 
     if (this.y <= GROUND_Y) {
-      const wasAir = this.vy < 0;
+      const impact = this.vy;
       this.y = GROUND_Y;
       this.vy = 0;
-      if (wasAir) this.onLand();
+      // A hard enough launch skips off the floor before it settles.
+      if (
+        this.bouncesLeft > 0 &&
+        impact < -PHYSICS.bounceThreshold &&
+        (this.state === "hitstunAir" || this.pendingKnockdown === "groundbounce")
+      ) {
+        this.bouncesLeft--;
+        this.vy = -impact * PHYSICS.groundRestitution;
+        this.vx *= 0.7;
+        this.y = GROUND_Y + 0.5;
+        this.bounced = "ground";
+      } else if (impact < 0) {
+        this.onLand();
+      }
     }
 
     const limit = STAGE_HALF_WIDTH - s.width;
-    if (this.x < -limit) {
-      this.x = -limit;
-      if (this.vx < 0) this.vx = 0;
-    }
-    if (this.x > limit) {
-      this.x = limit;
-      if (this.vx > 0) this.vx = 0;
+    for (const side of [-1, 1] as const) {
+      const wall = side * limit;
+      if (side < 0 ? this.x < wall : this.x > wall) {
+        this.x = wall;
+        const into = side < 0 ? this.vx < 0 : this.vx > 0;
+        if (!into) continue;
+        // Getting slammed into the corner bounces you back out of it.
+        if (this.bouncesLeft > 0 && Math.abs(this.vx) > PHYSICS.bounceThreshold && this.state === "hitstunAir") {
+          this.bouncesLeft--;
+          this.vx = -this.vx * PHYSICS.wallRestitution;
+          this.vy = Math.max(this.vy, 4);
+          this.bounced = "wall";
+        } else {
+          this.vx = 0;
+        }
+      }
     }
   }
+
+  /** Set for one frame when a bounce happens, so the match can spawn effects. */
+  bounced: "none" | "ground" | "wall" = "none";
 
   private onLand() {
     this.airJumpsUsed = 0;
@@ -753,7 +798,7 @@ export class Fighter {
       return;
     }
     if (this.state === "air" || this.state === "blockAir" || this.state === "backdash") {
-      this.vx *= 0.5;
+      this.vx *= PHYSICS.landKeep;
       this.setState("land");
     }
   }
@@ -770,13 +815,45 @@ export class Fighter {
     }
     this.setState("knockdown");
     this.downTimer = kind === "hard" ? COMBAT.hardKnockdownFrames : COMBAT.softKnockdownFrames;
+    this.startRagdoll(kind === "hard" ? 1.4 : 0.9);
+  }
+
+  /**
+   * Hands the current pose over to a physics body. Called on knockdown and KO;
+   * the ragdoll drives the visuals while the simulation keeps owning position.
+   */
+  startRagdoll(force = 1) {
+    const { pose, grounded } = this.pose();
+    const sk = buildSkeleton(pose, grounded, 1);
+    this.ragdoll = new Ragdoll(
+      sk,
+      this.x,
+      this.y,
+      this.facing,
+      this.vx * force,
+      Math.max(this.vy, 1.5) * force,
+      force,
+    );
+  }
+
+  /** Advances the ragdoll, if one is active. */
+  stepRagdoll() {
+    if (!this.ragdoll) return;
+    if (this.ragdoll.settled && this.state === "knockdown") return;
+    this.ragdoll.step(this.x, this.y, this.grounded);
   }
 
   endCombo() {
+    this.bouncesLeft = 0;
     this.comboHits = 0;
     this.comboDamage = 0;
     this.juggleCount = 0;
     this.scaling = 1;
+  }
+
+  /** Nudges an active ragdoll, e.g. a body being blown across the floor. */
+  ragdollImpulse(x: number, y: number) {
+    this.ragdoll?.impulse(x, y);
   }
 
   addMeter(amount: number) {

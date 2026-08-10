@@ -40,6 +40,7 @@ export interface Projectile {
   age: number;
   spec: ProjectileSpawn;
   hitsLeft: number;
+  bouncesLeft: number;
   facing: 1 | -1;
   spin: number;
   dead: boolean;
@@ -166,7 +167,10 @@ export class Match {
   }
 
   private stepPassive() {
-    for (const f of this.fighters) f.update(this.other(f), false);
+    for (const f of this.fighters) {
+      f.update(this.other(f), false);
+      f.stepRagdoll();
+    }
     this.updateProjectiles();
   }
 
@@ -178,6 +182,20 @@ export class Match {
 
     a.update(b, true);
     b.update(a, true);
+
+    for (const f of this.fighters) {
+      f.stepRagdoll();
+      if (f.bounced !== "none") {
+        this.pushFx({
+          kind: f.bounced === "wall" ? "spark" : "dust",
+          x: f.x,
+          y: f.bounced === "wall" ? f.y + 50 : f.y + 4,
+          scale: 1.5,
+        });
+        this.shake = Math.max(this.shake, 4);
+        f.bounced = "none";
+      }
+    }
 
     this.separate();
     this.resolveThrows(a, b);
@@ -232,6 +250,7 @@ export class Match {
       loser.setState("ko");
       loser.vy = 6;
       loser.vx = -loser.facing * 3.2;
+      loser.startRagdoll(1.8);
       this.pushFx({ kind: "ko", x: loser.x, y: loser.y + 60, scale: 2 });
     }
 
@@ -243,7 +262,10 @@ export class Match {
   }
 
   private stepRoundEnd() {
-    for (const f of this.fighters) f.update(this.other(f), false);
+    for (const f of this.fighters) {
+      f.update(this.other(f), false);
+      f.stepRagdoll();
+    }
     this.updateProjectiles();
 
     if (this.phaseFrame === 40 && this.lastResult?.winner !== null && this.lastResult) {
@@ -428,6 +450,12 @@ export class Match {
     const kd = hit.knockdown ?? "none";
     const airborne = !defender.grounded || kd === "launch" || hit.launch;
 
+    if (kd === "wallbounce" || kd === "groundbounce") defender.bouncesLeft = 1;
+    if (defender.ragdoll) {
+      // Hitting a body that is already down just knocks it further along.
+      defender.ragdollImpulse(dirSign * (hit.pushX ?? 5) * 0.6, -2);
+    }
+
     if (hit.launch || kd === "launch") {
       const [lx, ly] = hit.launch ?? [3, 11];
       defender.vx = dirSign * lx * (1 / weight);
@@ -541,6 +569,7 @@ export class Match {
         age: 0,
         spec,
         hitsLeft: spec.hits ?? 1,
+        bouncesLeft: spec.bounces ?? 0,
         facing: f.facing,
         spin: spec.spin ?? 0,
         dead: false,
@@ -554,14 +583,27 @@ export class Match {
       if (p.dead) continue;
       p.age++;
       p.vy -= p.gravity;
+      if (p.spec.drag) {
+        p.vx *= 1 - p.spec.drag;
+        p.vy *= 1 - p.spec.drag;
+      }
       p.x += p.vx;
       p.y += p.vy;
+
+      // Thrown objects skip off the ground before they come to rest.
+      if (p.spec.bounce && p.bouncesLeft > 0 && p.y <= GROUND_Y + 4 && p.vy < 0) {
+        p.bouncesLeft--;
+        p.y = GROUND_Y + 4;
+        p.vy = -p.vy * p.spec.bounce;
+        p.vx *= 0.72;
+        this.pushFx({ kind: "dust", x: p.x, y: GROUND_Y + 2, scale: 0.7 });
+      }
 
       if (p.spec.trail && p.age % 2 === 0) {
         this.pushFx({ kind: "trail", x: p.x, y: p.y, color: p.spec.trail, scale: p.spec.scale ?? 1 });
       }
 
-      const grounded = p.y <= GROUND_Y + 2 && p.gravity > 0;
+      const grounded = p.y <= GROUND_Y + 2 && p.gravity > 0 && p.bouncesLeft <= 0;
       const expired = p.age >= p.life || Math.abs(p.x) > STAGE_HALF_WIDTH + 60;
 
       if (this.roundActive) {
