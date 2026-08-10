@@ -340,9 +340,30 @@ export class ThrongletSim {
     this.tubMesh.count = c.tubs.length;
     this.tubMesh.instanceMatrix.needsUpdate = true;
 
-    const start = c.thronglets[0];
-    if (start) this.controls.target.set(start.x, 1, start.z);
-    this.camera.position.set((start?.x ?? 0) + 9, 8, (start?.z ?? 0) + 11);
+    this.frameColony();
+  }
+
+  /**
+   * Open on the colony from above — a steep top-down look at the island, tilted
+   * just enough that the creatures still face the camera. Orbiting from here is
+   * up to the player.
+   */
+  private frameColony() {
+    const list = this.colony.thronglets;
+    let x = 0;
+    let z = 0;
+    for (const t of list) {
+      x += t.x;
+      z += t.z;
+    }
+    if (list.length) {
+      x /= list.length;
+      z /= list.length;
+    }
+    const ground = this.colony.terrain.height(x, z);
+    this.controls.target.set(x, ground + 0.6, z);
+    this.camera.position.set(x, ground + 23, z + 10.7);
+    this.controls.update();
   }
 
   /* ---------------- events ---------------- */
