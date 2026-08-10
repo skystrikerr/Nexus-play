@@ -31,6 +31,21 @@ NexusPlay is a full-stack activity tracker: games, study sessions, work, exercis
 
 Without `RESEND_API_KEY`, password reset links are printed to the server console instead of emailed (development fallback).
 
+## Stick Fighter (arcade)
+
+`/arcade` is a 2D fighting game built with three.js: stickman fighters from
+different eras, motion-input specials, combos, supers, best-of-three matches
+against the CPU or a second player on the same keyboard (or two gamepads).
+
+Three fighters ship today — a Roman legionary, a pirate captain and a
+gunslinger — each with five specials, EX versions, a super, a character skill,
+throws, a block, a dodge roll and a full set of normals. The roster is data:
+see [client/src/game/stickfight/README.md](client/src/game/stickfight/README.md)
+for the fighter contract and how to add more.
+
+`npm run arcade:test` runs the game headlessly and checks both the mechanics and
+the roster contract.
+
 ## Scripts
 
 | Command | Purpose |
@@ -40,6 +55,7 @@ Without `RESEND_API_KEY`, password reset links are printed to the server console
 | `npm run start` | Run the production build |
 | `npm run check` | TypeScript type check |
 | `npm run db:push` | Apply schema changes to the database |
+| `npm run arcade:test` | Headless checks for the Stick Fighter game |
 | `npm run electron:build` | Windows desktop build |
 
 ## Deploying (free)

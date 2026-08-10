@@ -1,0 +1,289 @@
+/**
+ * Stick Fighter self-test: `npm run arcade:test`
+ *
+ * Runs the simulation headlessly with scripted inputs. It checks the core
+ * mechanics still work and - importantly when adding fighters - that every
+ * character honours the roster contract:
+ *
+ *   5 specials · 1 light · 1 heavy · block · dodge · jump · skill · super
+ *
+ * No test framework: it prints PASS/FAIL lines and exits non-zero on failure.
+ */
+
+import { AiController } from "./engine/ai";
+import { EMPTY_INPUT, type RawInput } from "./engine/input";
+import { Match } from "./engine/match";
+import { getFighter, ROSTER } from "./fighters";
+import type { FighterDef, MoveDef } from "./types";
+
+const results: { name: string; ok: boolean; detail: string }[] = [];
+
+function check(name: string, ok: boolean, detail = "") {
+  results.push({ name, ok, detail });
+}
+
+const inp = (o: Partial<RawInput> = {}): RawInput => ({ ...EMPTY_INPUT, ...o });
+
+function newMatch(a = "roman", b = "pirate"): Match {
+  const m = new Match([getFighter(a), getFighter(b)]);
+  for (let i = 0; i < 80; i++) m.step([inp(), inp()]); // skip the intro
+  return m;
+}
+
+function run(m: Match, frames: number, p1: (f: number) => RawInput, p2: (f: number) => RawInput = () => inp()) {
+  for (let i = 0; i < frames; i++) m.step([p1(i), p2(i)]);
+}
+
+const qcf = (btn: "A" | "B" | "C" | "S"): RawInput[] => [
+  inp({ down: true }),
+  inp({ down: true }),
+  inp({ down: true, right: true }),
+  inp({ right: true }),
+  inp({ right: true, [btn]: true }),
+  inp({ right: true, [btn]: true }),
+];
+
+// ---------------------------------------------------------------------------
+// Roster contract
+// ---------------------------------------------------------------------------
+
+const isSpecial = (m: MoveDef) =>
+  !!m.tags?.includes("special") && !m.tags?.includes("ex") && !m.variant && !m.internal;
+
+function contract(def: FighterDef) {
+  const moves = def.moves;
+  const countTag = (tag: string) => moves.filter((m) => m.tags?.includes(tag as never)).length;
+
+  check(`${def.id}: exactly five specials`, moves.filter(isSpecial).length === 5, `${moves.filter(isSpecial).length}`);
+  check(`${def.id}: has a light attack`, countTag("light") >= 1);
+  check(`${def.id}: has a heavy attack`, countTag("heavy") >= 1);
+  check(`${def.id}: has a block`, moves.some((m) => m.id === "block"));
+  check(`${def.id}: has a parry`, moves.some((m) => m.id === "parry"));
+  check(`${def.id}: has a dodge`, moves.some((m) => m.tags?.includes("dodge")));
+  check(`${def.id}: has a throw`, countTag("throw") >= 1);
+  check(`${def.id}: has a character skill`, countTag("skill") >= 1);
+  check(`${def.id}: has a super`, countTag("super") === 1);
+  check(`${def.id}: can jump`, def.stats.jumpVel > 5 && def.stats.gravity > 0);
+
+  // Move data integrity - the usual authoring mistakes.
+  const ids = new Set(moves.map((m) => m.id));
+  for (const m of moves) {
+    if (m.throwDef) check(`${def.id}.${m.id}: throw target exists`, ids.has(m.throwDef.success), m.throwDef.success);
+    for (const fu of m.followUps ?? []) {
+      check(`${def.id}.${m.id}: follow-up exists`, ids.has(fu.move), fu.move);
+    }
+    if (m.holdRelease) check(`${def.id}.${m.id}: hold release exists`, ids.has(m.holdRelease), m.holdRelease);
+    if (m.variant) check(`${def.id}.${m.id}: variant parent exists`, ids.has(m.variant), m.variant);
+    for (const h of m.hits ?? []) {
+      check(`${def.id}.${m.id}: hit inside duration`, h.to < m.duration, `${h.from}-${h.to} of ${m.duration}`);
+    }
+    for (const p of m.projectiles ?? []) {
+      check(`${def.id}.${m.id}: projectile inside duration`, p.at < m.duration, `${p.at} of ${m.duration}`);
+    }
+    const last = m.frames[m.frames.length - 1];
+    check(`${def.id}.${m.id}: animation covers the move`, !!last && last.t >= m.duration - 2, `${last?.t}/${m.duration}`);
+    check(`${def.id}.${m.id}: has a description`, m.internal || m.desc.length > 0);
+  }
+}
+
+for (const def of ROSTER) contract(def);
+
+// ---------------------------------------------------------------------------
+// Mechanics
+// ---------------------------------------------------------------------------
+
+{
+  const m = newMatch();
+  const x0 = m.fighters[0].x;
+  run(m, 40, () => inp({ right: true }));
+  check("walking moves the fighter", m.fighters[0].x > x0 + 20);
+
+  const j = newMatch();
+  run(j, 12, () => inp({ up: true }));
+  check("jump leaves the ground", j.fighters[0].y > 20, `y=${j.fighters[0].y.toFixed(1)}`);
+  run(j, 70, () => inp());
+  check("jump lands again", j.fighters[0].y <= 0.01);
+}
+
+{
+  const m = newMatch();
+  m.fighters[0].x = -40;
+  m.fighters[1].x = 20;
+  const hp = m.fighters[1].health;
+  run(m, 30, (f) => inp({ B: f < 3 }));
+  check("attacks deal damage", m.fighters[1].health < hp, `${hp} -> ${m.fighters[1].health}`);
+}
+
+{
+  // Holding the Guard button blocks, without holding back.
+  const m = newMatch();
+  m.fighters[0].x = -40;
+  m.fighters[1].x = 20;
+  const hp = m.fighters[1].health;
+  run(m, 30, (f) => inp({ B: f < 3 }), () => inp({ S: true }));
+  check("Guard button blocks", hp - m.fighters[1].health <= 10, `lost=${hp - m.fighters[1].health}`);
+}
+
+{
+  // Standing guard loses to a low.
+  const m = newMatch();
+  m.fighters[0].x = -40;
+  m.fighters[1].x = 20;
+  const hp = m.fighters[1].health;
+  run(m, 40, (f) => inp({ down: f < 8, C: f >= 4 && f < 7 }), () => inp({ S: true }));
+  check("lows beat standing guard", m.fighters[1].health < hp - 20, `lost=${hp - m.fighters[1].health}`);
+
+  // Crouching guard stops it.
+  const m2 = newMatch();
+  m2.fighters[0].x = -40;
+  m2.fighters[1].x = 20;
+  const hp2 = m2.fighters[1].health;
+  run(m2, 40, (f) => inp({ down: f < 8, C: f >= 4 && f < 7 }), () => inp({ S: true, down: true }));
+  check("crouching guard stops lows", hp2 - m2.fighters[1].health <= 12, `lost=${hp2 - m2.fighters[1].health}`);
+}
+
+{
+  // Dodge roll passes through an attack.
+  const m = newMatch("western", "roman");
+  m.fighters[0].x = -30;
+  m.fighters[1].x = 40;
+  const hp = m.fighters[0].health;
+  run(m, 34, (f) => inp({ right: true, S: f < 3 }), (f) => inp({ B: f === 6 }));
+  check("dodge roll avoids an attack", m.fighters[0].health === hp);
+}
+
+{
+  // Every fighter's five specials can actually be performed from their input.
+  for (const def of ROSTER) {
+    for (const move of def.moves.filter(isSpecial)) {
+      const m = newMatch(def.id, "roman");
+      const self = m.fighters[0];
+      self.meter = 200;
+      const script = scriptFor(move);
+      let fired = false;
+      for (let i = 0; i < 90; i++) {
+        // Air specials need a jump first.
+        const pre = move.input.stance === "air" && i < 3 ? inp({ up: true }) : null;
+        m.step([pre ?? script[i - (move.input.stance === "air" ? 8 : 0)] ?? inp(), inp()]);
+        if (self.move?.id === move.id) fired = true;
+      }
+      check(`${def.id}.${move.id}: comes out from its input`, fired, move.notation ?? "");
+    }
+  }
+}
+
+/** Turns a move's input into the button/stick script that performs it. */
+function scriptFor(move: MoveDef): RawInput[] {
+  const btn = move.input.button ?? "B";
+  const motion = move.input.motion ?? "none";
+  const press = (extra: Partial<RawInput>) => inp({ ...extra, [btn]: true });
+  switch (motion) {
+    case "qcf":
+      return qcf(btn);
+    case "qcb":
+      return [
+        inp({ down: true }),
+        inp({ down: true }),
+        inp({ down: true, left: true }),
+        inp({ left: true }),
+        press({ left: true }),
+        press({ left: true }),
+      ];
+    case "dp":
+      return [
+        inp({ right: true }),
+        inp({ right: true }),
+        inp({ down: true }),
+        inp({ down: true }),
+        inp({ down: true, right: true }),
+        press({ down: true, right: true }),
+        press({ down: true, right: true }),
+      ];
+    case "hcf":
+      return [
+        inp({ left: true }),
+        inp({ down: true, left: true }),
+        inp({ down: true }),
+        inp({ down: true, right: true }),
+        inp({ right: true }),
+        press({ right: true }),
+        press({ right: true }),
+      ];
+    case "hcb":
+      return [
+        inp({ right: true }),
+        inp({ down: true, right: true }),
+        inp({ down: true }),
+        inp({ down: true, left: true }),
+        inp({ left: true }),
+        press({ left: true }),
+        press({ left: true }),
+      ];
+    case "dd":
+      return [inp({ down: true }), inp({ down: true }), inp(), inp({ down: true }), press({ down: true }), press({ down: true })];
+    default: {
+      const dir = move.input.dir;
+      const held: Partial<RawInput> =
+        dir === "f" ? { right: true } : dir === "b" ? { left: true } : dir === "d" ? { down: true } : dir === "df" ? { down: true, right: true } : {};
+      return [inp(held), press(held), press(held)];
+    }
+  }
+}
+
+{
+  // Supers cost meter and land.
+  for (const def of ROSTER) {
+    const superMove = def.moves.find((m) => m.tags?.includes("super"))!;
+    const m = newMatch(def.id, "roman");
+    m.fighters[0].meter = 200;
+    m.fighters[0].x = -60;
+    m.fighters[1].x = 30;
+    const hp = m.fighters[1].health;
+    const script = scriptFor(superMove);
+    let fired = false;
+    for (let i = 0; i < 220; i++) {
+      m.step([script[i] ?? inp(), inp()]);
+      if (m.fighters[0].move?.id === superMove.id) fired = true;
+    }
+    check(`${def.id}: super activates`, fired, superMove.notation ?? "");
+    check(`${def.id}: super deals damage`, m.fighters[1].health < hp, `lost=${hp - m.fighters[1].health}`);
+  }
+}
+
+{
+  // Rounds and matches resolve.
+  const m = newMatch();
+  for (let round = 0; round < 2; round++) {
+    m.fighters[1].health = 15;
+    m.fighters[0].x = -40;
+    m.fighters[1].x = 20;
+    run(m, 40, (f) => inp({ C: f < 3 }));
+    run(m, 220, () => inp());
+  }
+  check("best-of-three ends with a winner", m.matchWinner === 0, `winner=${m.matchWinner}`);
+}
+
+{
+  // The AI plays every matchup to completion.
+  let finished = 0;
+  for (const a of ROSTER) {
+    for (const b of ROSTER) {
+      const m = new Match([a, b]);
+      const ai1 = new AiController("Champion");
+      const ai2 = new AiController("Brawler");
+      for (let i = 0; i < 40000; i++) {
+        m.step([ai1.step(m, m.fighters[0], m.fighters[1]), ai2.step(m, m.fighters[1], m.fighters[0])]);
+        if (m.phase === "matchEnd") break;
+      }
+      if (m.phase === "matchEnd") finished++;
+    }
+  }
+  check("AI finishes every matchup", finished === ROSTER.length * ROSTER.length, `${finished}/${ROSTER.length ** 2}`);
+}
+
+// ---------------------------------------------------------------------------
+
+const failed = results.filter((r) => !r.ok);
+console.log(`${results.length - failed.length} passed, ${failed.length} failed`);
+for (const f of failed) console.log(`FAIL  ${f.name}${f.detail ? " :: " + f.detail : ""}`);
+if (failed.length > 0) process.exit(1);

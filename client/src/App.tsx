@@ -1,5 +1,5 @@
-import React from "react";
-import { Switch, Route } from "wouter";
+import React, { Suspense, lazy } from "react";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -33,9 +33,28 @@ import PostsPage from "@/pages/posts";
 import TierList from "@/pages/tier-list";
 import NotFound from "@/pages/not-found";
 
+// The arcade pulls in three.js, so it loads on demand instead of riding along
+// in the main bundle.
+const StickFighter = lazy(() => import("@/pages/stick-fighter"));
+
+function Arcade() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0b0b10] text-sm uppercase tracking-[0.3em] text-white/50">
+          Loading arcade
+        </div>
+      }
+    >
+      <StickFighter />
+    </Suspense>
+  );
+}
+
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useMobile();
+  const [location] = useLocation();
 
   const AppContent = () => (
     <Switch>
@@ -45,6 +64,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/gaming-platforms" component={GamingPlatforms} />
       <Route path="/game-backlog" component={GameBacklog} />
+      <Route path="/arcade" component={Arcade} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
@@ -68,6 +88,11 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
+
+  // The arcade takes over the whole viewport - no sidebar, no banners.
+  if (location === "/arcade") {
+    return <Arcade />;
+  }
 
   // For authenticated users, wrap with mobile layout and show guest banner
   if (isAuthenticated && !isLoading) {

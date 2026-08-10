@@ -1,0 +1,323 @@
+/**
+ * Scene assembly: camera framing, stage, the two fighter rigs, projectiles and
+ * effects. `render()` is called once per animation frame with the current
+ * simulation state.
+ */
+
+import * as THREE from "three";
+import { CAMERA, GROUND_Y, STAGE_HALF_WIDTH } from "../constants";
+import type { Match, Projectile } from "../engine/match";
+import { buildSkeleton } from "../skeleton";
+import { FxSystem } from "./fx";
+import { StickRig } from "./rig";
+import { Stage, type StageTheme } from "./stage";
+
+function disposeTree(root: THREE.Object3D) {
+  root.traverse((o: THREE.Object3D) => {
+    const m = o as THREE.Mesh;
+    if (m.geometry) m.geometry.dispose();
+    if (m.material) (m.material as THREE.Material).dispose();
+  });
+}
+
+function flat(color: THREE.ColorRepresentation, opacity = 1) {
+  const translucent = opacity < 1;
+  return new THREE.MeshBasicMaterial({
+    color,
+    transparent: translucent,
+    opacity,
+    depthTest: true,
+    depthWrite: !translucent,
+    side: THREE.DoubleSide,
+  });
+}
+
+export class GameRenderer {
+  readonly scene = new THREE.Scene();
+  readonly camera: THREE.OrthographicCamera;
+  private renderer: THREE.WebGLRenderer;
+  private stage: Stage;
+  private rigs: [StickRig, StickRig];
+  private fx = new FxSystem();
+  private projectileMeshes = new Map<number, THREE.Object3D>();
+  private projectileGroup = new THREE.Group();
+  private debugGroup = new THREE.Group();
+  private viewWidth = CAMERA.minViewWidth;
+  private camX = 0;
+  private aspect = 16 / 9;
+  showBoxes = false;
+
+  constructor(canvas: HTMLCanvasElement, match: Match, theme: StageTheme) {
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+    });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.sortObjects = true;
+
+    this.camera = new THREE.OrthographicCamera(-400, 400, 300, -100, -1000, 1000);
+    this.camera.position.z = 100;
+
+    this.stage = new Stage(theme);
+    this.scene.add(this.stage.group);
+
+    this.rigs = [new StickRig(match.fighters[0].def), new StickRig(match.fighters[1].def)];
+    for (const rig of this.rigs) {
+      this.scene.add(rig.shadowMesh);
+      this.scene.add(rig.group);
+    }
+
+    // Projectiles, effects and debug boxes sit in front of the fighters on z.
+    this.projectileGroup.position.z = 55;
+    this.fx.group.position.z = 60;
+    this.debugGroup.position.z = 90;
+    this.scene.add(this.projectileGroup);
+    this.scene.add(this.fx.group);
+    this.scene.add(this.debugGroup);
+  }
+
+  /** Live draw-call / triangle counts, for profiling from the console. */
+  get stats() {
+    return { ...this.renderer.info.render, memory: { ...this.renderer.info.memory } };
+  }
+
+  setSize(width: number, height: number) {
+    this.aspect = width / Math.max(1, height);
+    this.renderer.setSize(width, height, false);
+    this.updateCamera(this.viewWidth, this.camX, 0);
+  }
+
+  private updateCamera(viewWidth: number, x: number, shake: number) {
+    const halfW = viewWidth / 2;
+    const halfH = halfW / this.aspect;
+    const sx = shake > 0 ? (Math.random() - 0.5) * shake * 2.2 : 0;
+    const sy = shake > 0 ? (Math.random() - 0.5) * shake * 1.6 : 0;
+    const centerY = CAMERA.height + halfH * 0.18;
+    this.camera.left = -halfW + x + sx;
+    this.camera.right = halfW + x + sx;
+    this.camera.top = centerY + halfH + sy;
+    this.camera.bottom = centerY - halfH + sy;
+    this.camera.updateProjectionMatrix();
+  }
+
+  render(match: Match) {
+    // Camera framing follows the pair.
+    const focus = match.cameraFocus();
+    const want = Math.max(
+      CAMERA.minViewWidth,
+      Math.min(CAMERA.maxViewWidth, focus.spread + CAMERA.padding),
+    );
+    this.viewWidth += (want - this.viewWidth) * CAMERA.lerp;
+    const halfView = this.viewWidth / 2;
+    const clampX = Math.max(-STAGE_HALF_WIDTH + halfView - 60, Math.min(STAGE_HALF_WIDTH - halfView + 60, focus.x));
+    this.camX += (clampX - this.camX) * CAMERA.lerp;
+    this.updateCamera(this.viewWidth, this.camX, match.shake);
+    this.stage.update(this.camX, 0);
+
+    // Fighters.
+    for (let i = 0; i < 2; i++) {
+      const f = match.fighters[i];
+      const { pose, grounded } = f.pose();
+      const sk = buildSkeleton(pose, grounded, 1);
+      const visible = new Set(f.move?.showProps ?? []);
+      const hidden = new Set(f.move?.hideProps ?? []);
+      // Whoever is swinging renders in front, so weapons never disappear
+      // inside the other fighter.
+      const depth = (f.state === "move" ? 3 : 0) + i * 0.5;
+      this.rigs[i].update(sk, {
+        x: f.x,
+        y: f.y,
+        z: depth,
+        facing: f.facing,
+        visibleProps: visible,
+        hiddenProps: hidden,
+        flash: f.flash,
+        airborne: !f.grounded,
+      });
+
+      // Meter aura once a super is available.
+      if (f.meter >= 100 && match.frame % 4 === 0) {
+        this.fx.aura(f.x, f.y + 10, f.def.palette.aura);
+      }
+      if (f.parrySuccess > 0) {
+        f.parrySuccess--;
+        if (f.parrySuccess % 3 === 0) this.fx.aura(f.x, f.y + 40, "#ffe9a8");
+      }
+    }
+
+    this.syncProjectiles(match);
+
+    for (const e of match.fx) this.fx.emit(e);
+    this.fx.update();
+
+    if (this.showBoxes) this.drawBoxes(match);
+    else if (this.debugGroup.children.length) this.clearDebug();
+
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  // -------------------------------------------------------------------------
+
+  private syncProjectiles(match: Match) {
+    const seen = new Set<number>();
+    for (const p of match.projectiles) {
+      seen.add(p.id);
+      let mesh = this.projectileMeshes.get(p.id);
+      if (!mesh) {
+        mesh = this.buildProjectile(p);
+        this.projectileMeshes.set(p.id, mesh);
+        this.projectileGroup.add(mesh);
+      }
+      mesh.position.set(p.x, p.y, 0);
+      mesh.scale.x = p.facing;
+      if (p.spin) mesh.rotation.z += p.spin * 0.03;
+      else if (p.gravity > 0) mesh.rotation.z = Math.atan2(p.vy, p.vx * p.facing);
+    }
+    const stale: number[] = [];
+    this.projectileMeshes.forEach((mesh, id) => {
+      if (seen.has(id)) return;
+      this.projectileGroup.remove(mesh);
+      disposeTree(mesh);
+      stale.push(id);
+    });
+    for (const id of stale) this.projectileMeshes.delete(id);
+  }
+
+  private buildProjectile(p: Projectile): THREE.Object3D {
+    const g = new THREE.Group();
+    const color = p.spec.color ?? "#ffffff";
+    const add = (mesh: THREE.Mesh, order = 55) => {
+      mesh.renderOrder = order;
+      g.add(mesh);
+    };
+
+    switch (p.kind) {
+      case "pilum": {
+        add(new THREE.Mesh(new THREE.PlaneGeometry(72, 3.4), flat("#8a6a3f")));
+        const tip = new THREE.Mesh(new THREE.PlaneGeometry(22, 6), flat("#dfe6ee"));
+        tip.position.x = 44;
+        add(tip);
+        const fin = new THREE.Mesh(new THREE.PlaneGeometry(10, 9), flat("#c0392b"));
+        fin.position.x = -36;
+        add(fin);
+        break;
+      }
+      case "bullet":
+      case "shot": {
+        const body = new THREE.Mesh(new THREE.CircleGeometry(4.5, 12), flat(color));
+        add(body);
+        const streak = new THREE.Mesh(new THREE.PlaneGeometry(34, 3), flat(color, 0.55));
+        streak.position.x = -18;
+        add(streak);
+        break;
+      }
+      case "hook": {
+        add(new THREE.Mesh(new THREE.PlaneGeometry(38, 2.6), flat("#9aa4b1")));
+        const claw = new THREE.Mesh(new THREE.PlaneGeometry(16, 5), flat(color));
+        claw.position.x = 20;
+        add(claw);
+        const barb = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), flat(color));
+        barb.position.set(16, -7);
+        barb.rotation.z = 0.9;
+        add(barb);
+        break;
+      }
+      case "dynamite": {
+        add(new THREE.Mesh(new THREE.PlaneGeometry(9, 22), flat("#a83b2a")));
+        const band = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), flat("#e2c98a"));
+        add(band);
+        const fuse = new THREE.Mesh(new THREE.CircleGeometry(3.2, 10), flat("#ffcf6b"));
+        fuse.position.y = 14;
+        add(fuse);
+        break;
+      }
+      case "shock": {
+        // A low wedge of broken ground skimming along the floor.
+        const wedge = new THREE.Shape();
+        wedge.moveTo(-22, 0);
+        wedge.lineTo(-6, 26);
+        wedge.lineTo(6, 10);
+        wedge.lineTo(18, 30);
+        wedge.lineTo(24, 0);
+        wedge.closePath();
+        const rock = new THREE.Mesh(new THREE.ShapeGeometry(wedge), flat(color));
+        add(rock);
+        const dust = new THREE.Mesh(new THREE.CircleGeometry(12, 12), flat("#c9b28a", 0.55));
+        dust.position.set(-14, 6);
+        add(dust);
+        break;
+      }
+      case "cannon": {
+        add(new THREE.Mesh(new THREE.CircleGeometry(11, 16), flat("#23262c")));
+        const shine = new THREE.Mesh(new THREE.CircleGeometry(3.4, 10), flat("#6b727d"));
+        shine.position.set(-3, 3);
+        add(shine);
+        break;
+      }
+      default: {
+        add(new THREE.Mesh(new THREE.CircleGeometry(8, 14), flat(color)));
+      }
+    }
+
+    const scale = p.spec.scale ?? 1;
+    g.scale.setScalar(scale);
+    return g;
+  }
+
+  // -------------------------------------------------------------------------
+
+  private clearDebug() {
+    for (const child of [...this.debugGroup.children]) {
+      this.debugGroup.remove(child);
+      const m = child as THREE.Mesh;
+      m.geometry?.dispose();
+      (m.material as THREE.Material)?.dispose();
+    }
+  }
+
+  private drawBoxes(match: Match) {
+    this.clearDebug();
+    const addBox = (b: { left: number; bottom: number; w: number; h: number }, color: string) => {
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(b.w, b.h), flat(color, 0.32));
+      mesh.position.set(b.left + b.w / 2, b.bottom + b.h / 2, 0);
+      mesh.renderOrder = 90;
+      this.debugGroup.add(mesh);
+    };
+    for (const f of match.fighters) {
+      for (const h of f.hurtboxes()) addBox(h, "#3b82f6");
+      for (const { box } of f.activeHits()) addBox(box, "#ef4444");
+      addBox(f.pushbox(), "#22c55e");
+    }
+  }
+
+  setStage(theme: StageTheme) {
+    if (this.stage.theme === theme) return;
+    this.scene.remove(this.stage.group);
+    this.stage.dispose();
+    this.stage = new Stage(theme);
+    this.scene.add(this.stage.group);
+  }
+
+  resetEffects() {
+    this.fx.clear();
+    this.projectileMeshes.forEach((mesh) => {
+      this.projectileGroup.remove(mesh);
+      disposeTree(mesh);
+    });
+    this.projectileMeshes.clear();
+  }
+
+  dispose() {
+    this.clearDebug();
+    this.fx.dispose();
+    this.stage.dispose();
+    for (const rig of this.rigs) rig.dispose();
+    this.projectileMeshes.forEach((mesh) => disposeTree(mesh));
+    this.projectileMeshes.clear();
+    this.renderer.dispose();
+  }
+}
+
+export { GROUND_Y };
