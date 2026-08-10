@@ -39,7 +39,8 @@ against the CPU or a second player on the same keyboard (or two gamepads).
 
 Three fighters ship today — a Roman legionary, a pirate captain and a
 gunslinger — each with five specials, EX versions, a super, a character skill,
-throws, a block, a dodge roll and a full set of normals. The roster is data:
+throws, a block, a dodge roll and a full set of normals, across eight arenas
+with their own weather (rain, snow, embers, petals). The roster is data:
 see [client/src/game/stickfight/README.md](client/src/game/stickfight/README.md)
 for the fighter contract and how to add more.
 

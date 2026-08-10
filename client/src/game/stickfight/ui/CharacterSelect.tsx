@@ -5,11 +5,61 @@ import { AI_LEVELS, type AiLevel } from "../constants";
 import { ROSTER } from "../fighters";
 import type { FighterDef } from "../types";
 import type { GameMode } from "../engine/game";
+import { STAGE_LIST, STAGE_THEMES, type StageTheme } from "../render/stage";
 import { FighterPortrait } from "./Portrait";
 
 interface Props {
-  onStart: (opts: { p1: string; p2: string; mode: GameMode; aiLevel: AiLevel; rounds: number }) => void;
+  onStart: (opts: {
+    p1: string;
+    p2: string;
+    mode: GameMode;
+    aiLevel: AiLevel;
+    rounds: number;
+    stage: StageTheme | "random";
+  }) => void;
   onShowMoves: (id: string) => void;
+}
+
+/** A tiny painted preview of a stage: sky gradient, horizon and accent. */
+function StageChip({
+  theme,
+  selected,
+  onPick,
+}: {
+  theme: StageTheme | "random";
+  selected: boolean;
+  onPick: () => void;
+}) {
+  const def = theme === "random" ? null : STAGE_THEMES[theme];
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      title={def?.blurb ?? "Roll a different stage every match"}
+      className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 text-left transition ${
+        selected ? "border-amber-400 shadow-[0_0_16px_-4px_rgba(251,191,36,0.7)]" : "border-white/10 hover:border-white/40"
+      }`}
+    >
+      {def ? (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(to bottom, ${def.sky[0]}, ${def.sky[1]})` }}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-4" style={{ background: def.ground }} />
+          <div
+            className="absolute bottom-4 left-1/2 h-6 w-10 -translate-x-1/2 rounded-sm opacity-70"
+            style={{ background: def.accent }}
+          />
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900" />
+      )}
+      <span className="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+        {def ? def.name : "Random"}
+      </span>
+    </button>
+  );
 }
 
 function StatBar({ label, value, max = 5 }: { label: string; value: number; max?: number }) {
@@ -86,6 +136,7 @@ export function CharacterSelect({ onStart, onShowMoves }: Props) {
   const [mode, setMode] = useState<GameMode>("cpu");
   const [aiLevel, setAiLevel] = useState<AiLevel>("Veteran");
   const [rounds, setRounds] = useState(2);
+  const [stage, setStage] = useState<StageTheme | "random">("random");
 
   const preview = ROSTER.find((f) => f.id === hover) ?? ROSTER[0];
   const ratings = ratingFor(preview);
@@ -218,6 +269,21 @@ export function CharacterSelect({ onStart, onShowMoves }: Props) {
         </aside>
       </div>
 
+      <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+        <div className="mb-2 flex items-baseline justify-between">
+          <span className="text-xs font-bold uppercase tracking-widest text-white/70">Stage</span>
+          <span className="text-[11px] text-white/40">
+            {stage === "random" ? "A different arena every match" : STAGE_THEMES[stage].blurb}
+          </span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <StageChip theme="random" selected={stage === "random"} onPick={() => setStage("random")} />
+          {STAGE_LIST.map((t) => (
+            <StageChip key={t} theme={t} selected={stage === t} onPick={() => setStage(t)} />
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 p-3">
         <div className="flex items-center gap-4">
           {[p1, p2].map((id, i) => {
@@ -236,7 +302,7 @@ export function CharacterSelect({ onStart, onShowMoves }: Props) {
 
         <button
           type="button"
-          onClick={() => onStart({ p1, p2, mode, aiLevel, rounds })}
+          onClick={() => onStart({ p1, p2, mode, aiLevel, rounds, stage })}
           className="rounded-md bg-amber-400 px-8 py-3 text-lg font-black uppercase italic tracking-wide text-black transition hover:bg-amber-300"
         >
           Fight

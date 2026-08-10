@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AiLevel } from "../constants";
 import { GameSession, type GameMode, type HudState } from "../engine/game";
+import { STAGE_THEMES, type StageTheme } from "../render/stage";
 import { Announcement, Hud } from "./Hud";
 import { TouchControls } from "./TouchControls";
 
@@ -12,6 +13,7 @@ export interface MatchConfig {
   mode: GameMode;
   aiLevel: AiLevel;
   rounds: number;
+  stage: StageTheme | "random";
 }
 
 export function GameCanvas({
@@ -45,6 +47,7 @@ export function GameCanvas({
       mode: config.mode,
       aiLevel: config.aiLevel,
       roundsToWin: config.rounds,
+      stage: config.stage,
     });
     sessionRef.current = session;
     session.onHud = setHud;
@@ -98,7 +101,7 @@ export function GameCanvas({
       session.dispose();
       sessionRef.current = null;
     };
-  }, [config.p1, config.p2, config.mode, config.aiLevel, config.rounds]);
+  }, [config.p1, config.p2, config.mode, config.aiLevel, config.rounds, config.stage]);
 
   const togglePause = () => {
     const s = sessionRef.current;
@@ -124,6 +127,17 @@ export function GameCanvas({
       )}
 
       {touch && pads === 0 && sessionRef.current && <TouchControls keyboard={sessionRef.current.keyboard} />}
+
+      {hud && hud.phase === "intro" && sessionRef.current && (
+        <div className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-center">
+          <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/50">
+            {STAGE_THEMES[sessionRef.current.theme].name}
+          </div>
+          <div className="text-[11px] italic text-white/35">
+            {STAGE_THEMES[sessionRef.current.theme].blurb}
+          </div>
+        </div>
+      )}
 
       {pads > 0 && (
         <div className="pointer-events-none absolute bottom-3 left-3 z-20 rounded-md border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">

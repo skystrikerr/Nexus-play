@@ -89,6 +89,29 @@ lead limb (nearer the opponent), `B` the back limb.
 Hitboxes live in facing space too: `bx(x, y, w, h)` with `x` forward from the
 fighter and `y` up from the ground.
 
+## Stages
+
+Eight arenas, each a few parallax layers plus optional ambient weather:
+
+| Stage | Weather |
+| --- | --- |
+| The Colosseum | drifting sand |
+| Storm Deck | driving rain |
+| Perdition Flats | blowing dust |
+| Blossom Dojo | falling petals |
+| Neon Bazaar | neon-lit rain |
+| Frozen Pass | snow under an aurora |
+| Ember Forge | rising embers |
+| Cloudbreak Temple | drifting motes |
+
+Pick one on the select screen or leave it on Random. To add a stage: add a key
+to `StageTheme`, an entry to `STAGE_THEMES` (sky, ground, accent, ambient) and a
+`build<Name>()` method in `stage.ts`. The select screen and the random roll pick
+it up automatically.
+
+Ambient weather is a small pooled particle field that wraps around the camera,
+so density is independent of how far the fighters travel.
+
 ## Controls
 
 | Input | Action |

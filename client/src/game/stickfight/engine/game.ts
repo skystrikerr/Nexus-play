@@ -8,7 +8,7 @@ import type { AiLevel } from "../constants";
 import { COMBAT, FPS, MATCH } from "../constants";
 import { getFighter } from "../fighters";
 import { GameRenderer } from "../render/renderer";
-import { themeForFighter, type StageTheme } from "../render/stage";
+import { randomTheme, themeForFighter, type StageTheme } from "../render/stage";
 import type { FighterDef } from "../types";
 import { AiController } from "./ai";
 import { Sfx } from "./audio";
@@ -23,7 +23,8 @@ export interface GameOptions {
   mode: GameMode;
   aiLevel: AiLevel;
   roundsToWin?: number;
-  stage?: StageTheme;
+  /** A specific stage, or "random" to roll one per match. */
+  stage?: StageTheme | "random";
 }
 
 export interface PlayerHud {
@@ -73,11 +74,18 @@ export class GameSession {
   constructor(private options: GameOptions) {
     this.defs = [getFighter(options.p1), getFighter(options.p2)];
     this.match = new Match(this.defs, options.roundsToWin ?? MATCH.roundsToWin);
+    this.theme =
+      options.stage === "random"
+        ? randomTheme()
+        : (options.stage ?? themeForFighter(options.p1));
     if (options.mode === "cpu") this.ai = new AiController(options.aiLevel);
   }
 
+  /** The stage actually in use once "random" has been resolved. */
+  readonly theme: StageTheme;
+
   attach(canvas: HTMLCanvasElement) {
-    const theme = this.options.stage ?? themeForFighter(this.options.p1);
+    const theme = this.theme;
     this.renderer = new GameRenderer(canvas, this.match, theme);
     this.detachKeys = this.keyboard.attach(window);
     this.resize(canvas.clientWidth, canvas.clientHeight);
