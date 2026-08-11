@@ -10,6 +10,7 @@ import type { Match, Projectile } from "../engine/match";
 import { buildSkeleton } from "../skeleton";
 import { FxSystem } from "./fx";
 import { StickRig } from "./rig";
+import { defaultQuality, PostFx } from "./post";
 import { Stage, type StageTheme } from "./stage";
 
 function disposeTree(root: THREE.Object3D) {
@@ -45,9 +46,15 @@ export class GameRenderer {
   private viewWidth = CAMERA.minViewWidth;
   private camX = 0;
   private aspect = 16 / 9;
+  private post: PostFx | null = null;
+  private quality: "high" | "low";
+  /** Extra zoom applied by impacts, eased back out over a few frames. */
+  private punch = 0;
+  private lastShake = 0;
   showBoxes = false;
 
-  constructor(canvas: HTMLCanvasElement, match: Match, theme: StageTheme) {
+  constructor(canvas: HTMLCanvasElement, match: Match, theme: StageTheme, quality?: "high" | "low") {
+    this.quality = quality ?? defaultQuality();
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
@@ -88,7 +95,33 @@ export class GameRenderer {
   setSize(width: number, height: number) {
     this.aspect = width / Math.max(1, height);
     this.renderer.setSize(width, height, false);
+    // The effects chain does not need full retina resolution; capping it keeps
+    // the cost roughly constant across displays.
+    const pr = Math.min(this.renderer.getPixelRatio(), 1.25);
+    if (this.quality === "high") {
+      if (!this.post) {
+        this.post = new PostFx(this.renderer, this.scene, this.camera, width * pr, height * pr);
+      } else {
+        this.post.setSize(width * pr, height * pr);
+      }
+    }
     this.updateCamera(this.viewWidth, this.camX, 0);
+  }
+
+  setQuality(quality: "high" | "low") {
+    if (quality === this.quality) return;
+    this.quality = quality;
+    if (quality === "low") {
+      this.post?.dispose();
+      this.post = null;
+    }
+    const size = new THREE.Vector2();
+    this.renderer.getSize(size);
+    this.setSize(size.x, size.y);
+  }
+
+  get currentQuality(): "high" | "low" {
+    return this.quality;
   }
 
   private updateCamera(viewWidth: number, x: number, shake: number) {
@@ -112,10 +145,29 @@ export class GameRenderer {
       Math.min(CAMERA.maxViewWidth, focus.spread + CAMERA.padding),
     );
     this.viewWidth += (want - this.viewWidth) * CAMERA.lerp;
-    const halfView = this.viewWidth / 2;
-    const clampX = Math.max(-STAGE_HALF_WIDTH + halfView - 60, Math.min(STAGE_HALF_WIDTH - halfView + 60, focus.x));
+
+    // A spike in screen shake means something heavy landed: punch the camera
+    // in for a few frames, then let it breathe back out.
+    const spike = match.shake - this.lastShake;
+    this.lastShake = match.shake;
+    if (spike > 1.5) this.punch = Math.min(0.1, this.punch + spike * 0.012);
+    this.punch *= 0.9;
+    if (this.punch < 0.001) this.punch = 0;
+
+    // Round-end pushes in on whoever is on the floor.
+    let framed = this.viewWidth * (1 - this.punch);
+    let focusX = focus.x;
+    if (match.phase === "roundEnd" && match.lastResult?.winner !== null && match.lastResult) {
+      const loser = match.fighters[match.lastResult.winner === 0 ? 1 : 0];
+      const t = Math.min(1, match.phaseFrame / 70);
+      framed = framed * (1 - 0.22 * t);
+      focusX = focus.x + (loser.x - focus.x) * 0.65 * t;
+    }
+
+    const halfView = framed / 2;
+    const clampX = Math.max(-STAGE_HALF_WIDTH + halfView - 60, Math.min(STAGE_HALF_WIDTH - halfView + 60, focusX));
     this.camX += (clampX - this.camX) * CAMERA.lerp;
-    this.updateCamera(this.viewWidth, this.camX, match.shake);
+    this.updateCamera(framed, this.camX, match.shake);
     this.stage.update(this.camX, 0);
 
     // Fighters.
@@ -168,13 +220,24 @@ export class GameRenderer {
 
     this.syncProjectiles(match);
 
-    for (const e of match.fx) this.fx.emit(e);
+    for (const e of match.fx) {
+      this.fx.emit(e);
+      // Big, bright events wash the screen for a frame or two.
+      if (this.post) {
+        if (e.kind === "super") this.post.punch(0.5, e.color ?? "#ffffff");
+        else if (e.kind === "explode") this.post.punch(0.26, "#ffd06b");
+        else if (e.kind === "ko") this.post.punch(0.4, "#ffffff");
+        else if (e.kind === "parry") this.post.punch(0.22, "#ffe9a8");
+        else if (e.kind === "guardBreak") this.post.punch(0.2, "#ff8a8a");
+      }
+    }
     this.fx.update();
 
     if (this.showBoxes) this.drawBoxes(match);
     else if (this.debugGroup.children.length) this.clearDebug();
 
-    this.renderer.render(this.scene, this.camera);
+    if (this.post) this.post.render(match.shake);
+    else this.renderer.render(this.scene, this.camera);
   }
 
   // -------------------------------------------------------------------------
@@ -367,6 +430,8 @@ export class GameRenderer {
   }
 
   dispose() {
+    this.post?.dispose();
+    this.post = null;
     this.clearDebug();
     this.fx.dispose();
     this.stage.dispose();

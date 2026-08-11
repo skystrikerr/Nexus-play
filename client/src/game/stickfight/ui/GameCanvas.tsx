@@ -35,6 +35,7 @@ export function GameCanvas({
   const [ready, setReady] = useState(false);
   const [pads, setPads] = useState(0);
   const [muted, setMuted] = useState(false);
+  const [quality, setQuality] = useState<"high" | "low">("high");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,6 +55,7 @@ export function GameCanvas({
     session.attach(canvas);
     session.start();
     setReady(true);
+    setQuality(session.quality);
 
     const resize = () => {
       const rect = wrap.getBoundingClientRect();
@@ -121,7 +123,7 @@ export function GameCanvas({
 
       {hud && ready && (
         <>
-          <Hud state={hud} roundsToWin={config.rounds} />
+          <Hud state={hud} roundsToWin={config.rounds} fighterIds={[config.p1, config.p2]} />
           <Announcement state={hud} />
         </>
       )}
@@ -152,6 +154,17 @@ export function GameCanvas({
           className="rounded-md border border-white/20 bg-black/50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80 hover:bg-black/70"
         >
           {paused ? "Resume" : "Pause"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const s = sessionRef.current;
+            if (!s) return;
+            setQuality(s.toggleQuality());
+          }}
+          className="rounded-md border border-white/20 bg-black/50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80 hover:bg-black/70"
+        >
+          FX {quality === "high" ? "High" : "Low"}
         </button>
         <button
           type="button"

@@ -25,6 +25,8 @@ export interface GameOptions {
   roundsToWin?: number;
   /** A specific stage, or "random" to roll one per match. */
   stage?: StageTheme | "random";
+  /** "high" adds bloom, grade and vignette; "low" is a plain render. */
+  quality?: "high" | "low";
 }
 
 export interface PlayerHud {
@@ -68,6 +70,9 @@ export class GameSession {
   paused = false;
   private detachKeys: (() => void) | null = null;
   private defs: [FighterDef, FighterDef];
+  /** Rolling frame-time watchdog, used to drop effects on weak hardware. */
+  private frameSamples: number[] = [];
+  private qualityLocked = false;
 
   onHud: ((s: HudState) => void) | null = null;
 
@@ -86,7 +91,7 @@ export class GameSession {
 
   attach(canvas: HTMLCanvasElement) {
     const theme = this.theme;
-    this.renderer = new GameRenderer(canvas, this.match, theme);
+    this.renderer = new GameRenderer(canvas, this.match, theme, this.options.quality);
     this.detachKeys = this.keyboard.attach(window);
     this.resize(canvas.clientWidth, canvas.clientHeight);
     // Handy for poking at a live match from the console (F2 toggles hitboxes).
@@ -134,6 +139,20 @@ export class GameSession {
     if (this.renderer) this.renderer.showBoxes = !this.renderer.showBoxes;
   }
 
+  /** Flips between the full effects chain and the plain render. */
+  toggleQuality(): "high" | "low" {
+    // An explicit choice overrides the watchdog.
+    this.qualityLocked = true;
+    if (!this.renderer) return "low";
+    const next = this.renderer.currentQuality === "high" ? "low" : "high";
+    this.renderer.setQuality(next);
+    return next;
+  }
+
+  get quality(): "high" | "low" {
+    return this.renderer?.currentQuality ?? "low";
+  }
+
   private loop = () => {
     if (!this.running) return;
     this.raf = requestAnimationFrame(this.loop);
@@ -155,8 +174,28 @@ export class GameSession {
     }
 
     this.renderer?.render(this.match);
+    this.watchPerformance(delta);
     this.pushHud();
   };
+
+  /**
+   * If the full effects chain cannot hold a reasonable frame rate on this
+   * machine, drop to the plain render once and stay there.
+   */
+  private watchPerformance(delta: number) {
+    if (this.qualityLocked || !this.renderer || this.renderer.currentQuality !== "high") return;
+    this.frameSamples.push(delta);
+    if (this.frameSamples.length < 90) return;
+    const avg = this.frameSamples.reduce((a, b) => a + b, 0) / this.frameSamples.length;
+    this.frameSamples.length = 0;
+    if (avg > 0.028) {
+      this.renderer.setQuality("low");
+      this.qualityLocked = true;
+    } else {
+      // Fast enough - stop sampling.
+      this.qualityLocked = true;
+    }
+  }
 
   private stepOnce() {
     // Player 1 is keyboard + first pad; player 2 is keyboard + second pad, or

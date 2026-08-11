@@ -26,6 +26,7 @@ game/stickfight/
     game.ts       fixed-step loop tying simulation, renderer and React together
 
   render/         three.js only, reads simulation state, never writes it
+    post.ts       bloom, colour grade, vignette, impact flash
     shapes.ts     tapered limbs, hands, boots, heads - the character art
     cloth.ts      verlet capes and coat tails
     trail.ts      fading ribbon off a swinging weapon
@@ -148,6 +149,27 @@ the wakeup animation.
 
 Portraits on the select screen (`ui/Portrait.tsx`) are drawn in SVG from the
 same stance data and the same proportions, so they cannot drift from the game.
+
+## Presentation
+
+The scene is flat, unlit art, so the post chain does the work a lighting rig
+normally would (`render/post.ts`):
+
+- **Bloom** picks out the hot things - muzzle flashes, supers, lava, neon,
+  weapon trails. It runs at half resolution because it is a soft glow and
+  nobody can tell, which makes it four times cheaper on fill rate.
+- **Grade and vignette** add a little contrast and saturation and pull focus to
+  the middle of the arena.
+- **Impact channel**: supers, explosions, parries and KOs wash the screen for a
+  frame or two, and chromatic aberration scales with screen shake so heavy hits
+  smear the edges.
+
+The camera has its own feedback: a spike in screen shake punches it in for a few
+frames, and the end of a round pushes in slowly on whoever is on the floor.
+
+Effects are on by default on desktop and off on touch/small screens. A watchdog
+samples frame time for the first 90 frames and drops to the plain render if the
+machine cannot hold it - and the in-match FX button overrides either way.
 
 ## Stages
 

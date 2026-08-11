@@ -42,7 +42,8 @@ raider, a pirate captain, a ronin, a gunslinger and a 1965 rifleman — each wit
 five specials, EX versions, a super, a character skill, throws, a block, a
 dodge roll and a full set of normals, across nine arenas with their own weather
 (rain, snow, embers, petals). Movement carries momentum, hard knockdowns bounce
-off the floor and walls, and downed fighters collapse into a verlet ragdoll.
+off the floor and walls, downed fighters collapse into a verlet ragdoll, and
+the whole thing is graded with bloom, vignette and impact flashes.
 The roster is data:
 see [client/src/game/stickfight/README.md](client/src/game/stickfight/README.md)
 for the fighter contract and how to add more.
