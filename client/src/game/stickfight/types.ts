@@ -424,10 +424,25 @@ export type PropAttach =
   | "footF"
   | "footB";
 
+/** A simulated cape/tail hanging from the prop's attachment point. */
+export interface PropCloth {
+  segments: number;
+  segmentLength: number;
+  width: number;
+  endWidth?: number;
+  color: string;
+  lining?: string;
+  gravity?: number;
+  stiffness?: number;
+  drift?: number;
+}
+
 export interface PropDef {
   id: string;
   attach: PropAttach;
   parts: ShapePart[];
+  /** Physics cloth hanging from this prop (capes, coat tails, cloaks). */
+  cloth?: PropCloth;
   /** Hidden unless the current move/state lists this prop id in `showProps`. */
   conditional?: boolean;
 }

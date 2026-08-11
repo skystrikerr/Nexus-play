@@ -25,9 +25,9 @@ const STANCE = {
   // Axe resting on the shoulder, shield arm loose across the body.
   shoulderF: 40,
   elbowF: 54,
-  shoulderB: 150,
-  elbowB: -74,
-  weaponBack: 26,
+  shoulderB: 156,
+  elbowB: -66,
+  weaponBack: 116,
 };
 
 export const VIKING: FighterDef = {
@@ -127,8 +127,18 @@ export const VIKING: FighterDef = {
       attach: "torso",
       parts: [
         { geo: "box", size: [30, 22], pos: [-2, 12], rot: 4, color: FUR },
-        { geo: "box", size: [18, 40], pos: [-11, -10], rot: 8, color: "#7a6d5a", behind: true },
+        { geo: "box", size: [18, 18], pos: [-10, 0], rot: 8, color: "#7a6d5a", behind: true },
       ],
+      cloth: {
+        segments: 3,
+        segmentLength: 10,
+        width: 20,
+        endWidth: 14,
+        color: "#7a6d5a",
+        gravity: 0.52,
+        stiffness: 0.56,
+        drift: -0.26,
+      },
     },
     {
       id: "belt",

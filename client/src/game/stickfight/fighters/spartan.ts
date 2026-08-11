@@ -104,21 +104,28 @@ export const SPARTAN: FighterDef = {
       id: "aspis",
       attach: "forearmF",
       parts: [
-        { geo: "disc", size: [31], pos: [16, 0], color: BRONZE, z: 0.5 },
-        { geo: "disc", size: [26], pos: [16, 0], color: "#b07f33", z: 0.6 },
-        { geo: "disc", size: [19], pos: [16, 0], color: CRIMSON, z: 0.7 },
+        { geo: "disc", size: [27], pos: [15, 0], color: BRONZE, z: 0.5 },
+        { geo: "disc", size: [22.5], pos: [15, 0], color: "#b07f33", z: 0.6 },
+        { geo: "disc", size: [16.5], pos: [15, 0], color: CRIMSON, z: 0.7 },
         // Lambda.
-        { geo: "box", size: [5, 26], pos: [12, 0], rot: 20, color: "#f0e6d2", z: 0.8 },
-        { geo: "box", size: [5, 26], pos: [21, 0], rot: -20, color: "#f0e6d2", z: 0.8 },
+        { geo: "box", size: [4.5, 22], pos: [11, 0], rot: 20, color: "#f0e6d2", z: 0.8 },
+        { geo: "box", size: [4.5, 22], pos: [19, 0], rot: -20, color: "#f0e6d2", z: 0.8 },
       ],
     },
     {
       id: "cloak",
-      attach: "torso",
-      parts: [
-        { geo: "box", size: [20, 52], pos: [-11, -8], rot: 7, color: CRIMSON, behind: true },
-        { geo: "box", size: [14, 20], pos: [-14, -30], rot: 12, color: "#7d1f1f", behind: true },
-      ],
+      attach: "neck",
+      parts: [{ geo: "box", size: [26, 7], pos: [-5, -3], color: CRIMSON, behind: true }],
+      cloth: {
+        segments: 5,
+        segmentLength: 12,
+        width: 22,
+        endWidth: 13,
+        color: CRIMSON,
+        gravity: 0.55,
+        stiffness: 0.55,
+        drift: -0.3,
+      },
     },
     {
       id: "cuirass",

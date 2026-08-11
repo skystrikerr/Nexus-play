@@ -114,10 +114,19 @@ export const WESTERN: FighterDef = {
       id: "poncho",
       attach: "torso",
       parts: [
-        { geo: "box", size: [30, 34], pos: [-2, -4], rot: 3, color: PONCHO, behind: true },
-        { geo: "box", size: [30, 4], pos: [-2, -20], color: "#8f3d2a", behind: true },
+        { geo: "box", size: [30, 26], pos: [-2, 0], rot: 3, color: PONCHO, behind: true },
         { geo: "box", size: [26, 3], pos: [-2, 10], color: "#8f3d2a", behind: true },
       ],
+      cloth: {
+        segments: 3,
+        segmentLength: 10,
+        width: 24,
+        endWidth: 18,
+        color: PONCHO,
+        gravity: 0.46,
+        stiffness: 0.6,
+        drift: -0.2,
+      },
     },
     {
       id: "holster",

@@ -120,10 +120,18 @@ export const ROMAN: FighterDef = {
     },
     {
       id: "cape",
-      attach: "torso",
-      parts: [
-        { geo: "box", size: [16, 40], pos: [-9, -4], rot: 6, color: "#7d1f1f", behind: true },
-      ],
+      attach: "neck",
+      parts: [{ geo: "box", size: [22, 6], pos: [-4, -2], color: "#7d1f1f", behind: true }],
+      cloth: {
+        segments: 4,
+        segmentLength: 11,
+        width: 19,
+        endWidth: 11,
+        color: "#8f2222",
+        gravity: 0.5,
+        stiffness: 0.5,
+        drift: -0.34,
+      },
     },
   ],
 

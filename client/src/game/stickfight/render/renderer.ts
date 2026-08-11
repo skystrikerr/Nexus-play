@@ -67,6 +67,8 @@ export class GameRenderer {
     for (const rig of this.rigs) {
       this.scene.add(rig.shadowMesh);
       this.scene.add(rig.group);
+      // Cloth and weapon trails simulate in world space.
+      this.scene.add(rig.worldGroup);
     }
 
     // Projectiles, effects and debug boxes sit in front of the fighters on z.
@@ -137,6 +139,10 @@ export class GameRenderer {
       // Whoever is swinging renders in front, so weapons never disappear
       // inside the other fighter.
       const depth = (f.state === "move" ? 3 : 0) + i * 0.5;
+      // A weapon leaves a trail while its move is actually swinging.
+      const swinging =
+        f.state === "move" &&
+        !!f.move?.hits?.some((h) => f.moveFrame >= h.from - 3 && f.moveFrame <= h.to + 2);
       this.rigs[i].update(sk, {
         x: f.x,
         y: f.y,
@@ -146,6 +152,8 @@ export class GameRenderer {
         hiddenProps: hidden,
         flash: f.flash,
         airborne: !f.grounded,
+        speed: f.vx * f.facing,
+        swinging,
       });
 
       // Meter aura once a super is available.

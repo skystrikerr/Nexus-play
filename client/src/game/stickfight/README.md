@@ -26,7 +26,10 @@ game/stickfight/
     game.ts       fixed-step loop tying simulation, renderer and React together
 
   render/         three.js only, reads simulation state, never writes it
-    rig.ts        skeleton -> outlined bones, head, weapons and props
+    shapes.ts     tapered limbs, hands, boots, heads - the character art
+    cloth.ts      verlet capes and coat tails
+    trail.ts      fading ribbon off a swinging weapon
+    rig.ts        skeleton -> inked body, props, cloth and trails
     stage.ts      parallax backdrops
     fx.ts         pooled particle effects
     renderer.ts   scene, camera framing, projectiles, debug boxes
@@ -122,6 +125,29 @@ fighter's simulated x/y, easing in over the first 24 frames so the initial
 tumble still comes from the hit. Physics changes how a body looks as it falls,
 never where the game thinks it is. Getting up drops the ragdoll and returns to
 the wakeup animation.
+
+## How a fighter is drawn
+
+`rig.ts` turns a posed `Skeleton` into an inked body:
+
+- **Tapered limbs.** Each bone is a capsule that is wider at the joint carrying
+  the weight and narrower at the far end, with a vertex-colour gradient across
+  its width so it shades like a tube. That taper is most of what makes the
+  figures read as bodies rather than diagrams - and it is cheaper than the old
+  rectangle-plus-two-circles bone (2 meshes per limb instead of 6).
+- **Hands, boots and a face.** Mitts follow the forearm, boots follow the shin
+  and sit on the floor, and the head carries a jaw and an eye so it reads as
+  facing the opponent.
+- **Props** (`ShapePart[]`) get the same across-the-form shading, so a helmet
+  sits in the same world as the head under it.
+- **Cloth.** A prop can declare `cloth`, which hangs a verlet strip from its
+  attachment point: capes lag behind a dash, snap on a reversal and settle when
+  the fighter stands still. Simulated in world space, so it keeps its momentum.
+- **Weapon trails.** Anything held with real reach leaves a fading ribbon off
+  its tip while an attack is live.
+
+Portraits on the select screen (`ui/Portrait.tsx`) are drawn in SVG from the
+same stance data and the same proportions, so they cannot drift from the game.
 
 ## Stages
 

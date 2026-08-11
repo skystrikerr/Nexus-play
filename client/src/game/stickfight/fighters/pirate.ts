@@ -125,9 +125,19 @@ export const PIRATE: FighterDef = {
       id: "coat",
       attach: "torso",
       parts: [
-        { geo: "box", size: [15, 44], pos: [-8, -6], rot: 5, color: COAT, behind: true },
-        { geo: "box", size: [6, 30], pos: [7, -12], rot: -6, color: "#33447a", behind: true },
+        { geo: "box", size: [15, 30], pos: [-6, 4], rot: 5, color: COAT, behind: true },
+        { geo: "box", size: [6, 24], pos: [7, -6], rot: -6, color: "#33447a", behind: true },
       ],
+      cloth: {
+        segments: 4,
+        segmentLength: 10,
+        width: 17,
+        endWidth: 9,
+        color: COAT,
+        gravity: 0.44,
+        stiffness: 0.42,
+        drift: -0.4,
+      },
     },
     {
       id: "sash",

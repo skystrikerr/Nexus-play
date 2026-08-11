@@ -22,11 +22,11 @@ const STANCE = {
   hipB: -18,
   kneeB: 28,
   // Left hand rests on the scabbard, right hand hovers at the hilt.
-  shoulderF: 26,
-  elbowF: 58,
-  shoulderB: 18,
-  elbowB: 46,
-  weapon: -46,
+  shoulderF: 44,
+  elbowF: 36,
+  shoulderB: 34,
+  elbowB: 40,
+  weapon: 26,
 };
 
 export const SAMURAI: FighterDef = {
@@ -120,9 +120,19 @@ export const SAMURAI: FighterDef = {
       id: "hakama",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [12, 26], pos: [-8, -12], rot: 4, color: "#2b3948", behind: true },
-        { geo: "box", size: [12, 26], pos: [7, -12], rot: -4, color: "#2b3948", behind: true },
+        { geo: "box", size: [12, 24], pos: [-8, -11], rot: 4, color: "#2b3948", behind: true },
+        { geo: "box", size: [12, 24], pos: [7, -11], rot: -4, color: "#2b3948", behind: true },
       ],
+      cloth: {
+        segments: 3,
+        segmentLength: 9,
+        width: 19,
+        endWidth: 13,
+        color: "#2b3948",
+        gravity: 0.5,
+        stiffness: 0.55,
+        drift: -0.24,
+      },
     },
   ],
 
