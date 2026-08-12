@@ -53,4 +53,15 @@ The repo includes a [render.yaml](render.yaml) blueprint for Render's free tier:
 
 The free tier sleeps after 15 minutes of inactivity; the first request afterwards takes up to a minute while it wakes.
 
+## Thronglets
+
+`/thronglets` is a three.js artificial-life sandbox that ships with the app: a
+colony of voxel creatures that forage, drink, sleep, chatter, pair off, lay
+eggs and haul wood to build cairns, huts, watchtowers and monoliths — all of it
+driven by each creature scoring its own needs, with no script telling them what
+to do. Click one to read its needs, inherited traits and current thought; drop
+food or plant trees and watch the colony react. See
+[client/src/thronglets/README.md](client/src/thronglets/README.md) for how it
+works.
+
 See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for a full tour of the codebase and [MOBILE_SETUP.md](MOBILE_SETUP.md) for the Android build.
