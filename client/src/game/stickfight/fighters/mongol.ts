@@ -88,42 +88,60 @@ export const MONGOL: FighterDef = {
     {
       id: "hat",
       attach: "head",
+      // Fur-trimmed cap with the upturned brim split at the front.
       parts: [
-        // Fur-trimmed conical cap.
-        { geo: "cone", size: [15, 20], pos: [0, 12], color: FELT },
-        { geo: "box", size: [27, 8], pos: [0, 3], color: "#3c3226" },
-        { geo: "disc", size: [4], pos: [0, 23], color: TRIM },
+        { geo: "cone", size: [13, 19], pos: [0, 11], color: FELT },
+        { geo: "poly", size: [-8, 5, 8, 4, 6, -5, -6, -5], pos: [0, 9], color: "#4a5b3c" },
+        { geo: "poly", size: [-14, 4, -6, 6, 6, 6, 14, 4, 12, -4, -12, -4], pos: [0, 3], color: "#3c3226" },
+        { geo: "box", size: [26, 2], pos: [0, 6], color: "#544838" },
+        { geo: "disc", size: [3.6], pos: [0, 22], color: TRIM },
+        // Ear flaps tied up behind.
+        { geo: "poly", size: [-4, 6, 4, 5, 3, -7, -4, -6], pos: [-12, -2], rot: 14, color: "#3c3226", behind: true },
       ],
     },
     {
       id: "deel",
       attach: "torso",
+      // Deel wrapped right over left, with a lamellar plate laced over the
+      // chest and the sash holding the whole thing shut.
       parts: [
-        { geo: "box", size: [29, 36], pos: [0, 3], color: DEEL },
-        { geo: "box", size: [30, 5], pos: [0, -12], color: TRIM },
-        // The wrapped front panel.
-        { geo: "box", size: [16, 34], pos: [6, 4], rot: -5, color: "#8f6a38" },
-        { geo: "box", size: [6, 34], pos: [-8, 3], color: "#6a4a26" },
+        { geo: "poly", size: [-14, -17, 14, -17, 15, 6, 10, 17, -10, 17, -15, 6], pos: [0, 3], color: DEEL },
+        { geo: "poly", size: [-3, 18, 12, 15, 13, -14, -4, -16], pos: [5, 3], rot: -4, color: "#8f6a38" },
+        { geo: "poly", size: [-5, 18, 3, 17, 2, -16, -6, -15], pos: [-8, 3], color: "#6a4a26" },
+        // Lamellar scales.
+        { geo: "poly", size: [-10, -6, 10, -6, 11, 4, 6, 8, -6, 8, -11, 4], pos: [-1, 8], color: "#7a6a4a" },
+        { geo: "box", size: [20, 1.6], pos: [-1, 10], color: "#4f4430" },
+        { geo: "box", size: [20, 1.6], pos: [-1, 5], color: "#4f4430" },
+        { geo: "box", size: [1.6, 15], pos: [-6, 8], color: "#4f4430" },
+        { geo: "box", size: [1.6, 15], pos: [3, 8], color: "#4f4430" },
+        { geo: "poly", size: [-15, 3, 15, 4, 15, -4, -15, -3], pos: [0, -13], color: TRIM },
+        { geo: "disc", size: [2.4], pos: [8, -13], color: "#8f6a24", z: 0.3 },
       ],
     },
     {
       id: "quiver",
       attach: "back",
+      // Birch quiver slung at the hip, arrows nock-up.
       parts: [
-        { geo: "box", size: [14, 34], pos: [-6, 6], rot: -16, color: HORN, behind: true },
-        { geo: "box", size: [15, 5], pos: [-3, 22], rot: -16, color: TRIM, behind: true },
+        { geo: "poly", size: [-7, 18, 7, 17, 6, -17, -7, -18], pos: [-6, 6], rot: -16, color: HORN, behind: true },
+        { geo: "box", size: [15, 4], pos: [-3, 22], rot: -16, color: TRIM, behind: true },
+        { geo: "box", size: [15, 4], pos: [-9, -10], rot: -16, color: TRIM, behind: true },
         // Fletchings poking out of the top.
-        { geo: "box", size: [3, 16], pos: [-7, 28], rot: -22, color: SHAFT, behind: true },
-        { geo: "box", size: [3, 16], pos: [-3, 29], rot: -14, color: "#b04a3a", behind: true },
-        { geo: "box", size: [3, 15], pos: [1, 28], rot: -8, color: SHAFT, behind: true },
+        { geo: "box", size: [2.4, 17], pos: [-7, 29], rot: -22, color: SHAFT, behind: true },
+        { geo: "poly", size: [-2, 7, 2, 6, 2, -7, -2, -6], pos: [-8, 36], rot: -22, color: "#b04a3a", behind: true },
+        { geo: "box", size: [2.4, 17], pos: [-3, 30], rot: -14, color: SHAFT, behind: true },
+        { geo: "poly", size: [-2, 7, 2, 6, 2, -7, -2, -6], pos: [-3, 37], rot: -14, color: "#dfe4e9", behind: true },
+        { geo: "box", size: [2.4, 16], pos: [1, 29], rot: -8, color: SHAFT, behind: true },
+        { geo: "poly", size: [-2, 6, 2, 6, 2, -6, -2, -6], pos: [2, 36], rot: -8, color: "#b04a3a", behind: true },
       ],
     },
     {
       id: "sash",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [30, 12], pos: [0, -2], color: TRIM },
-        { geo: "box", size: [10, 9], pos: [-10, -3], color: "#9a7a2f" },
+        { geo: "poly", size: [-14, 5, 14, 4, 14, -5, -14, -6], pos: [0, -2], color: TRIM },
+        { geo: "poly", size: [-4, 4, 4, 4, 4, -4, -4, -4], pos: [-10, -3], color: "#9a7a2f" },
+        { geo: "box", size: [8, 3], pos: [8, -4], color: "#9a7a2f" },
       ],
       cloth: {
         segments: 4,
@@ -140,15 +158,18 @@ export const MONGOL: FighterDef = {
     {
       id: "bow",
       attach: "handF",
+      // Recurve, built out of straight segments that kink outwards: grip,
+      // two limbs, two reflexed tips, and the string chorded across them.
       parts: [
-        // Recurve, built out of straight segments that kink outwards: grip,
-        // two limbs, two reflexed tips, and the string chorded across them.
-        { geo: "box", size: [7, 13], pos: [-4, 0], color: HORN },
-        { geo: "box", size: [5, 19], pos: [-7, 15], rot: 12, color: "#4e3823" },
-        { geo: "box", size: [5, 19], pos: [-7, -15], rot: -12, color: "#4e3823" },
+        { geo: "poly", size: [-4, 7, 3, 6, 3, -6, -4, -7], pos: [-4, 0], color: HORN },
+        { geo: "poly", size: [-3, 11, 2, 10, 3, -10, -2, -11], pos: [-7, 15], rot: 12, color: "#4e3823" },
+        { geo: "poly", size: [-3, 11, 2, 10, 3, -10, -2, -11], pos: [-7, -15], rot: -12, color: "#4e3823" },
         // Reflexed tips, kicked back the other way.
-        { geo: "box", size: [4, 12], pos: [-4, 28], rot: -34, color: TRIM },
-        { geo: "box", size: [4, 12], pos: [-4, -28], rot: 34, color: TRIM },
+        { geo: "poly", size: [-2, 7, 2, 6, 2, -6, -2, -7], pos: [-4, 28], rot: -34, color: TRIM },
+        { geo: "poly", size: [-2, 7, 2, 6, 2, -6, -2, -7], pos: [-4, -28], rot: 34, color: TRIM },
+        // Sinew binding at the grip.
+        { geo: "box", size: [8, 2], pos: [-4, 5], color: "#8f7a58" },
+        { geo: "box", size: [8, 2], pos: [-4, -5], color: "#8f7a58" },
         // The string chords straight across the belly of the bow.
         { geo: "box", size: [1.6, 62], pos: [2, 0], color: "#efe8d6" },
       ],
@@ -159,8 +180,8 @@ export const MONGOL: FighterDef = {
       conditional: true,
       parts: [
         { geo: "box", size: [46, 2.6], pos: [22, 0], color: SHAFT },
-        { geo: "tri", size: [9, 7], pos: [46, 0], rot: -90, color: "#b9c2cc" },
-        { geo: "box", size: [3, 9], pos: [2, 0], color: "#b04a3a" },
+        { geo: "poly", size: [0, 0, -8, 4, -8, -4], pos: [50, 0], color: "#b9c2cc" },
+        { geo: "poly", size: [-2, 5, 2, 4, 2, -5, -2, -4], pos: [2, 0], color: "#b04a3a" },
       ],
     },
   ],

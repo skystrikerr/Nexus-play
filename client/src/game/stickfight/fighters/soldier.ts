@@ -79,53 +79,87 @@ export const SOLDIER: FighterDef = {
     {
       id: "helmet",
       attach: "head",
+      // M1 steel pot under a camouflage cover, band round the outside with
+      // cigarettes and a bottle of bug juice tucked in it.
       parts: [
-        { geo: "sphere", size: [12], pos: [0, 2], color: OLIVE },
-        { geo: "box", size: [28, 4], pos: [0, -5], rot: -3, color: OLIVE },
-        // Helmet band with the usual bits tucked into it.
-        { geo: "box", size: [26, 3], pos: [0, 1], color: "#3c472c" },
-        { geo: "box", size: [6, 4], pos: [-8, 1], color: KHAKI },
+        { geo: "poly", size: [-13, -6, -13, 3, -8, 10, 0, 12, 8, 10, 13, 3, 13, -6, 8, -8, -8, -8], pos: [0, 2], color: OLIVE },
+        // Camo blotches on the cover.
+        { geo: "poly", size: [-5, 3, 0, 5, 4, 1, -1, -3], pos: [-5, 7], color: "#3c472c" },
+        { geo: "poly", size: [-4, 2, 1, 4, 4, 0, -1, -3], pos: [6, 4], color: "#6a734a" },
+        { geo: "box", size: [27, 3.5], pos: [0, 0], color: "#333d24" },
+        { geo: "box", size: [7, 5], pos: [-8, 1], color: KHAKI },
+        { geo: "box", size: [4, 6], pos: [8, 1], color: "#7d7a4a" },
+        { geo: "box", size: [28, 4], pos: [0, -6], rot: -3, color: "#46512f" },
       ],
     },
     {
       id: "rifle",
       attach: "handB",
+      // M16A1: slab receiver, triangular handguard, carry handle with the rear
+      // sight on it, twenty-round mag and an A1 birdcage.
       parts: [
-        // M16: receiver, carry handle, fore-end, magazine, stock.
-        { geo: "box", size: [46, 6], pos: [12, 2], color: GUNMETAL },
-        { geo: "box", size: [16, 4], pos: [6, 7], color: "#2f353a" },
-        { geo: "cyl", size: [1.8, 30], pos: [40, 2], rot: 90, color: "#2f353a" },
-        { geo: "box", size: [7, 12], pos: [4, -6], rot: -8, color: "#2b3036" },
-        { geo: "box", size: [16, 7], pos: [-14, 0], rot: -4, color: "#2b3036" },
+        { geo: "poly", size: [-14, 4, 14, 4, 14, -4, -14, -4], pos: [-2, 2], color: GUNMETAL },
+        // Triangular handguard.
+        { geo: "poly", size: [-11, 4.5, 12, 3.5, 12, -3.5, -11, -4.5], pos: [22, 2], color: "#2f353a" },
+        { geo: "box", size: [22, 1.5], pos: [22, 4], color: "#4a5158" },
+        // Carry handle and rear sight.
+        { geo: "poly", size: [-11, 0, -9, 5, 9, 5, 11, 0], pos: [-2, 6], color: "#2f353a" },
+        { geo: "box", size: [5, 4], pos: [-11, 9], color: "#22262a" },
+        // Barrel, front sight post and flash hider.
+        { geo: "cyl", size: [1.6, 22], pos: [44, 2], rot: 90, color: "#22262a" },
+        { geo: "poly", size: [-2.5, 0, -2, 7, 2, 7, 2.5, 0], pos: [37, 4], color: "#2f353a" },
+        { geo: "poly", size: [-5, 2.8, 5, 3.4, 5, -3.4, -5, -2.8], pos: [58, 2], color: "#3f454b" },
+        // Magazine and pistol grip.
+        { geo: "poly", size: [-3.5, 7, 3.5, 6, 4.5, -7, -2.5, -7], pos: [4, -8], rot: -6, color: "#2b3036" },
+        { geo: "poly", size: [3, 4, -2, 3, -5, -7, 0, -8], pos: [-6, -6], color: "#22262a" },
+        // Stock.
+        { geo: "poly", size: [-9, 5, 9, 6, 9, -3, -9, -5], pos: [-24, 0], color: "#2b3036" },
+        { geo: "box", size: [4, 9], pos: [-33, 0], color: "#1c2024" },
       ],
     },
     {
       id: "knife",
       attach: "handF",
       conditional: true,
+      // Ka-Bar: clip point, stacked leather grip, steel pommel.
       parts: [
-        { geo: "blade", size: [26, 5, 0.4], pos: [15, 0], color: "#cfd6de" },
-        { geo: "box", size: [9, 5], pos: [0, 0], color: "#22252a" },
+        { geo: "blade", size: [28, 5.5, 0.35], pos: [17, 0], color: "#cfd6de" },
+        { geo: "box", size: [24, 1.2], pos: [16, 1.6], color: "#f0f4f8" },
+        { geo: "box", size: [2.5, 11], pos: [2, 0], color: "#3f454b" },
+        { geo: "poly", size: [-6, 3.4, 6, 3, 6, -3, -6, -3.4], pos: [-5, 0], color: "#4a3422" },
+        { geo: "box", size: [3, 7], pos: [-12, 0], color: "#3f454b" },
       ],
     },
     {
       id: "vest",
       attach: "torso",
+      // M69 flak jacket over a jungle fatigue shirt: quilted panels, big
+      // pockets, grenades and a spare mag on the front.
       parts: [
-        { geo: "box", size: [28, 34], pos: [0, 2], color: "#54633e" },
-        { geo: "box", size: [10, 9], pos: [-8, 6], color: "#3c472c" },
-        { geo: "box", size: [10, 9], pos: [5, 6], color: "#3c472c" },
-        { geo: "box", size: [30, 4], pos: [0, -12], color: "#3c472c" },
-        { geo: "box", size: [16, 30], pos: [-12, -6], rot: 6, color: "#46512f", behind: true },
+        { geo: "poly", size: [-14, -17, 14, -17, 15, 6, 10, 17, -10, 17, -15, 6], pos: [0, 2], color: "#54633e" },
+        { geo: "box", size: [28, 2], pos: [0, 12], color: "#46512f" },
+        { geo: "box", size: [28, 2], pos: [0, 4], color: "#46512f" },
+        { geo: "box", size: [27, 2], pos: [0, -4], color: "#46512f" },
+        { geo: "box", size: [3, 34], pos: [0, 0], color: "#3c472c" },
+        // Chest pockets.
+        { geo: "poly", size: [-5, 5, 5, 5, 5, -5, -5, -5], pos: [-8, 6], color: "#3c472c" },
+        { geo: "poly", size: [-5, 5, 5, 5, 5, -5, -5, -5], pos: [8, 6], color: "#3c472c" },
+        // A grenade and a spare magazine hung off the webbing.
+        { geo: "poly", size: [-3, 4, 3, 4, 3, -4, -3, -4], pos: [-9, -8], color: "#2f3a24", z: 0.3 },
+        { geo: "box", size: [2, 3], pos: [-9, -3], color: KHAKI, z: 0.35 },
+        { geo: "poly", size: [-3, 5, 3, 4, 3, -5, -3, -4], pos: [8, -8], color: "#2b3036", z: 0.3 },
+        { geo: "poly", size: [-8, 15, 8, 14, 7, -15, -8, -14], pos: [-13, -6], rot: 6, color: "#46512f", behind: true },
       ],
     },
     {
       id: "webbing",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [26, 6], pos: [0, 2], rot: -6, color: "#3c472c" },
-        { geo: "box", size: [9, 12], pos: [-10, -5], rot: 6, color: "#46512f" },
-        { geo: "cyl", size: [4, 12], pos: [9, -4], rot: 84, color: "#5a6b3f" },
+        { geo: "poly", size: [-13, 3.5, 13, 3, 13, -3.5, -13, -4], pos: [0, 2], rot: -6, color: "#3c472c" },
+        { geo: "poly", size: [-4, 4, 4, 4, 4, -4, -4, -4], pos: [0, 2], color: BRASS, z: 0.3 },
+        { geo: "poly", size: [-5, 6, 5, 6, 4, -7, -4, -7], pos: [-10, -5], rot: 6, color: "#46512f" },
+        { geo: "cyl", size: [4, 13], pos: [9, -4], rot: 84, color: "#5a6b3f" },
+        { geo: "box", size: [9, 3], pos: [9, -4], rot: 84, color: "#7d8a5a" },
       ],
     },
   ],

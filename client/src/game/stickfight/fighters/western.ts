@@ -11,6 +11,7 @@ import { bx, hit, kf, universalMoves } from "./builders";
 const LEATHER = "#8a5a2b";
 const PONCHO = "#b2543a";
 const IRON = "#b8bfc7";
+const BRASSY = "#c9a24a";
 
 const STANCE = {
   torso: 4,
@@ -76,28 +77,40 @@ export const WESTERN: FighterDef = {
     {
       id: "hat",
       attach: "head",
+      // Cattleman: a creased crown with a pinch at the front and a brim that
+      // rolls up at the sides.
       parts: [
-        { geo: "box", size: [34, 4], pos: [1, 7], color: "#6b4423" },
-        { geo: "box", size: [18, 12], pos: [0, 13], color: "#7d5029" },
-        { geo: "box", size: [19, 3], pos: [0, 9], color: "#4a2f18" },
+        { geo: "poly", size: [-19, 0, -14, 3, 0, 4, 14, 3, 19, 0, 13, -3, 0, -4, -13, -3], pos: [1, 7], color: "#6b4423" },
+        { geo: "poly", size: [-9, -3, -10, 8, -5, 12, 0, 8, 5, 12, 10, 8, 9, -3], pos: [0, 12], color: "#7d5029" },
+        { geo: "box", size: [19, 3.5], pos: [0, 9], color: "#4a2f18" },
+        { geo: "poly", size: [-2, 2, 2, 3, 3, -2, -2, -3], pos: [7, 9], color: "#c9a24a", z: 0.3 },
       ],
     },
     {
       id: "bandana",
       attach: "head",
       parts: [
-        { geo: "box", size: [16, 7], pos: [1, -6], color: PONCHO, z: 0.9 },
-        { geo: "box", size: [7, 9], pos: [-9, -8], rot: 18, color: "#96442f", z: 0.85 },
+        { geo: "poly", size: [-9, 4, 9, 3, 8, -4, -8, -5], pos: [1, -6], color: PONCHO, z: 0.9 },
+        { geo: "poly", size: [-4, 5, 4, 4, 3, -5, -4, -5], pos: [-9, -8], rot: 18, color: "#96442f", z: 0.85 },
       ],
     },
     {
       id: "revolver",
       attach: "handF",
+      // Single-action army: octagonal barrel, fluted cylinder, loading gate,
+      // hammer spur and a plough-handle grip.
       parts: [
-        { geo: "box", size: [22, 4], pos: [11, 2], color: "#5b6068" },
-        { geo: "box", size: [6, 6], pos: [3, 1], color: IRON },
-        { geo: "box", size: [6, 9], pos: [-1, -5], rot: -16, color: "#4a2f18" },
-        { geo: "cyl", size: [1.4, 8], pos: [21, 2], rot: 90, color: IRON },
+        { geo: "poly", size: [-11, 2.4, 11, 2, 11, -2, -11, -2.4], pos: [15, 2], color: "#5b6068" },
+        { geo: "box", size: [10, 1.2], pos: [15, 4], color: "#8f979f" },
+        { geo: "poly", size: [-5, 5, 5, 4.5, 5, -4.5, -5, -5], pos: [2, 1], color: IRON },
+        { geo: "box", size: [9, 1.4], pos: [2, 3], color: "#8f979f" },
+        { geo: "box", size: [9, 1.4], pos: [2, -1], color: "#8f979f" },
+        // Hammer, cocked.
+        { geo: "poly", size: [0, 0, -3, 4, -6, 3, -4, -2], pos: [-4, 3], color: "#3f444b" },
+        { geo: "box", size: [3, 5], pos: [1, -5], rot: 8, color: "#3f444b" },
+        // Grip.
+        { geo: "poly", size: [4, 4, -1, 2, -6, -7, -1, -10, 3, -4], pos: [-3, -4], color: "#4a2f18" },
+        { geo: "disc", size: [1.4], pos: [-4, -6], color: "#c9a24a", z: 0.3 },
       ],
     },
     {
@@ -105,17 +118,22 @@ export const WESTERN: FighterDef = {
       attach: "handB",
       conditional: true,
       parts: [
-        { geo: "cyl", size: [4, 16], pos: [8, 0], rot: 90, color: "#a83b2a" },
+        { geo: "cyl", size: [4.4, 17], pos: [8, 0], rot: 90, color: "#a83b2a" },
+        { geo: "box", size: [17, 3], pos: [8, 0], rot: 90, color: "#e2c98a" },
         { geo: "cyl", size: [1, 9], pos: [18, 4], rot: 60, color: "#d8cdb4" },
-        { geo: "disc", size: [2], pos: [22, 8], color: "#ffcf6b" },
+        { geo: "disc", size: [2.2], pos: [22, 8], color: "#ffcf6b" },
       ],
     },
     {
       id: "poncho",
       attach: "torso",
+      // Serape over a waistcoat, with the striped weave showing.
       parts: [
-        { geo: "box", size: [30, 26], pos: [-2, 0], rot: 3, color: PONCHO, behind: true },
-        { geo: "box", size: [26, 3], pos: [-2, 10], color: "#8f3d2a", behind: true },
+        { geo: "poly", size: [-15, -15, 15, -15, 17, 6, 11, 17, -11, 17, -17, 6], pos: [-1, 1], rot: 3, color: PONCHO, behind: true },
+        { geo: "box", size: [31, 2.5], pos: [-2, 10], color: "#8f3d2a", behind: true },
+        { geo: "box", size: [31, 2.5], pos: [-2, 2], color: "#d8785a", behind: true },
+        { geo: "box", size: [30, 2.5], pos: [-2, -6], color: "#8f3d2a", behind: true },
+        { geo: "box", size: [12, 6], pos: [-1, 15], color: "#7d3527", behind: true },
       ],
       cloth: {
         segments: 3,
@@ -131,17 +149,25 @@ export const WESTERN: FighterDef = {
     {
       id: "holster",
       attach: "pelvis",
+      // Gunbelt: cartridge loops all the way round, holster on the hip.
       parts: [
-        { geo: "box", size: [24, 6], pos: [0, 2], rot: -10, color: "#5b3a1c" },
-        { geo: "box", size: [9, 14], pos: [-10, -7], rot: 6, color: "#4a2f18" },
-        { geo: "disc", size: [1.6], pos: [-2, 3], color: "#ffcf6b" },
-        { geo: "disc", size: [1.6], pos: [4, 2], color: "#ffcf6b" },
+        { geo: "poly", size: [-13, 4, 13, 3.5, 13, -4, -13, -4.5], pos: [0, 2], rot: -10, color: "#5b3a1c" },
+        { geo: "box", size: [2.4, 7], pos: [-8, 2], color: BRASSY },
+        { geo: "box", size: [2.4, 7], pos: [-3, 2], color: BRASSY },
+        { geo: "box", size: [2.4, 7], pos: [2, 2], color: BRASSY },
+        { geo: "box", size: [2.4, 7], pos: [7, 2], color: BRASSY },
+        { geo: "poly", size: [-4, 4, 4, 4, 4, -4, -4, -4], pos: [-1, 2], color: "#c9a24a", z: 0.3 },
+        { geo: "poly", size: [-5, 7, 5, 8, 4, -8, -4, -7], pos: [-11, -7], rot: 6, color: "#4a2f18" },
+        { geo: "box", size: [11, 2.4], pos: [-11, -1], rot: 6, color: "#6b4423", z: 0.2 },
       ],
     },
     {
       id: "spur",
       attach: "footB",
-      parts: [{ geo: "disc", size: [3.4], pos: [-6, 2], color: IRON }],
+      parts: [
+        { geo: "box", size: [6, 2.2], pos: [-3, 4], color: IRON },
+        { geo: "poly", size: [0, 3, 3, 1.5, 3, -1.5, 0, -3, -3, -1.5, -3, 1.5], pos: [-6, 4], color: IRON },
+      ],
     },
   ],
 

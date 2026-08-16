@@ -27,7 +27,7 @@ game/stickfight/
 
   render/         three.js only, reads simulation state, never writes it
     post.ts       bloom, colour grade, vignette, impact flash
-    shapes.ts     tapered limbs, hands, boots, heads - the character art
+    shapes.ts     ink strokes, blob hands and feet, the open-circle head
     cloth.ts      verlet capes and coat tails
     trail.ts      fading ribbon off a swinging weapon
     rig.ts        skeleton -> inked body, props, cloth and trails
@@ -67,7 +67,8 @@ for free.
 
 A fighter can carry one resource bar next to their health: the Roman's pila,
 the gunslinger's rounds, the samurai's Ki, the Spartan's Aegis, the soldier's
-magazine, the Viking's Fury. Moves declare `resourceCost` / `resourceMin` /
+magazine, the Viking's Fury, the shinobi's Kage, the archer's Quiver, the Muay
+Thai fighter's Rhythm. Moves declare `resourceCost` / `resourceMin` /
 `resourceGain`, and the bar itself can `regen` passively, only while idle, or
 fill from the fight through `gainOnHit`, `gainOnTakeHit` and `gainOnBlocked` -
 which is how Fury works: she powers up by being in a fight she is losing.
@@ -103,6 +104,18 @@ lead limb (nearer the opponent), `B` the back limb.
 Hitboxes live in facing space too: `bx(x, y, w, h)` with `x` forward from the
 fighter and `y` up from the ground.
 
+### Props in one minute
+
+A prop is a list of flat shapes attached to a joint. `box`, `cyl`, `disc`,
+`cone` and `tri` cover the simple pieces; `blade` is a sword or an axe edge
+(`[length, width, taper]`, running along +x); `ring` is an annulus
+(`[radius, thickness]`) for shield rims and headbands; and `poly` takes a flat
+list of x,y pairs, which is what a cuirass, a helmet bowl or a recurve limb
+wants. Hand props run along **+x** from the grip - the samurai's katana sits at
+`pos: [50, 3]`, not above the hand - and `behind: true` puts a piece behind the
+body. Set `conditional: true` for anything a move has to reveal through
+`showProps` (a drawn pistol, a nocked arrow).
+
 ## Physics
 
 Movement is momentum-based: walking accelerates towards its target speed and
@@ -129,18 +142,27 @@ the wakeup animation.
 
 ## How a fighter is drawn
 
-`rig.ts` turns a posed `Skeleton` into an inked body:
+The look is a stick figure drawn in ink, wearing real kit. `rig.ts` turns a
+posed `Skeleton` into that:
 
-- **Tapered limbs.** Each bone is a capsule that is wider at the joint carrying
-  the weight and narrower at the far end, with a vertex-colour gradient across
-  its width so it shades like a tube. That taper is most of what makes the
-  figures read as bodies rather than diagrams - and it is cheaper than the old
-  rectangle-plus-two-circles bone (2 meshes per limb instead of 6).
-- **Hands, boots and a face.** Mitts follow the forearm, boots follow the shin
-  and sit on the floor, and the head carries a jaw and an eye so it reads as
-  facing the opponent.
-- **Props** (`ShapePart[]`) get the same across-the-form shading, so a helmet
-  sits in the same world as the head under it.
+- **Ink strokes.** Each bone is a thin capsule, slightly wider at the joint
+  carrying the weight, painted in the fighter's outline colour. The body stays
+  ink; the costume carries all the colour.
+- **A halo of paper.** Behind every stroke sits a slightly fatter one in the
+  fighter's skin tone. A stick figure is ink on paper, and without the paper a
+  black stroke vanishes against Neon Bazaar or the Ember Forge - so each
+  fighter carries a sliver of their own around with them.
+- **Blob hands and feet, and an open circle for a head.** Fists swell off the
+  end of the forearm, feet are teardrops lying along the floor, and the head is
+  a pale disc inside a heavy ink ring. There is no face: which way a fighter is
+  looking comes from the pose, the same way it does in the drawing.
+- **Props** (`ShapePart[]`) get the same ink line, so a helmet reads as part of
+  the drawing rather than a sticker over it. All of one prop's lines merge into
+  a single mesh per layer, so full armour costs two extra draw calls, not
+  thirty. On top of that they carry an across-the-form gradient with a hot band
+  along the top eighth, which is what makes bronze and steel read as bevelled -
+  and the ramp is measured along the part's own rotation, so a spear held flat
+  shades across its thickness instead of from butt to tip.
 - **Cloth.** A prop can declare `cloth`, which hangs a verlet strip from its
   attachment point: capes lag behind a dash, snap on a reversal and settle when
   the fighter stands still. Simulated in world space, so it keeps its momentum.
@@ -157,7 +179,12 @@ normally would (`render/post.ts`):
 
 - **Bloom** picks out the hot things - muzzle flashes, supers, lava, neon,
   weapon trails. It runs at half resolution because it is a soft glow and
-  nobody can tell, which makes it four times cheaper on fill rate.
+  nobody can tell, which makes it four times cheaper on fill rate. Its
+  threshold is high on purpose: bright backdrops sit just under it, so a sky
+  full of clouds does not flare the whole frame.
+- **Soft particles.** Sparks, smoke and embers sample a radial alpha falloff
+  drawn once into a canvas, so they have no polygon edge and their bright
+  centres are what the bloom picks up.
 - **Grade and vignette** add a little contrast and saturation and pull focus to
   the middle of the arena.
 - **Impact channel**: supers, explosions, parries and KOs wash the screen for a
@@ -173,7 +200,9 @@ machine cannot hold it - and the in-match FX button overrides either way.
 
 ## Stages
 
-Nine arenas, each a few parallax layers plus optional ambient weather:
+Nine arenas, each a few parallax layers plus optional ambient weather. Two
+scrims of the horizon colour sit over the far and mid layers, so distance reads
+as distance instead of every backdrop sharing a plane with the fighters.
 
 | Stage | Weather |
 | --- | --- |
@@ -208,6 +237,7 @@ so density is independent of how far the fighters travel.
 | ↓↘→ + button | quarter-circle specials |
 | →↓↘ + button | dragon punch specials |
 | motion + S | EX special (50 meter) |
+| hold ← then → + button | charge specials (the archer's Heartseeker) |
 | Esc / Start | pause · F2 shows hitboxes |
 
 Gamepads use the standard mapping: ✕ light, ○ medium, □ heavy, △/L1/L2 guard,

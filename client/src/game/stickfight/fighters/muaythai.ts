@@ -80,45 +80,68 @@ export const MUAYTHAI: FighterDef = {
     {
       id: "mongkhon",
       attach: "head",
+      // The mongkhon: a blessed cord worn into the ring and never touched by
+      // anyone but her, with the tail hanging down behind.
       parts: [
-        // The sacred headband, worn into the ring.
-        { geo: "box", size: [23, 6], pos: [0, 7], color: GOLD },
-        { geo: "box", size: [23, 3], pos: [0, 3], color: SILK },
-        { geo: "box", size: [5, 14], pos: [-11, -2], rot: 14, color: GOLD, behind: true },
+        { geo: "ring", size: [10.5, 3.4], pos: [0, 3], color: GOLD },
+        { geo: "poly", size: [-4, 3, 4, 3, 3, -3, -3, -3], pos: [2, 11], color: SILK },
+        { geo: "disc", size: [2.2], pos: [2, 13], color: "#f0d68e", z: 0.2 },
+        // Hair knotted at the back, under the cord.
+        { geo: "poly", size: [-7, 6, 2, 8, 3, -7, -6, -6], pos: [-6, 1], color: "#2b1d16", behind: true },
+        { geo: "poly", size: [-3, 9, 3, 8, 2, -9, -3, -8], pos: [-12, 0], rot: 12, color: GOLD, behind: true },
+        { geo: "poly", size: [-3, 5, 3, 4, 2, -5, -2, -5], pos: [-14, -13], rot: 12, color: SILK, behind: true },
       ],
     },
     {
       id: "handwrapF",
       attach: "handF",
       parts: [
-        { geo: "box", size: [11, 9], pos: [2, 0], color: ROPE },
-        { geo: "box", size: [4, 10], pos: [-3, 0], color: "#d6c9ab" },
+        { geo: "poly", size: [-5, 5, 6, 4, 6, -4, -5, -5], pos: [2, 0], color: ROPE },
+        { geo: "box", size: [2, 10], pos: [-1, 0], color: "#d6c9ab" },
+        { geo: "box", size: [2, 10], pos: [3, 0], color: "#d6c9ab" },
+        { geo: "box", size: [4, 11], pos: [-4, 0], color: "#c8bb9c" },
       ],
     },
     {
       id: "handwrapB",
       attach: "handB",
       parts: [
-        { geo: "box", size: [11, 9], pos: [2, 0], color: ROPE },
-        { geo: "box", size: [4, 10], pos: [-3, 0], color: "#d6c9ab" },
+        { geo: "poly", size: [-5, 5, 6, 4, 6, -4, -5, -5], pos: [2, 0], color: ROPE },
+        { geo: "box", size: [2, 10], pos: [-1, 0], color: "#d6c9ab" },
+        { geo: "box", size: [2, 10], pos: [3, 0], color: "#d6c9ab" },
+        { geo: "box", size: [4, 11], pos: [-4, 0], color: "#c8bb9c" },
       ],
     },
     {
       id: "prajioud",
       attach: "torso",
+      // Armbands, one per arm, and the ankle wraps she never takes off.
       parts: [
-        // Armbands.
-        { geo: "box", size: [9, 7], pos: [-9, 16], rot: 8, color: SILK },
-        { geo: "box", size: [9, 7], pos: [7, 16], rot: -8, color: SILK },
+        { geo: "poly", size: [-5, 4, 5, 3, 4, -4, -5, -3], pos: [-9, 16], rot: 8, color: SILK },
+        { geo: "box", size: [9, 1.6], pos: [-9, 17], rot: 8, color: GOLD },
+        { geo: "poly", size: [-5, 4, 5, 3, 4, -4, -5, -3], pos: [7, 16], rot: -8, color: SILK },
+        { geo: "box", size: [9, 1.6], pos: [7, 17], rot: -8, color: GOLD },
       ],
+    },
+    {
+      id: "anklesF",
+      attach: "footF",
+      parts: [{ geo: "poly", size: [-5, 4, 5, 3.5, 4, -4, -4, -4.5], pos: [-1, 5], color: ROPE }],
+    },
+    {
+      id: "anklesB",
+      attach: "footB",
+      parts: [{ geo: "poly", size: [-5, 4, 5, 3.5, 4, -4, -4, -4.5], pos: [-1, 5], color: "#c8bb9c" }],
     },
     {
       id: "shorts",
       attach: "pelvis",
+      // Satin shorts, high-cut at the hip so the knees come up clean.
       parts: [
-        { geo: "box", size: [30, 24], pos: [0, -6], color: SILK },
-        { geo: "box", size: [30, 4], pos: [0, 5], color: GOLD },
-        { geo: "box", size: [12, 6], pos: [1, -14], color: GOLD },
+        { geo: "poly", size: [-14, 9, 14, 9, 11, -9, -11, -9], pos: [0, -4], color: SILK },
+        { geo: "poly", size: [-14, 2.5, 14, 2, 14, -2.5, -14, -2], pos: [0, 4], color: GOLD },
+        { geo: "poly", size: [-6, 3, 6, 2.5, 5, -3, -5, -2.5], pos: [1, -11], color: GOLD },
+        { geo: "box", size: [2.2, 16], pos: [0, -4], color: "#a82a25" },
       ],
       cloth: {
         segments: 3,

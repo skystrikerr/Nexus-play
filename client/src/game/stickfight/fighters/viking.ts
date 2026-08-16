@@ -83,51 +83,82 @@ export const VIKING: FighterDef = {
     {
       id: "helm",
       attach: "head",
+      // Spangenhelm: iron plates riveted to a browband, with a nose bar and a
+      // pair of horns she took off something that lost.
       parts: [
-        { geo: "sphere", size: [11], pos: [0, 2], color: IRON },
-        { geo: "box", size: [24, 4], pos: [0, -5], color: IRON },
-        { geo: "box", size: [4, 13], pos: [6, -4], color: "#8f979f", z: 0.9 },
-        // Horns.
-        { geo: "cone", size: [4.5, 17], pos: [-11, 10], rot: -38, color: "#e8dfc8" },
-        { geo: "cone", size: [4.5, 17], pos: [11, 10], rot: 38, color: "#e8dfc8" },
+        { geo: "poly", size: [-11, -5, -11, 3, -6, 10, 0, 13, 6, 10, 11, 3, 11, -5], pos: [0, 2], color: IRON },
+        { geo: "box", size: [2.5, 17], pos: [-1, 4], color: "#8f979f" },
+        { geo: "box", size: [24, 4.5], pos: [0, -5], color: "#9aa2ab" },
+        { geo: "poly", size: [-3, 8, 3, 8, 3, -7, -3, -7], pos: [7, -6], color: "#8f979f", z: 0.9 },
+        { geo: "disc", size: [1.4], pos: [-7, -1], color: "#e6ebef", z: 0.9 },
+        { geo: "disc", size: [1.4], pos: [6, -1], color: "#e6ebef", z: 0.9 },
+        // Horns, curving up and out from the browband.
+        { geo: "poly", size: [0, -4, -3, 3, -9, 9, -15, 12, -13, 6, -8, 0, -4, -4], pos: [-9, 6], color: "#e8dfc8" },
+        { geo: "poly", size: [0, -4, 3, 3, 9, 9, 15, 12, 13, 6, 8, 0, 4, -4], pos: [9, 6], color: "#efe7d3" },
       ],
     },
     {
       id: "beard",
       attach: "head",
       parts: [
-        { geo: "box", size: [14, 12], pos: [4, -12], color: "#a8763c", z: 0.85 },
-        { geo: "tri", size: [12, 12], pos: [4, -20], rot: 180, color: "#a8763c", z: 0.85 },
+        // Braid falling out from under the helm.
+        { geo: "poly", size: [-5, 8, 5, 6, 4, -10, -2, -12, -6, -4], pos: [-8, -6], color: "#a8763c", behind: true },
+        { geo: "box", size: [7, 4], pos: [-9, -18], color: "#5a3a1c", behind: true },
+        { geo: "poly", size: [-4, 6, 4, 5, 2, -9, -2, -9], pos: [-9, -24], color: "#a8763c", behind: true },
       ],
     },
     {
       id: "axe",
       attach: "handB",
+      // Bearded axe: a broad blade that hangs well below the haft, with a
+      // langet strapping it on and a leather-wrapped grip.
       parts: [
-        { geo: "cyl", size: [2.6, 70], pos: [20, 0], rot: 90, color: LEATHER },
-        // Bearded axe head: a broad blade hanging off the haft.
-        { geo: "box", size: [17, 24], pos: [48, 5], rot: 6, color: IRON },
-        { geo: "tri", size: [17, 13], pos: [48, -11], rot: 180, color: IRON },
-        { geo: "box", size: [6, 10], pos: [41, 1], color: "#8f979f" },
-        { geo: "box", size: [7, 4], pos: [-14, 0], color: "#4a3422" },
+        { geo: "cyl", size: [2.8, 72], pos: [20, 0], rot: 90, color: LEATHER },
+        { geo: "box", size: [12, 5], pos: [40, 0], color: "#4a3422" },
+        // Bearded axe: a narrow eye at the haft that opens into a thin
+        // crescent, with the beard hooking well below the shaft.
+        { geo: "poly", size: [-3, 7, 4, 7, 12, 1, 16, -10, 12, -22, 4, -28, 0, -20, 3, -10, -1, -3, -3, 0], pos: [48, 1], color: IRON },
+        // The edge itself, catching the light along the whole curve.
+        { geo: "poly", size: [0, 0, 5, -9, 3, -20, -2, -25, -4, -18, -1, -9], pos: [61, -1], color: "#eef2f6" },
+        // Langets strapping the head to the haft.
+        { geo: "box", size: [3.4, 18], pos: [42, -1], color: "#8f979f" },
+        { geo: "box", size: [16, 5], pos: [4, 0], color: "#4a3422" },
+        { geo: "box", size: [16, 1.8], pos: [4, 1.6], color: "#8a6440" },
+        { geo: "poly", size: [-4, 4, 4, 4, 3, -4, -3, -4], pos: [-14, 0], color: "#c9a24a" },
       ],
     },
     {
       id: "buckler",
       attach: "forearmF",
+      // Round shield: planks, an iron rim and a domed boss over the grip.
       parts: [
-        { geo: "disc", size: [22], pos: [12, 0], color: LEATHER, z: 0.5 },
-        { geo: "disc", size: [17], pos: [12, 0], color: "#7d5836", z: 0.6 },
-        { geo: "disc", size: [5], pos: [12, 0], color: IRON, z: 0.7 },
-        { geo: "box", size: [44, 3], pos: [12, 0], rot: 90, color: "#5b3d24", z: 0.65 },
+        { geo: "disc", size: [22], pos: [12, 0], color: "#5b3d24", z: 0.5 },
+        { geo: "ring", size: [22, 3], pos: [12, 0], color: IRON, z: 0.55 },
+        { geo: "disc", size: [19], pos: [12, 0], color: LEATHER, z: 0.6 },
+        // Painted quarters.
+        { geo: "poly", size: [0, 0, 18, 6, 18, -6], pos: [12, 0], color: BLOOD, z: 0.62 },
+        { geo: "poly", size: [0, 0, -18, 6, -18, -6], pos: [12, 0], color: BLOOD, z: 0.62 },
+        { geo: "box", size: [38, 2], pos: [12, 0], rot: 90, color: "#4a3422", z: 0.65 },
+        { geo: "disc", size: [6], pos: [12, 0], color: IRON, z: 0.7 },
+        { geo: "disc", size: [2.6], pos: [12, 1], color: "#e6ebef", z: 0.72 },
+        { geo: "disc", size: [1.3], pos: [12, 19], color: "#9aa2ab", z: 0.72 },
+        { geo: "disc", size: [1.3], pos: [12, -19], color: "#9aa2ab", z: 0.72 },
       ],
     },
     {
       id: "pelt",
       attach: "torso",
+      // Mail over a padded coat, with a wolf pelt across the shoulders.
       parts: [
-        { geo: "box", size: [30, 22], pos: [-2, 12], rot: 4, color: FUR },
-        { geo: "box", size: [18, 18], pos: [-10, 0], rot: 8, color: "#7a6d5a", behind: true },
+        { geo: "poly", size: [-12, -16, 12, -16, 13, 8, 8, 16, -8, 16, -13, 8], pos: [0, 3], color: "#6f7681" },
+        { geo: "box", size: [24, 2], pos: [0, 11], color: "#585f69" },
+        { geo: "box", size: [24, 2], pos: [0, 5], color: "#585f69" },
+        { geo: "box", size: [23, 2], pos: [0, -1], color: "#585f69" },
+        { geo: "box", size: [22, 2], pos: [0, -7], color: "#585f69" },
+        { geo: "box", size: [21, 2], pos: [0, -13], color: "#585f69" },
+        // Pelt: a ragged collar over the mail.
+        { geo: "poly", size: [-16, -3, -13, 7, -4, 11, 6, 10, 14, 4, 15, -5, 6, 0, -4, 1], pos: [-2, 13], rot: 4, color: FUR },
+        { geo: "poly", size: [-9, 8, 9, 6, 7, -9, -8, -8], pos: [-11, 0], rot: 8, color: "#7a6d5a", behind: true },
       ],
       cloth: {
         segments: 3,
@@ -144,9 +175,10 @@ export const VIKING: FighterDef = {
       id: "belt",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [24, 7], pos: [0, 2], rot: -6, color: LEATHER },
-        { geo: "box", size: [7, 7], pos: [0, 2], color: "#c9a24a" },
-        { geo: "box", size: [10, 18], pos: [-9, -8], rot: 8, color: "#6b5a44", behind: true },
+        { geo: "box", size: [26, 8], pos: [0, 2], rot: -6, color: LEATHER },
+        { geo: "poly", size: [-4, 5, 4, 5, 4, -5, -4, -5], pos: [0, 2], color: "#c9a24a" },
+        { geo: "disc", size: [1.8], pos: [0, 2], color: "#8a6a2f", z: 0.2 },
+        { geo: "poly", size: [-5, 9, 5, 9, 4, -9, -4, -9], pos: [-9, -8], rot: 8, color: "#6b5a44", behind: true },
       ],
     },
   ],

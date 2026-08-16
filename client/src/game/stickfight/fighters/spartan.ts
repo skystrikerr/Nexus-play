@@ -181,15 +181,15 @@ export const SPARTAN: FighterDef = {
       id: "greaveF",
       attach: "footF",
       parts: [
-        { geo: "poly", size: [-5, -3, 5, -3, 6, 12, 3, 20, -3, 20, -6, 11], pos: [-1, 15], color: BRONZE },
-        { geo: "box", size: [3, 20], pos: [2, 15], color: "#e0ad57" },
+        { geo: "poly", size: [-4, -2, 4, -2, 5, 9, 2, 15, -2, 15, -5, 8], pos: [-1, 11], color: BRONZE },
+        { geo: "box", size: [2.4, 15], pos: [1, 11], color: "#e0ad57" },
       ],
     },
     {
       id: "greaveB",
       attach: "footB",
       parts: [
-        { geo: "poly", size: [-5, -3, 5, -3, 6, 12, 3, 20, -3, 20, -6, 11], pos: [-1, 15], color: "#a8752c" },
+        { geo: "poly", size: [-4, -2, 4, -2, 5, 9, 2, 15, -2, 15, -5, 8], pos: [-1, 11], color: "#a8752c" },
       ],
     },
   ],

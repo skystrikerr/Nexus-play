@@ -80,48 +80,79 @@ export const SAMURAI: FighterDef = {
     {
       id: "kabuto",
       attach: "head",
+      // Kabuto: lacquered bowl, a flared neck guard, a gold crescent maedate
+      // and a demon mask over the lower face.
       parts: [
-        { geo: "sphere", size: [11], pos: [0, 2], color: LACQUER },
-        { geo: "box", size: [26, 4], pos: [0, -6], rot: -4, color: LACQUER },
-        // Crescent maedate.
-        { geo: "box", size: [4, 16], pos: [-2, 12], rot: -22, color: GOLD },
-        { geo: "box", size: [4, 16], pos: [4, 12], rot: 22, color: GOLD },
-        { geo: "box", size: [8, 8], pos: [7, -3], color: CRIMSON, z: 0.9 },
+        { geo: "poly", size: [-11, -4, -11, 4, -6, 11, 0, 13, 6, 11, 11, 4, 11, -4], pos: [0, 2], color: LACQUER },
+        { geo: "box", size: [2.5, 16], pos: [0, 4], color: "#33465c" },
+        { geo: "box", size: [24, 4], pos: [0, -3], rot: -4, color: "#33465c" },
+        // Shikoro: the lamellar neck guard flaring out behind.
+        { geo: "poly", size: [4, 2, -4, -4, -14, -9, -16, -1, -8, 4], pos: [-8, -5], color: LACQUER, behind: true },
+        { geo: "box", size: [16, 2], pos: [-14, -9], rot: 18, color: CRIMSON, behind: true },
+        // Maedate: a gilt crescent standing off the brow.
+        { geo: "poly", size: [0, 0, -6, 10, -3, 18, 0, 12, 3, 18, 6, 10], pos: [1, 12], color: GOLD },
+        { geo: "poly", size: [0, 0, -3, 7, 0, 11, 3, 7], pos: [1, 13], color: "#f0d68e" },
+        // Mempo: the snarling half-mask.
+        { geo: "poly", size: [-5, 6, 6, 5, 8, -3, 3, -8, -5, -6], pos: [6, -6], color: CRIMSON, z: 0.9 },
+        { geo: "box", size: [9, 1.6], pos: [7, -6], color: "#e8e2d2", z: 0.92 },
       ],
     },
     {
       id: "katana",
       attach: "handF",
+      // Katana: a long shallow curve with a hardened edge, a round tsuba and a
+      // wrapped tsuka.
       parts: [
-        { geo: "blade", size: [86, 5, 0.3], pos: [48, 2], rot: 4, color: STEEL },
-        { geo: "disc", size: [4.6], pos: [3, 0], color: GOLD },
-        { geo: "cyl", size: [2.1, 20], pos: [-9, -1], rot: 90, color: LACQUER },
+        { geo: "blade", size: [86, 6, 0.3], pos: [50, 3], rot: 4, color: "#9aa7b5" },
+        { geo: "poly", size: [-42, 2.4, 42, 1.6, 44, -0.6, -42, -0.8], pos: [50, 4], rot: 4, color: STEEL },
+        { geo: "disc", size: [5.4], pos: [4, 0], color: GOLD },
+        { geo: "disc", size: [3], pos: [4, 0], color: "#8a6a2f", z: 0.1 },
+        { geo: "cyl", size: [2.4, 22], pos: [-10, -1], rot: 90, color: LACQUER },
+        // Ito wrap: diamonds down the grip.
+        { geo: "poly", size: [-3, 3, 3, 3, 3, -3, -3, -3], pos: [-4, -1], rot: 45, color: "#4a5c72" },
+        { geo: "poly", size: [-3, 3, 3, 3, 3, -3, -3, -3], pos: [-11, -1], rot: 45, color: "#4a5c72" },
+        { geo: "poly", size: [-3, 3, 3, 3, 3, -3, -3, -3], pos: [-18, -1], rot: 45, color: "#4a5c72" },
+        { geo: "box", size: [4, 7], pos: [-22, -1], color: GOLD },
       ],
     },
     {
       id: "saya",
       attach: "pelvis",
       parts: [
-        { geo: "cyl", size: [3.2, 74], pos: [-16, 4], rot: 74, color: LACQUER, behind: true },
-        { geo: "box", size: [7, 5], pos: [4, 12], rot: 74, color: GOLD, behind: true },
-        { geo: "box", size: [20, 6], pos: [-2, 0], rot: -8, color: CRIMSON },
+        { geo: "cyl", size: [3.4, 76], pos: [-16, 4], rot: 74, color: LACQUER, behind: true },
+        { geo: "box", size: [8, 5], pos: [4, 12], rot: 74, color: GOLD, behind: true },
+        { geo: "box", size: [6, 4], pos: [-32, -8], rot: 74, color: GOLD, behind: true },
+        // Obi with the knot at the hip.
+        { geo: "poly", size: [-12, 4, 12, 3, 12, -4, -12, -3], pos: [-2, 0], rot: -8, color: CRIMSON },
+        { geo: "poly", size: [-5, 5, 5, 4, 4, -5, -5, -4], pos: [-11, -1], color: "#8f2530" },
       ],
     },
     {
       id: "sode",
       attach: "torso",
+      // Do-maru: lacquered lamellar laced in crimson, with a big shoulder plate.
       parts: [
-        { geo: "box", size: [20, 26], pos: [-6, 14], rot: 8, color: LACQUER },
-        { geo: "box", size: [22, 5], pos: [-6, 22], color: CRIMSON },
-        { geo: "box", size: [18, 34], pos: [-10, -12], rot: 4, color: "#2b3948", behind: true },
+        { geo: "poly", size: [-13, -16, 13, -16, 14, 6, 10, 16, -10, 16, -14, 6], pos: [0, 3], color: LACQUER },
+        { geo: "box", size: [26, 2], pos: [0, 12], color: CRIMSON },
+        { geo: "box", size: [26, 2], pos: [0, 6], color: CRIMSON },
+        { geo: "box", size: [25, 2], pos: [0, 0], color: CRIMSON },
+        { geo: "box", size: [24, 2], pos: [0, -6], color: CRIMSON },
+        { geo: "box", size: [23, 2], pos: [0, -12], color: CRIMSON },
+        { geo: "box", size: [2, 32], pos: [-4, 0], color: "#33465c" },
+        { geo: "box", size: [2, 32], pos: [4, 0], color: "#33465c" },
+        // Sode: the rectangular shoulder guard hanging off a cord.
+        { geo: "poly", size: [-10, 12, 10, 13, 11, -10, -11, -11], pos: [-7, 14], rot: 8, color: LACQUER },
+        { geo: "box", size: [21, 2.5], pos: [-7, 20], rot: 8, color: GOLD },
+        { geo: "box", size: [20, 2], pos: [-7, 13], rot: 8, color: CRIMSON },
+        { geo: "poly", size: [-9, 17, 9, 15, 7, -17, -8, -16], pos: [-11, -12], rot: 4, color: "#2b3948", behind: true },
       ],
     },
     {
       id: "hakama",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [12, 24], pos: [-8, -11], rot: 4, color: "#2b3948", behind: true },
-        { geo: "box", size: [12, 24], pos: [7, -11], rot: -4, color: "#2b3948", behind: true },
+        { geo: "poly", size: [-6, 12, 6, 12, 5, -12, -5, -12], pos: [-8, -11], rot: 4, color: "#2b3948", behind: true },
+        { geo: "poly", size: [-6, 12, 6, 12, 5, -12, -5, -12], pos: [7, -11], rot: -4, color: "#33465c", behind: true },
       ],
       cloth: {
         segments: 3,

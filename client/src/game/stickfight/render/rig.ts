@@ -1,13 +1,15 @@
 /**
- * Turns a Skeleton into three.js geometry: an inked, tapered body with hands,
- * boots and a face, the character's props, physics-driven cloth, and a trail
- * off the weapon while it swings.
+ * Turns a Skeleton into three.js geometry: an inked stick-figure body with
+ * blob hands and feet, the character's props, physics-driven cloth, and a
+ * trail off the weapon while it swings.
  *
  * Layering is done with real depth (see ORDER); everything is unlit and flat,
  * which is what gives the game its 2D look inside a real 3D scene.
  */
 
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
 import { BONES, type Skeleton } from "../skeleton";
 import type { FighterDef, PropDef, ShapePart } from "../types";
 import { ClothStrip } from "./cloth";
@@ -278,18 +280,37 @@ export class StickRig {
 
   private buildProp(def: PropDef): THREE.Group {
     const g = new THREE.Group();
+
+    // Every piece of kit gets the same ink line the body is drawn with, so a
+    // helmet or an axe head reads as part of the same drawing rather than a
+    // coloured sticker laid over it. All of a prop's lines are the same flat
+    // ink at the same depth, so they are merged into one mesh per layer -
+    // otherwise a fighter in full armour costs a hundred extra draw calls for
+    // what is visually a single silhouette.
+    for (const behind of [true, false]) {
+      const parts = def.parts.filter((part) => !!part.behind === behind);
+      if (parts.length === 0) continue;
+      const outlines = parts.map((part) => {
+        const geo = partGeometry(part, PROP_LINE);
+        geo.applyMatrix4(
+          new THREE.Matrix4()
+            .makeRotationZ((part.rot ?? 0) * DEG)
+            .premultiply(new THREE.Matrix4().makeTranslation(part.pos[0], part.pos[1], 0)),
+        );
+        return geo;
+      });
+      const merged = mergeGeometries(outlines, false);
+      for (const geo of outlines) geo.dispose();
+      if (!merged) continue;
+      const order = behind ? ORDER.backProp : ORDER.frontProp;
+      const line = new THREE.Mesh(merged, this.propInk);
+      line.renderOrder = order - 1;
+      line.position.z = order - 0.5;
+      g.add(line);
+    }
+
     for (const part of def.parts) {
       const order = part.behind ? ORDER.backProp : ORDER.frontProp + (part.z ?? 0);
-
-      // Every piece of kit gets the same ink line the body is drawn with, so a
-      // helmet or an axe head reads as part of the same drawing rather than a
-      // coloured sticker laid over it.
-      const line = new THREE.Mesh(partGeometry(part, PROP_LINE), this.propInk);
-      line.renderOrder = order - 1;
-      line.position.set(part.pos[0], part.pos[1], order - 0.5);
-      if (part.rot) line.rotation.z = part.rot * DEG;
-      g.add(line);
-
       const mesh = this.buildPart(part);
       mesh.renderOrder = order;
       mesh.position.z = order;
@@ -597,6 +618,11 @@ function partReach(part: ShapePart): number {
   return part.pos[0] + half;
 }
 
+/** Rotation, in degrees, that lines a prop's +y up with the shin. */
+function shinAngle(knee: { x: number; y: number }, foot: { x: number; y: number }): number {
+  return (Math.atan2(knee.y - foot.y, knee.x - foot.x) * 180) / Math.PI - 90;
+}
+
 /** Where a prop sits on the body, in facing space. */
 export function attachTransform(sk: Skeleton, attach: PropDef["attach"]): { x: number; y: number; rot: number } {
   switch (attach) {
@@ -630,10 +656,13 @@ export function attachTransform(sk: Skeleton, attach: PropDef["attach"]): { x: n
       };
     case "back":
       return { x: sk.neck.x, y: sk.neck.y - 12, rot: -sk.torsoAngle };
+    // Greaves, ankle wraps and spurs hang off the ankle but belong to the
+    // shin, so they turn with it - otherwise a raised knee leaves the greave
+    // standing upright in mid air next to the leg.
     case "footF":
-      return { x: sk.footF.x, y: sk.footF.y, rot: 0 };
+      return { x: sk.footF.x, y: sk.footF.y, rot: shinAngle(sk.kneeF, sk.footF) };
     case "footB":
-      return { x: sk.footB.x, y: sk.footB.y, rot: 0 };
+      return { x: sk.footB.x, y: sk.footB.y, rot: shinAngle(sk.kneeB, sk.footB) };
     default:
       return { x: 0, y: 0, rot: 0 };
   }

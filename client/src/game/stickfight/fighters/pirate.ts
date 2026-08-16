@@ -77,38 +77,56 @@ export const PIRATE: FighterDef = {
     {
       id: "hat",
       attach: "head",
+      // Tricorn: three corners pinned up around a crown, with a plume.
       parts: [
-        { geo: "box", size: [30, 5], pos: [1, 8], rot: -6, color: "#1d2545" },
-        { geo: "tri", size: [22, 12], pos: [0, 12], color: "#1d2545" },
-        { geo: "box", size: [8, 3], pos: [-2, 15], color: GOLD },
-        { geo: "disc", size: [2.6], pos: [-9, 9], color: GOLD },
+        { geo: "poly", size: [-19, -1, -13, 5, 0, 7, 13, 5, 19, -1, 12, -5, 0, -6, -12, -5], pos: [1, 8], rot: -6, color: "#1d2545" },
+        { geo: "poly", size: [-11, -3, -8, 8, 0, 13, 8, 8, 11, -3], pos: [0, 10], color: "#243056" },
+        { geo: "box", size: [22, 3], pos: [0, 9], rot: -6, color: GOLD },
+        // Skull badge on the front corner.
+        { geo: "disc", size: [3.4], pos: [9, 10], color: "#e8e2d2", z: 0.3 },
+        { geo: "box", size: [7, 2], pos: [9, 7], color: "#e8e2d2", z: 0.3 },
+        // Plume off the back.
+        { geo: "poly", size: [0, 0, -7, 8, -16, 11, -20, 7, -12, 2, -5, -2], pos: [-14, 6], color: "#b03a4a", behind: true },
       ],
     },
     {
       id: "patch",
       attach: "head",
       parts: [
-        { geo: "box", size: [7, 6], pos: [5, 1], color: "#101215", z: 0.9 },
-        { geo: "box", size: [16, 1.6], pos: [0, 4], rot: -8, color: "#101215", z: 0.9 },
+        { geo: "poly", size: [-4, 4, 4, 3, 4, -4, -4, -3], pos: [5, 1], color: "#101215", z: 0.9 },
+        { geo: "box", size: [17, 1.6], pos: [0, 4], rot: -8, color: "#101215", z: 0.9 },
+        // Scar under the good eye.
+        { geo: "box", size: [1.4, 7], pos: [-3, -5], rot: 12, color: "#a5665a", z: 0.9 },
       ],
     },
     {
       id: "cutlass",
       attach: "handF",
+      // Cutlass: a broad curved blade with a knuckle bow round the grip.
       parts: [
-        { geo: "blade", size: [62, 7, 0.45], pos: [34, 3], rot: 8, color: STEEL },
-        { geo: "disc", size: [5], pos: [2, 0], color: GOLD },
-        { geo: "cyl", size: [2.2, 12], pos: [-6, -1], rot: 90, color: "#5a3b21" },
+        { geo: "blade", size: [60, 8, 0.45], pos: [36, 4], rot: 8, color: STEEL },
+        { geo: "poly", size: [-28, 2, 28, 1, 26, -2, -28, -1], pos: [36, 6], rot: 8, color: "#f2f6fa" },
+        // Knuckle bow sweeping from the guard to the pommel.
+        { geo: "poly", size: [1, 9, 8, 6, 9, -6, 2, -10, 1, -6, 6, -4, 5, 4, 0, 6], pos: [1, -1], color: GOLD },
+        { geo: "box", size: [5, 20], pos: [3, 1], color: "#c99a2f" },
+        { geo: "cyl", size: [2.6, 13], pos: [-7, -1], rot: 90, color: "#5a3b21" },
+        { geo: "box", size: [12, 1.6], pos: [-7, 1], rot: 90, color: "#7d5730" },
+        { geo: "disc", size: [3.2], pos: [-14, -1], color: GOLD },
       ],
     },
     {
       id: "pistol",
       attach: "handB",
       conditional: true,
+      // Flintlock: octagonal barrel, lock plate, cock and a curled walnut butt.
       parts: [
-        { geo: "box", size: [26, 4], pos: [12, 2], color: "#4a4f57" },
-        { geo: "box", size: [7, 9], pos: [1, -4], rot: -18, color: "#5a3b21" },
-        { geo: "box", size: [7, 4], pos: [6, 5], color: GOLD },
+        { geo: "poly", size: [-13, 2.6, 15, 2, 15, -2, -13, -2.6], pos: [12, 2], color: "#3f444b" },
+        { geo: "box", size: [8, 2], pos: [22, 3], color: "#5a6068" },
+        { geo: "poly", size: [-5, 4, 5, 5, 6, -4, -5, -5], pos: [3, 0], color: "#4a4f57" },
+        { geo: "poly", size: [0, 0, 3, 5, 6, 4, 5, -2], pos: [4, 4], color: "#6a707a" },
+        { geo: "disc", size: [2], pos: [7, 3], color: GOLD },
+        { geo: "poly", size: [4, 4, -2, 2, -8, -6, -4, -9, 2, -4], pos: [-3, -4], color: "#5a3b21" },
+        { geo: "box", size: [4, 3], pos: [-9, -11], color: GOLD },
       ],
     },
     {
@@ -116,17 +134,27 @@ export const PIRATE: FighterDef = {
       attach: "handB",
       conditional: true,
       parts: [
-        { geo: "cyl", size: [1.4, 30], pos: [14, 0], rot: 90, color: "#8a8f98" },
-        { geo: "cone", size: [4.5, 12], pos: [34, 0], rot: 90, color: STEEL },
-        { geo: "box", size: [10, 3], pos: [30, -5], rot: 40, color: STEEL },
+        { geo: "cyl", size: [1.6, 26], pos: [12, 0], rot: 90, color: "#8a8f98" },
+        { geo: "poly", size: [-4, 6, 4, 5, 5, -5, -4, -6], pos: [24, 0], color: "#6a707a" },
+        // The claw itself, curling back on the point.
+        { geo: "poly", size: [0, 4, 10, 2, 16, -6, 12, -13, 8, -10, 11, -5, 7, -2, 0, -3], pos: [28, 0], color: STEEL },
       ],
     },
     {
       id: "coat",
       attach: "torso",
+      // Naval coat: wide lapels, a double row of buttons, and a bandolier.
       parts: [
-        { geo: "box", size: [15, 30], pos: [-6, 4], rot: 5, color: COAT, behind: true },
-        { geo: "box", size: [6, 24], pos: [7, -6], rot: -6, color: "#33447a", behind: true },
+        { geo: "poly", size: [-13, -16, 13, -16, 14, 8, 9, 17, -9, 17, -14, 8], pos: [0, 3], color: COAT },
+        { geo: "poly", size: [-8, 14, 2, 16, 4, 2, -6, -2], pos: [-5, 6], color: "#33447a" },
+        { geo: "poly", size: [8, 14, -2, 16, -4, 2, 6, -2], pos: [6, 6], color: "#3a4d88" },
+        { geo: "box", size: [26, 3], pos: [0, -12], color: "#1a2445" },
+        // Bandolier across the chest.
+        { geo: "box", size: [7, 40], pos: [-1, 2], rot: 24, color: "#6b4a2c" },
+        { geo: "disc", size: [1.9], pos: [-6, 12], color: GOLD, z: 0.3 },
+        { geo: "disc", size: [1.9], pos: [-3, 4], color: GOLD, z: 0.3 },
+        { geo: "disc", size: [1.9], pos: [0, -4], color: GOLD, z: 0.3 },
+        { geo: "poly", size: [-7, 16, 3, 14, 5, -12, -6, -14], pos: [-9, -6], rot: 6, color: "#22305c", behind: true },
       ],
       cloth: {
         segments: 4,
@@ -143,8 +171,9 @@ export const PIRATE: FighterDef = {
       id: "sash",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [22, 7], pos: [0, 2], rot: -8, color: "#a32d3a" },
-        { geo: "box", size: [5, 12], pos: [-9, -4], rot: 10, color: "#a32d3a", behind: true },
+        { geo: "poly", size: [-12, 4, 12, 5, 12, -4, -12, -5], pos: [0, 2], rot: -8, color: "#a32d3a" },
+        { geo: "poly", size: [-5, 5, 5, 4, 4, -5, -4, -6], pos: [1, 2], color: GOLD },
+        { geo: "poly", size: [-3, 7, 4, 6, 3, -7, -3, -7], pos: [-9, -5], rot: 10, color: "#8f2532", behind: true },
       ],
     },
   ],

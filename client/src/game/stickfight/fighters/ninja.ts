@@ -89,21 +89,22 @@ export const NINJA: FighterDef = {
     {
       id: "hood",
       attach: "head",
+      // Cowl over the crown, a bare strip for the eyes, mask over the jaw -
+      // the pale band is what makes the head read as a face and not a lump.
       parts: [
-        // Cowl over the crown, a bare strip for the eyes, mask over the jaw -
-        // the pale band is what makes the head read as a face and not a lump.
-        { geo: "box", size: [24, 12], pos: [0, 11], color: CLOTH },
-        { geo: "box", size: [25, 4], pos: [0, 16], color: DARK },
-        { geo: "box", size: [22, 12], pos: [3, -10], color: CLOTH },
-        { geo: "box", size: [23, 3], pos: [3, -15], color: DARK },
-        // Tail of the hood hanging off the back.
-        { geo: "box", size: [8, 20], pos: [-13, 1], rot: 14, color: DARK, behind: true },
+        { geo: "poly", size: [-12, -6, -12, 4, -7, 9, 0, 11, 7, 9, 12, 3, 12, -6], pos: [0, 6], color: CLOTH },
+        { geo: "box", size: [24, 3.5], pos: [0, 13], color: DARK },
+        { geo: "poly", size: [-11, 7, 10, 6, 11, -5, 3, -7, -10, -6], pos: [3, -8], color: CLOTH },
+        { geo: "box", size: [22, 3], pos: [3, -14], color: DARK },
+        // Knot and tail of the hood hanging off the back.
+        { geo: "poly", size: [-4, 4, 4, 3, 3, -4, -4, -4], pos: [-12, 4], color: DARK, behind: true },
+        { geo: "poly", size: [0, 5, -5, -6, -11, -12, -9, 2], pos: [-14, 1], rot: 8, color: DARK, behind: true },
       ],
     },
     {
       id: "scarf",
       attach: "neck",
-      parts: [{ geo: "box", size: [20, 8], pos: [-2, -1], color: SASH }],
+      parts: [{ geo: "poly", size: [-10, 4, 10, 3, 9, -4, -10, -4], pos: [-2, -1], color: SASH }],
       cloth: {
         segments: 5,
         segmentLength: 13,
@@ -119,31 +120,45 @@ export const NINJA: FighterDef = {
     {
       id: "vest",
       attach: "torso",
+      // Quilted jacket with a chest plate laced under the cross straps, and a
+      // row of throwing spikes along the strap.
       parts: [
-        { geo: "box", size: [27, 34], pos: [0, 4], color: CLOTH },
-        { geo: "box", size: [28, 6], pos: [0, -10], color: SASH },
+        { geo: "poly", size: [-13, -16, 13, -16, 14, 6, 9, 16, -9, 16, -14, 6], pos: [0, 4], color: CLOTH },
+        { geo: "poly", size: [-9, -10, 9, -10, 10, 4, 5, 10, -5, 10, -10, 4], pos: [0, 4], color: "#232b46" },
+        { geo: "box", size: [19, 1.6], pos: [0, 8], color: "#39436a" },
+        { geo: "box", size: [19, 1.6], pos: [0, 1], color: "#39436a" },
+        { geo: "box", size: [19, 1.6], pos: [0, -6], color: "#39436a" },
+        { geo: "poly", size: [-12, 3, 12, 4, 12, -3, -12, -4], pos: [0, -10], color: SASH },
         // Cross straps - a shade lighter than the jacket, or they vanish.
-        { geo: "box", size: [6, 38], pos: [-4, 4], rot: 12, color: "#454f74" },
-        { geo: "box", size: [5, 34], pos: [6, 4], rot: -14, color: "#3a4462" },
-        { geo: "disc", size: [4], pos: [1, 6], color: STEEL },
+        { geo: "poly", size: [-3, 19, 3, 19, 3, -19, -3, -19], pos: [-4, 4], rot: 12, color: "#454f74" },
+        { geo: "poly", size: [-2.5, 17, 2.5, 17, 2.5, -17, -2.5, -17], pos: [6, 4], rot: -14, color: "#3a4462" },
+        // Spikes tucked into the strap.
+        { geo: "poly", size: [0, 4, 5, 1, 5, -1, 0, -4], pos: [-6, 12], rot: 12, color: STEEL, z: 0.3 },
+        { geo: "poly", size: [0, 4, 5, 1, 5, -1, 0, -4], pos: [-4, 4], rot: 12, color: STEEL, z: 0.3 },
+        { geo: "poly", size: [0, 4, 5, 1, 5, -1, 0, -4], pos: [-2, -4], rot: 12, color: STEEL, z: 0.3 },
       ],
     },
     {
       id: "pouch",
       attach: "pelvis",
       parts: [
-        { geo: "box", size: [26, 16], pos: [0, -3], color: DARK },
-        { geo: "box", size: [11, 12], pos: [-11, -4], color: CLOTH },
-        { geo: "box", size: [9, 5], pos: [10, -2], color: SASH },
+        { geo: "poly", size: [-12, 4, 12, 3.5, 12, -4, -12, -4.5], pos: [0, 1], color: DARK },
+        { geo: "poly", size: [-5, 6, 5, 5, 4, -7, -5, -6], pos: [-11, -5], color: CLOTH },
+        { geo: "box", size: [9, 2], pos: [-11, 0], color: "#3a4462", z: 0.2 },
+        { geo: "poly", size: [-4, 3, 4, 2, 4, -3, -4, -3], pos: [10, -2], color: SASH },
       ],
     },
     {
       id: "tanto",
       attach: "handB",
+      // Tanto: short, straight, with a squared guard and a wrapped grip.
       parts: [
-        { geo: "box", size: [11, 6.5], pos: [-2, 0], color: DARK },
-        { geo: "box", size: [3, 10], pos: [4, 0], color: "#8b7d5c" },
-        { geo: "blade", size: [26, 5.5, 0.3], pos: [18, 0], color: STEEL },
+        { geo: "poly", size: [-6, 3.4, 6, 3, 6, -3, -6, -3.4], pos: [-2, 0], color: DARK },
+        { geo: "box", size: [2, 5], pos: [-4, 0], rot: 45, color: "#8b7d5c" },
+        { geo: "box", size: [2, 5], pos: [-1, 0], rot: 45, color: "#8b7d5c" },
+        { geo: "box", size: [3, 11], pos: [5, 0], color: "#8b7d5c" },
+        { geo: "blade", size: [26, 5.5, 0.3], pos: [18, 0], color: "#98a3b2" },
+        { geo: "box", size: [22, 1.4], pos: [17, 1.4], color: "#eef2f6" },
       ],
     },
     {
@@ -152,8 +167,8 @@ export const NINJA: FighterDef = {
       conditional: true,
       parts: [
         { geo: "box", size: [11, 5], pos: [-2, 0], color: DARK },
-        { geo: "disc", size: [4], pos: [-8, 0], color: DARK },
-        { geo: "blade", size: [20, 7, 0.25], pos: [14, 0], color: STEEL },
+        { geo: "ring", size: [4.5, 1.8], pos: [-9, 0], color: DARK },
+        { geo: "poly", size: [-4, 5, 10, 3, 18, 0, 10, -3, -4, -5], pos: [12, 0], color: STEEL },
       ],
     },
   ],

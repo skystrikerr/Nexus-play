@@ -1,7 +1,8 @@
 /**
  * SVG portrait of a fighter, drawn from the same stance data and the same
- * proportions as the 3D rig - tapered limbs, boots, hands and a jawed head -
- * so the select screen never drifts from what you get in the match.
+ * proportions as the 3D rig - ink strokes with a paper halo, blob hands and
+ * feet, an open circle for a head - so the select screen never drifts from
+ * what you get in the match.
  */
 
 import { useMemo } from "react";
@@ -10,15 +11,32 @@ import type { FighterDef, Pose, PropDef, ShapePart } from "../types";
 
 /** Limb widths, mirrored from the rig's LIMB table. */
 const W = {
-  thigh: [6.6, 5.2],
-  shin: [5.2, 3.9],
-  upperArm: [5.4, 4.3],
-  foreArm: [4.3, 3.3],
-  spine: [8.6, 6.4],
-  neck: [4.4, 3.6],
+  thigh: [2.9, 2.3],
+  shin: [2.4, 1.9],
+  upperArm: [2.5, 2.0],
+  foreArm: [2.1, 1.7],
+  spine: [3.4, 2.7],
+  neck: [2.3, 2.1],
 } as const;
 
-const OUTLINE = 2.1;
+/** Mirrors PAPER, PROP_LINE and HEAD_LINE in the rig. */
+const PAPER = 1.1;
+const PROP_LINE = 1.5;
+const HEAD_LINE = 3.2;
+
+/** Blends two hex colours, matching THREE.Color.lerp. */
+function mix(a: string, b: string, t: number): string {
+  const parse = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [r1, g1, b1] = parse(a);
+  const [r2, g2, b2] = parse(b);
+  const c = (x: number, y: number) => Math.round(x + (y - x) * t).toString(16).padStart(2, "0");
+  return `#${c(r1, r2)}${c(g1, g2)}${c(b1, b2)}`;
+}
+
+/** Rotation, in degrees, that lines a prop's +y up with the shin. */
+function shinAngle(knee: Joint, foot: Joint): number {
+  return (Math.atan2(knee.y - foot.y, knee.x - foot.x) * 180) / Math.PI - 90;
+}
 
 function attachTransform(sk: Skeleton, attach: PropDef["attach"]): { x: number; y: number; rot: number } {
   switch (attach) {
@@ -40,10 +58,11 @@ function attachTransform(sk: Skeleton, attach: PropDef["attach"]): { x: number; 
       return { x: (sk.elbowB.x + sk.handB.x) / 2, y: (sk.elbowB.y + sk.handB.y) / 2, rot: sk.foreAngleB - 90 };
     case "back":
       return { x: sk.neck.x, y: sk.neck.y - 12, rot: -sk.torsoAngle };
+    // Greaves and wraps belong to the shin, so they turn with it.
     case "footF":
-      return { x: sk.footF.x, y: sk.footF.y, rot: 0 };
+      return { x: sk.footF.x, y: sk.footF.y, rot: shinAngle(sk.kneeF, sk.footF) };
     case "footB":
-      return { x: sk.footB.x, y: sk.footB.y, rot: 0 };
+      return { x: sk.footB.x, y: sk.footB.y, rot: shinAngle(sk.kneeB, sk.footB) };
     default:
       return { x: 0, y: 0, rot: 0 };
   }
@@ -94,17 +113,17 @@ function Limb({
   );
 }
 
-/** A boot, drawn from the ankle along the foot direction. */
+/** A foot: a solid teardrop lying along the floor, mirroring bootGeometry(). */
 function Boot({ foot, toe, color, grow = 0 }: { foot: Joint; toe: Joint; color: string; grow?: number }) {
   const angle = (Math.atan2(-(toe.y - foot.y), toe.x - foot.x) * 180) / Math.PI;
-  const len = BONES.foot + 4;
-  const h = 7;
+  const len = BONES.foot + 5;
   const g = grow;
-  const d = `M ${-h * 0.75 - g} ${-(h * 0.55 + g)}
-    Q ${-h * 0.95 - g} ${h * 0.5 + g} ${-h * 0.45} ${h * 0.62 + g}
-    L ${len * 0.82} ${h * 0.62 + g}
-    Q ${len + g} ${h * 0.5 + g} ${len * 0.95 + g} ${-h * 0.05}
-    Q ${len * 0.6} ${-(h * 0.42 + g)} ${h * 0.2} ${-(h * 0.62 + g)} Z`;
+  const h = 4.5 + g;
+  const d = `M ${-h * 0.9} ${-h * 0.15}
+    Q ${-h * 1.15} ${h * 0.95} ${h * 0.2} ${h * 0.98}
+    Q ${len * 0.75} ${h * 1.05} ${len + g} ${h * 0.35}
+    Q ${len * 1.06 + g} ${-h * 0.34} ${len * 0.62} ${-h * 0.5}
+    Q ${h * 0.5} ${-h * 0.72} ${-h * 0.9} ${-h * 0.15} Z`;
   return (
     <g transform={`translate(${foot.x} ${-foot.y}) rotate(${angle})`}>
       <path d={d} fill={color} />
@@ -112,14 +131,14 @@ function Boot({ foot, toe, color, grow = 0 }: { foot: Joint; toe: Joint; color: 
   );
 }
 
-/** A hand mitt, oriented along the forearm. */
+/** A hand: a solid blob off the end of the forearm, mirroring handGeometry(). */
 function Hand({ at, angle, color, grow = 0 }: { at: Joint; angle: number; color: string; grow?: number }) {
-  const s = 4.4 + grow;
-  const d = `M ${-s * 0.2} ${s * 0.72}
-    Q ${s * 1.25} ${s * 0.9} ${s * 1.35} ${s * 0.1}
-    Q ${s * 1.4} ${-s * 0.75} ${s * 0.45} ${-s * 0.9}
-    Q ${s * 0.1} ${-s * 1.05} ${-s * 0.35} ${-s * 0.5}
-    Q ${-s * 0.6} ${-s * 0.05} ${-s * 0.2} ${s * 0.72} Z`;
+  const s = 4.6 + grow;
+  const d = `M ${-s * 0.35} ${s * 0.5}
+    Q ${s * 0.85} ${s * 1.02} ${s * 1.12} ${s * 0.18}
+    Q ${s * 1.3} ${-s * 0.72} ${s * 0.35} ${-s * 0.94}
+    Q ${-s * 0.55} ${-s * 1.02} ${-s * 0.62} ${-s * 0.16}
+    Q ${-s * 0.66} ${s * 0.24} ${-s * 0.35} ${s * 0.5} Z`;
   return (
     <g transform={`translate(${at.x} ${-at.y}) rotate(${-(angle - 90)})`}>
       <path d={d} fill={color} />
@@ -127,48 +146,43 @@ function Hand({ at, angle, color, grow = 0 }: { at: Joint; angle: number; color:
   );
 }
 
-function Head({ at, r, color, grow = 0 }: { at: Joint; r: number; color: string; grow?: number }) {
-  const s = r + grow;
-  // Skull arc plus a jaw pushed forward, mirroring headGeometry().
-  const start = { x: Math.cos(Math.PI * 0.62) * s, y: -Math.sin(Math.PI * 0.62) * s };
-  const end = { x: Math.cos(Math.PI * 1.72) * s, y: -Math.sin(Math.PI * 1.72) * s };
-  const d = `M ${start.x} ${start.y}
-    A ${s} ${s} 0 1 0 ${end.x} ${end.y}
-    Q ${s * 1.12} ${s * 0.62} ${s * 0.92} ${s * 0.36}
-    Q ${s * 1.16} ${s * 0.06} ${s * 0.86} ${-s * 0.5} Z`;
+/** The head: a pale disc with a heavy ink ring, the open circle of a stick figure. */
+function Head({ at, r, fill, ink }: { at: Joint; r: number; fill: string; ink: string }) {
   return (
     <g transform={`translate(${at.x} ${-at.y})`}>
-      <path d={d} fill={color} />
+      <circle r={r} fill={fill} />
+      <circle r={r - HEAD_LINE / 2} fill="none" stroke={ink} strokeWidth={HEAD_LINE} />
     </g>
   );
 }
 
-function PartShape({ part, fallback }: { part: ShapePart; fallback: string }) {
-  const color = part.color ?? fallback;
+function PartShape({ part, fallback, grow = 0, ink }: { part: ShapePart; fallback: string; grow?: number; ink?: string }) {
+  const color = ink ?? part.color ?? fallback;
+  const g = grow;
   const [x, y] = part.pos;
   const transform = `translate(${x} ${-y}) rotate(${-(part.rot ?? 0)})`;
 
   switch (part.geo) {
     case "box":
       return (
-        <rect x={-part.size[0] / 2} y={-part.size[1] / 2} width={part.size[0]} height={part.size[1]} fill={color} transform={transform} />
+        <rect x={-part.size[0] / 2 - g} y={-part.size[1] / 2 - g} width={part.size[0] + g * 2} height={part.size[1] + g * 2} fill={color} transform={transform} />
       );
     case "cyl":
       return (
-        <rect x={-part.size[0]} y={-part.size[1] / 2} width={part.size[0] * 2} height={part.size[1]} fill={color} transform={transform} />
+        <rect x={-part.size[0] - g} y={-part.size[1] / 2 - g} width={part.size[0] * 2 + g * 2} height={part.size[1] + g * 2} fill={color} transform={transform} />
       );
     case "sphere":
     case "disc":
-      return <circle r={part.size[0]} fill={color} transform={transform} />;
+      return <circle r={part.size[0] + g} fill={color} transform={transform} />;
     case "cone":
     case "tri": {
-      const w = part.geo === "cone" ? part.size[0] * 2 : part.size[0];
-      const h = part.size[1];
+      const w = (part.geo === "cone" ? part.size[0] * 2 : part.size[0]) + g * 2;
+      const h = part.size[1] + g * 2;
       return <polygon points={`${-w / 2},${h / 2} ${w / 2},${h / 2} 0,${-h / 2}`} fill={color} transform={transform} />;
     }
     case "blade": {
-      const len = part.size[0];
-      const w = part.size[1];
+      const len = part.size[0] + g * 2;
+      const w = part.size[1] + g * 2;
       const taper = part.size[2] ?? 0.5;
       return (
         <polygon
@@ -179,15 +193,29 @@ function PartShape({ part, fallback }: { part: ShapePart; fallback: string }) {
       );
     }
     case "ring": {
-      const r = part.size[0];
-      const t = part.size[1];
+      const r = part.size[0] + g;
+      const t = part.size[1] + g * 2;
       return (
-        <circle r={r - t / 2} fill="none" stroke={color} strokeWidth={t} transform={transform} />
+        <circle r={Math.max(0.01, r - t / 2)} fill="none" stroke={color} strokeWidth={t} transform={transform} />
       );
     }
     case "poly": {
+      const n = Math.floor(part.size.length / 2);
+      let cx = 0;
+      let cy = 0;
+      for (let i = 0; i < n; i++) {
+        cx += part.size[i * 2];
+        cy += part.size[i * 2 + 1];
+      }
+      cx /= n;
+      cy /= n;
       const pts: string[] = [];
-      for (let i = 0; i < part.size.length; i += 2) pts.push(`${part.size[i]},${-part.size[i + 1]}`);
+      for (let i = 0; i < n; i++) {
+        const dx = part.size[i * 2] - cx;
+        const dy = part.size[i * 2 + 1] - cy;
+        const d = Math.hypot(dx, dy) || 1;
+        pts.push(`${part.size[i * 2] + (dx / d) * g},${-(part.size[i * 2 + 1] + (dy / d) * g)}`);
+      }
       return <polygon points={pts.join(" ")} fill={color} transform={transform} />;
     }
     default:
@@ -195,13 +223,16 @@ function PartShape({ part, fallback }: { part: ShapePart; fallback: string }) {
   }
 }
 
-function Prop({ def, sk, fallback }: { def: PropDef; sk: Skeleton; fallback: string }) {
+function Prop({ def, sk, fallback, ink }: { def: PropDef; sk: Skeleton; fallback: string; ink: string }) {
   if (def.conditional) return null;
   const t = attachTransform(sk, def.attach);
   return (
     <g transform={`translate(${t.x} ${-t.y}) rotate(${-t.rot})`}>
       {def.parts.map((part, i) => (
-        <PartShape key={i} part={part} fallback={fallback} />
+        <g key={i}>
+          <PartShape part={part} fallback={fallback} grow={PROP_LINE} ink={ink} />
+          <PartShape part={part} fallback={fallback} />
+        </g>
       ))}
     </g>
   );
@@ -243,7 +274,9 @@ export function FighterPortrait({
   const front = def.props.filter((pr) => !pr.parts.some((part) => part.behind));
   const capes = def.props.filter((pr) => pr.cloth);
 
-  const back = (c: string) => c;
+  // Same washes the rig uses for the limbs on the far side of the body.
+  const backInk = mix(ink, p.cloth, 0.32);
+  const backPaper = mix(p.body, "#000000", 0.3);
 
   return (
     <svg viewBox="-70 -125 140 140" className={className} role="img" aria-label={def.name}>
@@ -252,58 +285,48 @@ export function FighterPortrait({
           <Cape key={`cape-${pr.id}`} def={pr} sk={sk} />
         ))}
         {behind.map((pr) => (
-          <Prop key={pr.id} def={pr} sk={sk} fallback={p.cloth} />
+          <Prop key={pr.id} def={pr} sk={sk} fallback={p.cloth} ink={ink} />
         ))}
 
-        {/* Back limbs, darkened so the body reads with depth. */}
-        <g opacity={0.78}>
-          <Limb a={sk.pelvis} b={sk.kneeB} r1={W.thigh[0]} r2={W.thigh[1]} color={ink} grow={OUTLINE} />
-          <Limb a={sk.kneeB} b={sk.footB} r1={W.shin[0]} r2={W.shin[1]} color={ink} grow={OUTLINE} />
-          <Limb a={sk.neck} b={sk.elbowB} r1={W.upperArm[0]} r2={W.upperArm[1]} color={ink} grow={OUTLINE} />
-          <Limb a={sk.elbowB} b={sk.handB} r1={W.foreArm[0]} r2={W.foreArm[1]} color={ink} grow={OUTLINE} />
-          <Boot foot={sk.footB} toe={sk.toeB} color={ink} grow={OUTLINE} />
-          <Hand at={sk.handB} angle={sk.foreAngleB} color={ink} grow={OUTLINE} />
+        {/* Back limbs: washed ink over dimmed paper, so they sit behind. */}
+        <Limb a={sk.pelvis} b={sk.kneeB} r1={W.thigh[0]} r2={W.thigh[1]} color={backPaper} grow={PAPER} />
+        <Limb a={sk.kneeB} b={sk.footB} r1={W.shin[0]} r2={W.shin[1]} color={backPaper} grow={PAPER} />
+        <Limb a={sk.neck} b={sk.elbowB} r1={W.upperArm[0]} r2={W.upperArm[1]} color={backPaper} grow={PAPER} />
+        <Limb a={sk.elbowB} b={sk.handB} r1={W.foreArm[0]} r2={W.foreArm[1]} color={backPaper} grow={PAPER} />
+        <Boot foot={sk.footB} toe={sk.toeB} color={backPaper} grow={PAPER} />
+        <Hand at={sk.handB} angle={sk.foreAngleB} color={backPaper} grow={PAPER} />
 
-          <Limb a={sk.pelvis} b={sk.kneeB} r1={W.thigh[0]} r2={W.thigh[1]} color={back(p.body)} />
-          <Limb a={sk.kneeB} b={sk.footB} r1={W.shin[0]} r2={W.shin[1]} color={back(p.body)} />
-          <Limb a={sk.neck} b={sk.elbowB} r1={W.upperArm[0]} r2={W.upperArm[1]} color={back(p.body)} />
-          <Limb a={sk.elbowB} b={sk.handB} r1={W.foreArm[0]} r2={W.foreArm[1]} color={back(p.body)} />
-          <Boot foot={sk.footB} toe={sk.toeB} color={p.cloth} />
-          <Hand at={sk.handB} angle={sk.foreAngleB} color={back(p.body)} />
-        </g>
+        <Limb a={sk.pelvis} b={sk.kneeB} r1={W.thigh[0]} r2={W.thigh[1]} color={backInk} />
+        <Limb a={sk.kneeB} b={sk.footB} r1={W.shin[0]} r2={W.shin[1]} color={backInk} />
+        <Limb a={sk.neck} b={sk.elbowB} r1={W.upperArm[0]} r2={W.upperArm[1]} color={backInk} />
+        <Limb a={sk.elbowB} b={sk.handB} r1={W.foreArm[0]} r2={W.foreArm[1]} color={backInk} />
+        <Boot foot={sk.footB} toe={sk.toeB} color={backInk} />
+        <Hand at={sk.handB} angle={sk.foreAngleB} color={backInk} />
 
         {/* Torso and head */}
-        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={ink} grow={OUTLINE} />
-        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={ink} grow={OUTLINE} />
-        <Head at={sk.head} r={BONES.headR} color={ink} grow={OUTLINE} />
-        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={p.body} />
-        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={p.body} />
-        <Head at={sk.head} r={BONES.headR} color={p.body} />
-        <ellipse
-          cx={sk.head.x + BONES.headR * 0.42}
-          cy={-sk.head.y - BONES.headR * 0.12}
-          rx={BONES.headR * 0.2}
-          ry={BONES.headR * 0.12}
-          fill={ink}
-        />
+        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={ink} />
+        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={ink} />
+        <Head at={sk.head} r={BONES.headR} fill={p.body} ink={ink} />
 
         {/* Front limbs */}
-        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={ink} grow={OUTLINE} />
-        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={ink} grow={OUTLINE} />
-        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={ink} grow={OUTLINE} />
-        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={ink} grow={OUTLINE} />
-        <Boot foot={sk.footF} toe={sk.toeF} color={ink} grow={OUTLINE} />
-        <Hand at={sk.handF} angle={sk.foreAngleF} color={ink} grow={OUTLINE} />
+        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={p.body} grow={PAPER} />
+        <Boot foot={sk.footF} toe={sk.toeF} color={p.body} grow={PAPER} />
+        <Hand at={sk.handF} angle={sk.foreAngleF} color={p.body} grow={PAPER} />
 
-        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={p.body} />
-        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={p.body} />
-        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={p.body} />
-        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={p.body} />
-        <Boot foot={sk.footF} toe={sk.toeF} color={p.cloth} />
-        <Hand at={sk.handF} angle={sk.foreAngleF} color={p.body} />
+        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={ink} />
+        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={ink} />
+        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={ink} />
+        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={ink} />
+        <Boot foot={sk.footF} toe={sk.toeF} color={ink} />
+        <Hand at={sk.handF} angle={sk.foreAngleF} color={ink} />
 
         {front.map((pr) => (
-          <Prop key={pr.id} def={pr} sk={sk} fallback={p.metal} />
+          <Prop key={pr.id} def={pr} sk={sk} fallback={p.metal} ink={ink} />
         ))}
       </g>
     </svg>
