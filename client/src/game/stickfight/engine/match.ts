@@ -11,7 +11,7 @@ import { EMPTY_INPUT, type RawInput } from "./input";
 export type Phase = "intro" | "fight" | "roundEnd" | "matchEnd";
 
 export interface FxEvent {
-  kind: HitFx | "block" | "parry" | "dust" | "spawn" | "super" | "guardBreak" | "ko" | "trail";
+  kind: HitFx | "block" | "parry" | "dust" | "smoke" | "spawn" | "super" | "guardBreak" | "ko" | "trail";
   x: number;
   y: number;
   scale?: number;

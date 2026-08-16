@@ -223,6 +223,19 @@ function scriptFor(move: MoveDef): RawInput[] {
       ];
     case "dd":
       return [inp({ down: true }), inp({ down: true }), inp(), inp({ down: true }), press({ down: true }), press({ down: true })];
+    case "chargeB": {
+      // Hold back past COMBAT.chargeFrames, then let go forward with the button.
+      const script: RawInput[] = [];
+      for (let i = 0; i < 48; i++) script.push(inp({ left: true }));
+      script.push(press({ right: true }), press({ right: true }), press({ right: true }));
+      return script;
+    }
+    case "chargeD": {
+      const script: RawInput[] = [];
+      for (let i = 0; i < 48; i++) script.push(inp({ down: true }));
+      script.push(press({ up: true }), press({ up: true }), press({ up: true }));
+      return script;
+    }
     default: {
       const dir = move.input.dir;
       const held: Partial<RawInput> =

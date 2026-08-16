@@ -93,7 +93,12 @@ export class PostFx {
     // Subtle: hot effects glow, the flat art itself stays crisp. The blur runs
     // at half resolution - it is a soft glow, so nobody can tell, and it is
     // four times cheaper on fill rate.
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(width / 2, height / 2), 0.55, 0.5, 0.78);
+    //
+    // The threshold is high on purpose. Bright backdrops - the clouds over
+    // Cloudbreak Temple, a snowfield - sit just under it, so bloom only ever
+    // picks out muzzle flashes, supers, lava and weapon trails instead of
+    // washing out the whole stage.
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(width / 2, height / 2), 0.62, 0.5, 0.9);
     this.composer.addPass(this.bloom);
 
     this.grade = new ShaderPass(GradeShader);

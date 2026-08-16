@@ -79,43 +79,68 @@ export const SPARTAN: FighterDef = {
     {
       id: "helm",
       attach: "head",
+      // Corinthian: one piece of bronze over the whole face, with eye slits and
+      // a nose bar left in it, and the crest running ear to ear.
       parts: [
-        { geo: "sphere", size: [11.5], pos: [0, 1], color: BRONZE },
-        // Corinthian face guard: cheek pieces with a nasal gap.
-        { geo: "box", size: [9, 16], pos: [7, -2], color: BRONZE, z: 0.9 },
-        { geo: "box", size: [4, 14], pos: [11, -3], color: "#a8752c", z: 0.95 },
-        // Transverse crest.
-        { geo: "box", size: [30, 6], pos: [-1, 12], rot: 0, color: CRIMSON },
-        { geo: "box", size: [26, 4], pos: [-1, 17], color: "#7d1f1f" },
+        { geo: "poly", size: [-12, -6, -12, 4, -7, 11, 4, 12, 11, 7, 12, -2, 10, -12, 4, -14, -6, -12], pos: [0, 1], color: BRONZE },
+        // Eye slit and the nasal between the two halves of the face guard.
+        { geo: "poly", size: [-6, 2, 4, 3, 5, -1, -6, -2], pos: [5, 1], color: "#3a2a12", z: 0.9 },
+        { geo: "box", size: [3.5, 15], pos: [8, -5], color: "#a8752c", z: 0.95 },
+        { geo: "poly", size: [-4, 7, 4, 6, 3, -7, -3, -6], pos: [11, -4], color: BRONZE, z: 0.92 },
+        // Cheek edge catching the light.
+        { geo: "box", size: [12, 2], pos: [4, -12], rot: -6, color: "#e0ad57", z: 0.93 },
+        // Transverse crest: a rail across the crown with horsehair on it.
+        { geo: "box", size: [30, 4], pos: [-1, 11], color: "#8a5a1f" },
+        { geo: "poly", size: [-16, -1, -14, 8, -6, 12, 4, 12, 12, 8, 15, -1], pos: [-1, 12], color: CRIMSON },
+        { geo: "poly", size: [-13, 0, -11, 5, -4, 8, 4, 8, 10, 5, 12, 0], pos: [-1, 13], color: "#c74848" },
       ],
     },
     {
       id: "dory",
       attach: "handB",
+      // Dory: ash shaft, iron leaf blade at the front, bronze sauroter behind.
       parts: [
-        { geo: "cyl", size: [2.6, 128], pos: [22, 0], rot: 90, color: "#6b4b2c" },
-        { geo: "cone", size: [5.5, 22], pos: [92, 0], rot: 90, color: IRON },
-        { geo: "box", size: [8, 5], pos: [78, 0], color: BRONZE },
-        // Sauroter - the bronze butt-spike.
-        { geo: "cone", size: [4, 14], pos: [-46, 0], rot: -90, color: "#8a6a2f" },
+        { geo: "cyl", size: [2.8, 122], pos: [18, 0], rot: 90, color: "#8a6238" },
+        { geo: "box", size: [10, 7], pos: [76, 0], color: BRONZE },
+        // Leaf blade with a raised midrib.
+        { geo: "poly", size: [-14, 0, -6, 8, 8, 5, 22, 0, 8, -5, -6, -8], pos: [94, 0], color: IRON },
+        { geo: "box", size: [26, 2], pos: [92, 0], color: "#eef2f6" },
+        // Grip binding at the balance point.
+        { geo: "box", size: [16, 7], pos: [2, 0], color: "#5a3d22" },
+        { geo: "box", size: [16, 2], pos: [2, 2.4], color: "#7d5730" },
+        // Sauroter - the butt-spike, for finishing the man on the ground.
+        { geo: "box", size: [8, 6.5], pos: [-40, 0], color: "#8a6a2f" },
+        { geo: "poly", size: [0, 0, 10, 4, 16, 0, 10, -4], pos: [-56, 0], color: "#a8823a" },
       ],
     },
     {
       id: "aspis",
       attach: "forearmF",
+      // Aspis: a domed bowl of bronze with a rolled rim and the lambda of
+      // Lacedaemon painted across the whole face.
       parts: [
-        { geo: "disc", size: [27], pos: [15, 0], color: BRONZE, z: 0.5 },
-        { geo: "disc", size: [22.5], pos: [15, 0], color: "#b07f33", z: 0.6 },
-        { geo: "disc", size: [16.5], pos: [15, 0], color: CRIMSON, z: 0.7 },
-        // Lambda.
-        { geo: "box", size: [4.5, 22], pos: [11, 0], rot: 20, color: "#f0e6d2", z: 0.8 },
-        { geo: "box", size: [4.5, 22], pos: [19, 0], rot: -20, color: "#f0e6d2", z: 0.8 },
+        { geo: "disc", size: [27], pos: [15, 0], color: "#7c5a24", z: 0.5 },
+        { geo: "ring", size: [27, 4.5], pos: [15, 0], color: "#e2b45c", z: 0.55 },
+        { geo: "disc", size: [22.5], pos: [15, 0], color: BRONZE, z: 0.6 },
+        { geo: "ring", size: [22.5, 2], pos: [15, 0], color: "#8a6228", z: 0.62 },
+        { geo: "disc", size: [19.5], pos: [15, 0], color: CRIMSON, z: 0.7 },
+        // Lambda, one stroke down and one kicked out.
+        { geo: "poly", size: [-3, 16, 3, 16, 6, -15, 0, -15], pos: [12, 0], rot: 12, color: "#f0e6d2", z: 0.8 },
+        { geo: "poly", size: [-3, 15, 3, 15, 5, -14, -1, -14], pos: [19, -1], rot: -22, color: "#f0e6d2", z: 0.8 },
+        // Rivets around the rim.
+        { geo: "disc", size: [1.5], pos: [15, 24], color: "#f2d68e", z: 0.85 },
+        { geo: "disc", size: [1.5], pos: [15, -24], color: "#f2d68e", z: 0.85 },
+        { geo: "disc", size: [1.5], pos: [39, 0], color: "#f2d68e", z: 0.85 },
+        { geo: "disc", size: [1.5], pos: [-9, 0], color: "#f2d68e", z: 0.85 },
       ],
     },
     {
       id: "cloak",
       attach: "neck",
-      parts: [{ geo: "box", size: [26, 7], pos: [-5, -3], color: CRIMSON, behind: true }],
+      parts: [
+        { geo: "box", size: [26, 7], pos: [-5, -3], color: CRIMSON, behind: true },
+        { geo: "disc", size: [3.2], pos: [8, -2], color: BRONZE },
+      ],
       cloth: {
         segments: 5,
         segmentLength: 12,
@@ -130,15 +155,42 @@ export const SPARTAN: FighterDef = {
     {
       id: "cuirass",
       attach: "torso",
+      // Bronze muscle cuirass: shaped to the chest, with the abdominal lines
+      // hammered into it and leather pteruges under the waist.
       parts: [
-        { geo: "box", size: [26, 30], pos: [0, 4], color: "#b8b2a4" },
-        { geo: "box", size: [26, 4], pos: [0, -10], color: BRONZE },
+        { geo: "poly", size: [-13, -16, 13, -16, 15, 2, 12, 14, 3, 18, -9, 17, -14, 6], pos: [0, 3], color: BRONZE },
+        // Pectorals.
+        { geo: "poly", size: [-11, -4, -2, -6, 1, 3, -4, 6, -11, 4], pos: [-2, 11], color: "#e0ad57" },
+        { geo: "poly", size: [-2, -5, 8, -4, 9, 4, 1, 6, -3, 2], pos: [5, 12], color: "#e6b862" },
+        // Abdominal seams.
+        { geo: "box", size: [22, 2], pos: [0, 2], color: "#8a6228" },
+        { geo: "box", size: [20, 2], pos: [0, -4], color: "#8a6228" },
+        { geo: "box", size: [17, 2], pos: [0, -10], color: "#8a6228" },
+        { geo: "box", size: [2, 26], pos: [1, -2], color: "#8a6228" },
+        // Shoulder straps buckled down at the front.
+        { geo: "poly", size: [-6, 0, -4, 6, 6, 7, 8, 1], pos: [-4, 17], color: "#c98f3a" },
+        { geo: "disc", size: [2], pos: [-2, 15], color: "#f2d68e", z: 0.3 },
+        { geo: "disc", size: [2], pos: [8, 15], color: "#f2d68e", z: 0.3 },
+        // Pteruges hanging off the bottom edge.
+        { geo: "poly", size: [-3, 5, 3, 5, 2, -6, -2, -6], pos: [-8, -20], color: "#7d4a28", behind: true },
+        { geo: "poly", size: [-3, 6, 3, 6, 2, -7, -2, -7], pos: [0, -21], color: "#8f5730", behind: true },
+        { geo: "poly", size: [-3, 5, 3, 5, 2, -6, -2, -6], pos: [8, -20], color: "#7d4a28", behind: true },
       ],
     },
     {
-      id: "greaves",
+      id: "greaveF",
       attach: "footF",
-      parts: [{ geo: "box", size: [10, 20], pos: [-1, 16], color: BRONZE }],
+      parts: [
+        { geo: "poly", size: [-5, -3, 5, -3, 6, 12, 3, 20, -3, 20, -6, 11], pos: [-1, 15], color: BRONZE },
+        { geo: "box", size: [3, 20], pos: [2, 15], color: "#e0ad57" },
+      ],
+    },
+    {
+      id: "greaveB",
+      attach: "footB",
+      parts: [
+        { geo: "poly", size: [-5, -3, 5, -3, 6, 12, 3, 20, -3, 20, -6, 11], pos: [-1, 15], color: "#a8752c" },
+      ],
     },
   ],
 

@@ -375,6 +375,7 @@ export class Stage {
         break;
     }
 
+    this.buildHaze(cfg.sky[1]);
     this.buildGround(cfg.ground, theme);
 
     this.ambient = new Ambient(cfg.ambient);
@@ -389,6 +390,25 @@ export class Stage {
       if (m.geometry) this.disposables.push(m.geometry);
       if (m.material) this.disposables.push(m.material as THREE.Material);
     });
+  }
+
+  /**
+   * Aerial perspective. Two scrims of the horizon colour, one over the far
+   * layer and a thinner one over the mid layer, so distance reads as distance
+   * instead of every backdrop sitting in the same plane as the fighters. Each
+   * one is a single quad, and each parallaxes with the layer it is veiling.
+   */
+  private buildHaze(horizon: string) {
+    const veil = (order: number, opacity: number, parallax: number) => {
+      const g = new THREE.Group();
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(2600, 1400), mat(horizon, opacity));
+      m.position.set(0, 380, layerZ(order));
+      m.renderOrder = order;
+      g.add(m);
+      this.addLayer(g, parallax);
+    };
+    veil(2.6, 0.3, 0.3);
+    veil(5.6, 0.12, 0.62);
   }
 
   private buildGround(color: string, theme: StageTheme) {
@@ -708,12 +728,14 @@ export class Stage {
 
   private buildSkyward() {
     const far = new THREE.Group();
-    far.add(disc(-260, 380, 62, "#fffbe8", 1, 0.9));
+    // Kept off pure white deliberately: bloom picks out effects, and a sky
+    // full of #ffffff clouds would flare the whole frame instead.
+    far.add(disc(-260, 380, 62, "#f7edcf", 1, 0.9));
     for (let i = -4; i <= 4; i++) {
       const y = 220 + ((i * 61) % 150);
-      far.add(disc(i * 240, y, 70, "#ffffff", 2, 0.6));
-      far.add(disc(i * 240 + 60, y - 16, 52, "#ffffff", 2, 0.55));
-      far.add(disc(i * 240 - 66, y - 20, 46, "#eef6ff", 2, 0.5));
+      far.add(disc(i * 240, y, 70, "#e9f1fb", 2, 0.6));
+      far.add(disc(i * 240 + 60, y - 16, 52, "#e3ecf8", 2, 0.55));
+      far.add(disc(i * 240 - 66, y - 20, 46, "#d8e6f6", 2, 0.5));
     }
     this.addLayer(far, 0.18);
 
@@ -829,6 +851,12 @@ export function themeForFighter(id: string): StageTheme {
       return "delta";
     case "spartan":
       return "colosseum";
+    case "muaythai":
+      return "delta";
+    case "ninja":
+      return "dojo";
+    case "mongol":
+      return "tundra";
     default:
       return "colosseum";
   }

@@ -178,6 +178,18 @@ function PartShape({ part, fallback }: { part: ShapePart; fallback: string }) {
         />
       );
     }
+    case "ring": {
+      const r = part.size[0];
+      const t = part.size[1];
+      return (
+        <circle r={r - t / 2} fill="none" stroke={color} strokeWidth={t} transform={transform} />
+      );
+    }
+    case "poly": {
+      const pts: string[] = [];
+      for (let i = 0; i < part.size.length; i += 2) pts.push(`${part.size[i]},${-part.size[i + 1]}`);
+      return <polygon points={pts.join(" ")} fill={color} transform={transform} />;
+    }
     default:
       return null;
   }

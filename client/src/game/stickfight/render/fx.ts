@@ -6,7 +6,10 @@
 import * as THREE from "three";
 import type { FxEvent } from "../engine/match";
 
-type Shape = "dot" | "shard" | "ring" | "arc" | "star" | "puff";
+type Shape = "dot" | "shard" | "ring" | "arc" | "star" | "puff" | "glow";
+
+/** Shapes drawn with the soft radial falloff instead of a hard edge. */
+const SOFT: ReadonlySet<Shape> = new Set<Shape>(["dot", "puff", "glow"]);
 
 interface Particle {
   mesh: THREE.Mesh;
@@ -25,6 +28,8 @@ interface Particle {
 }
 
 const POOL_SIZE = 260;
+/** How many of the pool carry the soft glow texture. */
+const SOFT_POOL_SIZE = 150;
 
 function shardShape(): THREE.BufferGeometry {
   const s = new THREE.Shape();
@@ -63,63 +68,108 @@ function ringShape(): THREE.BufferGeometry {
   return new THREE.RingGeometry(0.38, 0.5, 28);
 }
 
+/**
+ * A radial alpha falloff drawn once into a canvas. Sparks, smoke and embers
+ * lose their hard polygon edge, and because the centre stays bright it is the
+ * bloom pass that turns them into actual light.
+ */
+function glowTexture(): THREE.Texture {
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, "rgba(255,255,255,1)");
+  g.addColorStop(0.42, "rgba(255,255,255,0.86)");
+  g.addColorStop(0.72, "rgba(255,255,255,0.3)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 export class FxSystem {
   readonly group = new THREE.Group();
+  /**
+   * Two pools, because whether a particle samples the glow texture is baked
+   * into its material: swapping a map on a live material recompiles the
+   * shader, which is not something to do sixty times a second.
+   */
+  private hard: Particle[] = [];
+  private soft: Particle[] = [];
+  /** Both pools in one array, built once - update() must not allocate. */
   private pool: Particle[] = [];
-  private cursor = 0;
+  private hardCursor = 0;
+  private softCursor = 0;
+  private glow = glowTexture();
   private geos: Record<Shape, THREE.BufferGeometry>;
 
   constructor() {
     this.geos = {
-      dot: new THREE.CircleGeometry(0.5, 12),
+      dot: new THREE.PlaneGeometry(1, 1),
       shard: shardShape(),
       ring: ringShape(),
       arc: arcShape(),
       star: starShape(),
-      puff: new THREE.CircleGeometry(0.5, 10),
+      puff: new THREE.PlaneGeometry(1, 1),
+      glow: new THREE.PlaneGeometry(1, 1),
     };
 
-    for (let i = 0; i < POOL_SIZE; i++) {
-      const material = new THREE.MeshBasicMaterial({
-        color: "#ffffff",
-        transparent: true,
-        opacity: 0,
-        depthTest: true,
-        depthWrite: false,
-      });
-      const mesh = new THREE.Mesh(this.geos.dot, material);
-      mesh.visible = false;
-      mesh.renderOrder = 60;
-      this.group.add(mesh);
-      this.pool.push({
-        mesh,
-        material,
-        life: 0,
-        maxLife: 1,
-        vx: 0,
-        vy: 0,
-        gravity: 0,
-        spin: 0,
-        scaleRate: 1,
-        fade: 1,
-        baseScaleX: 1,
-        baseScaleY: 1,
-        active: false,
-      });
-    }
+    const build = (count: number, map: THREE.Texture | null, into: Particle[]) => {
+      for (let i = 0; i < count; i++) {
+        const material = new THREE.MeshBasicMaterial({
+          color: "#ffffff",
+          map,
+          transparent: true,
+          opacity: 0,
+          depthTest: true,
+          depthWrite: false,
+        });
+        const mesh = new THREE.Mesh(map ? this.geos.glow : this.geos.shard, material);
+        mesh.visible = false;
+        mesh.renderOrder = 60;
+        this.group.add(mesh);
+        into.push({
+          mesh,
+          material,
+          life: 0,
+          maxLife: 1,
+          vx: 0,
+          vy: 0,
+          gravity: 0,
+          spin: 0,
+          scaleRate: 1,
+          fade: 1,
+          baseScaleX: 1,
+          baseScaleY: 1,
+          active: false,
+        });
+      }
+    };
+    build(POOL_SIZE - SOFT_POOL_SIZE, null, this.hard);
+    build(SOFT_POOL_SIZE, this.glow, this.soft);
+    this.pool = [...this.hard, ...this.soft];
   }
 
-  private take(): Particle {
-    for (let i = 0; i < POOL_SIZE; i++) {
-      const p = this.pool[(this.cursor + i) % POOL_SIZE];
+  private take(soft: boolean): Particle {
+    const pool = soft ? this.soft : this.hard;
+    const cursor = soft ? this.softCursor : this.hardCursor;
+    for (let i = 0; i < pool.length; i++) {
+      const p = pool[(cursor + i) % pool.length];
       if (!p.active) {
-        this.cursor = (this.cursor + i + 1) % POOL_SIZE;
+        const next = (cursor + i + 1) % pool.length;
+        if (soft) this.softCursor = next;
+        else this.hardCursor = next;
         return p;
       }
     }
     // All busy: recycle the oldest slot.
-    const p = this.pool[this.cursor];
-    this.cursor = (this.cursor + 1) % POOL_SIZE;
+    const p = pool[cursor];
+    if (soft) this.softCursor = (cursor + 1) % pool.length;
+    else this.hardCursor = (cursor + 1) % pool.length;
     return p;
   }
 
@@ -140,7 +190,7 @@ export class FxSystem {
     opacity?: number;
     order?: number;
   }) {
-    const p = this.take();
+    const p = this.take(SOFT.has(opts.shape));
     p.mesh.geometry = this.geos[opts.shape];
     p.mesh.visible = true;
     p.mesh.position.set(opts.x, opts.y, 0);
@@ -266,6 +316,29 @@ export class FxSystem {
       case "burn":
         this.burst(x, y, 10, "#ff8a3c", 3, 8, 20);
         break;
+
+      // A body vanishing: a bright ring at the point of departure, then a
+      // cloud of puffs that grows and drifts up where they used to be.
+      case "smoke": {
+        const tint = e.color ?? "#8f97a8";
+        this.spawn({ shape: "ring", x, y, color: tint, size: 44 * s, life: 12, scaleRate: 1.14, opacity: 0.7 });
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2 + Math.random();
+          this.spawn({
+            shape: "puff",
+            x: x + Math.cos(a) * 12 * s,
+            y: y + Math.sin(a) * 14 * s,
+            color: i % 3 === 0 ? tint : "#d8dde6",
+            size: (16 + Math.random() * 18) * s,
+            life: 20 + Math.random() * 12,
+            vx: Math.cos(a) * 1.4,
+            vy: Math.sin(a) * 1.1 + 0.6,
+            scaleRate: 1.05,
+            opacity: 0.55,
+          });
+        }
+        break;
+      }
 
       case "block":
         this.spawn({
@@ -406,5 +479,7 @@ export class FxSystem {
   dispose() {
     for (const g of Object.values(this.geos)) g.dispose();
     for (const p of this.pool) p.material.dispose();
+    this.glow.dispose();
   }
+
 }

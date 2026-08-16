@@ -80,48 +80,99 @@ export const ROMAN: FighterDef = {
     {
       id: "helmet",
       attach: "head",
+      // Galea: bowl, neck guard, hinged cheek pieces and a fore-and-aft crest.
       parts: [
-        { geo: "sphere", size: [11], pos: [0, 1], color: BRONZE },
-        { geo: "box", size: [22, 5], pos: [1, -7], rot: 0, color: BRONZE },
-        { geo: "box", size: [5, 16], pos: [-1, 12], color: RED },
-        { geo: "box", size: [14, 4], pos: [-6, 12], rot: -12, color: RED },
-        { geo: "box", size: [4, 12], pos: [8, -4], color: BRONZE },
+        { geo: "poly", size: [-11, -2, -10, 6, -5, 11, 5, 11, 10, 6, 11, -2, 8, -4, -8, -4], pos: [0, 1], color: BRONZE },
+        { geo: "box", size: [23, 4], pos: [0, -3], color: "#b8862f" },
+        // Neck guard sweeping back and down.
+        { geo: "poly", size: [0, 0, -3, -9, -11, -12, -12, -3], pos: [-8, -3], color: "#a8762a", behind: true },
+        // Cheek piece hinged over the jaw.
+        { geo: "poly", size: [0, 4, 5, 2, 6, -6, 2, -10, -2, -8], pos: [6, -6], color: BRONZE, z: 0.9 },
+        // Crest rail and the horsehair plume laid fore and aft along it.
+        { geo: "box", size: [20, 3.5], pos: [-1, 10], color: "#8a6a2f" },
+        { geo: "poly", size: [-13, -1, -14, 5, -6, 9, 4, 9, 11, 4, 12, -1], pos: [-1, 11], color: RED },
+        { geo: "poly", size: [-11, -1, -11, 3, -4, 6, 3, 6, 9, 2, 9, -1], pos: [-1, 12], color: "#e05a48" },
+        // Tail of the plume falling down the back of the helmet.
+        { geo: "poly", size: [0, 4, -4, -10, -8, -14, -7, 3], pos: [-13, 8], color: "#a52d1f", behind: true },
       ],
     },
     {
       id: "spear",
       attach: "handF",
+      // Pilum: a long shaft, an iron shank, a pyramid head and a bronze butt.
       parts: [
-        { geo: "cyl", size: [2.4, 132], pos: [26, 0], rot: 90, color: "#7a5230" },
-        { geo: "cone", size: [5, 20], pos: [96, 0], rot: 90, color: STEEL },
-        { geo: "box", size: [7, 4], pos: [84, 0], color: BRONZE },
-        { geo: "cone", size: [3.4, 9], pos: [-42, 0], rot: -90, color: BRONZE },
+        { geo: "cyl", size: [2.6, 118], pos: [18, 0], rot: 90, color: "#7a5230" },
+        { geo: "cyl", size: [1.7, 26], pos: [84, 0], rot: 90, color: "#8f97a1" },
+        // Socket collar where the shank enters the wood.
+        { geo: "box", size: [9, 6.5], pos: [72, 0], color: BRONZE },
+        { geo: "box", size: [4, 5], pos: [64, 0], color: "#b8862f" },
+        // Pyramid head, barbed.
+        { geo: "poly", size: [0, 0, -8, 5, -13, 2, -13, -2, -8, -5], pos: [110, 0], color: STEEL },
+        // Grip binding.
+        { geo: "box", size: [12, 6], pos: [4, 0], color: "#5c3d22" },
+        { geo: "box", size: [12, 2], pos: [4, 2], color: "#7a5230" },
+        { geo: "cone", size: [3.4, 10], pos: [-42, 0], rot: -90, color: BRONZE },
       ],
     },
     {
       id: "shield",
       attach: "forearmB",
+      // Scutum: a tall curved rectangle, bronze rim, iron boss and lightning wings.
       parts: [
-        { geo: "box", size: [17, 54], pos: [14, 0], rot: 0, color: RED, z: 0.6 },
-        { geo: "box", size: [13, 46], pos: [14, 0], rot: 0, color: "#a52d1f", z: 0.7 },
-        { geo: "disc", size: [5.5], pos: [14, 0], color: BRONZE, z: 0.8 },
-        { geo: "box", size: [17, 4], pos: [14, 22], color: BRONZE, z: 0.8 },
-        { geo: "box", size: [17, 4], pos: [14, -22], color: BRONZE, z: 0.8 },
+        { geo: "poly", size: [-9, -28, 9, -28, 10, -18, 10, 18, 9, 28, -9, 28, -10, 18, -10, -18], pos: [14, 0], color: BRONZE, z: 0.55 },
+        { geo: "poly", size: [-7, -25, 7, -25, 8, -16, 8, 16, 7, 25, -7, 25, -8, 16, -8, -16], pos: [14, 0], color: RED, z: 0.6 },
+        // Painted wings either side of the boss.
+        { geo: "poly", size: [0, 0, -6, 7, -2, 8, 2, 3, 2, -3, -2, -8, -6, -7], pos: [14, 12], color: "#e8c46a", z: 0.7 },
+        { geo: "poly", size: [0, 0, -6, -7, -2, -8, 2, -3, 2, 3, -2, 8, -6, 7], pos: [14, -12], color: "#e8c46a", z: 0.7 },
+        { geo: "box", size: [3.5, 34], pos: [14, 0], color: "#a52d1f", z: 0.7 },
+        // Iron boss over the hand grip.
+        { geo: "disc", size: [6.5], pos: [14, 0], color: STEEL, z: 0.8 },
+        { geo: "disc", size: [3], pos: [14, 1], color: "#eef2f6", z: 0.85 },
+        { geo: "box", size: [19, 3], pos: [14, 26], color: BRONZE, z: 0.8 },
+        { geo: "box", size: [19, 3], pos: [14, -26], color: BRONZE, z: 0.8 },
+      ],
+    },
+    {
+      id: "lorica",
+      attach: "torso",
+      // Lorica segmentata: banded iron plates over the chest, shoulder guards
+      // on top, all buckled down the centre.
+      parts: [
+        { geo: "poly", size: [-13, -15, 13, -15, 14, 6, 11, 15, -11, 15, -14, 6], pos: [0, 3], color: "#b9bfc6" },
+        { geo: "box", size: [27, 3.5], pos: [0, 12], color: "#8d959e" },
+        { geo: "box", size: [27, 3.5], pos: [0, 5], color: "#8d959e" },
+        { geo: "box", size: [26, 3.5], pos: [0, -2], color: "#8d959e" },
+        { geo: "box", size: [25, 3.5], pos: [0, -9], color: "#8d959e" },
+        // Shoulder guards.
+        { geo: "poly", size: [-9, 0, -7, 6, 6, 7, 9, 1, 6, -3, -7, -3], pos: [-4, 16], color: "#cdd3d9" },
+        { geo: "poly", size: [-8, 0, -6, 5, 6, 6, 8, 0, 5, -3, -6, -3], pos: [4, 18], color: "#dfe4e9", z: 0.2 },
+        // Buckles down the front.
+        { geo: "disc", size: [2], pos: [7, 10], color: BRONZE, z: 0.3 },
+        { geo: "disc", size: [2], pos: [7, 0], color: BRONZE, z: 0.3 },
+        { geo: "disc", size: [2], pos: [7, -10], color: BRONZE, z: 0.3 },
       ],
     },
     {
       id: "skirt",
       attach: "pelvis",
+      // Pteruges: leather straps with bronze studs on the ends.
       parts: [
-        { geo: "box", size: [7, 15], pos: [-7, -6], color: "#8c2f22", behind: true },
-        { geo: "box", size: [7, 17], pos: [1, -7], color: "#a5382a", behind: true },
-        { geo: "box", size: [7, 15], pos: [9, -6], color: "#8c2f22", behind: true },
+        { geo: "box", size: [28, 7], pos: [0, 2], color: "#6f4a2a" },
+        { geo: "poly", size: [-3.5, 8, 3.5, 8, 2.5, -8, -2.5, -8], pos: [-9, -6], color: "#8c2f22", behind: true },
+        { geo: "poly", size: [-3.5, 9, 3.5, 9, 2.5, -9, -2.5, -9], pos: [-1, -7], color: "#a5382a", behind: true },
+        { geo: "poly", size: [-3.5, 8, 3.5, 8, 2.5, -8, -2.5, -8], pos: [7, -6], color: "#8c2f22", behind: true },
+        { geo: "disc", size: [1.6], pos: [-9, -13], color: BRONZE, behind: true },
+        { geo: "disc", size: [1.6], pos: [-1, -15], color: BRONZE, behind: true },
+        { geo: "disc", size: [1.6], pos: [7, -13], color: BRONZE, behind: true },
       ],
     },
     {
       id: "cape",
       attach: "neck",
-      parts: [{ geo: "box", size: [22, 6], pos: [-4, -2], color: "#7d1f1f", behind: true }],
+      parts: [
+        { geo: "box", size: [22, 6], pos: [-4, -2], color: "#7d1f1f", behind: true },
+        { geo: "disc", size: [3], pos: [7, -1], color: BRONZE },
+      ],
       cloth: {
         segments: 4,
         segmentLength: 11,

@@ -369,6 +369,65 @@ export class GameRenderer {
         add(dust);
         break;
       }
+      case "arrow": {
+        add(new THREE.Mesh(new THREE.PlaneGeometry(52, 2.4), flat(color)));
+        const head = new THREE.Shape();
+        head.moveTo(14, 0);
+        head.lineTo(0, 4.5);
+        head.lineTo(0, -4.5);
+        head.closePath();
+        const tip = new THREE.Mesh(new THREE.ShapeGeometry(head), flat("#dfe6ee"));
+        tip.position.x = 26;
+        add(tip, 56);
+        // Fletching: two swept vanes at the nock.
+        for (const s of [1, -1]) {
+          const vane = new THREE.Mesh(new THREE.PlaneGeometry(13, 4.5), flat("#b04a3a"));
+          vane.position.set(-22, s * 3);
+          vane.rotation.z = s * 0.22;
+          add(vane);
+        }
+        break;
+      }
+      case "caltrop": {
+        // Four spikes from a common centre - however it lands, one points up.
+        for (let i = 0; i < 4; i++) {
+          const spike = new THREE.Mesh(new THREE.PlaneGeometry(3, 15), flat(color));
+          spike.position.y = 1;
+          spike.rotation.z = (i / 4) * Math.PI * 2 + Math.PI / 4;
+          spike.translateY(6);
+          add(spike);
+        }
+        add(new THREE.Mesh(new THREE.CircleGeometry(3.4, 8), flat("#8b939d")), 56);
+        break;
+      }
+      case "kunai": {
+        // Leaf blade, short grip, ring on the pommel - end over end.
+        const blade = new THREE.Shape();
+        blade.moveTo(16, 0);
+        blade.lineTo(0, 5);
+        blade.lineTo(-6, 3);
+        blade.lineTo(-6, -3);
+        blade.lineTo(0, -5);
+        blade.closePath();
+        add(new THREE.Mesh(new THREE.ShapeGeometry(blade), flat(color)), 56);
+        const grip = new THREE.Mesh(new THREE.PlaneGeometry(12, 3.4), flat("#2b2f3d"));
+        grip.position.x = -12;
+        add(grip);
+        const ring = new THREE.Mesh(new THREE.RingGeometry(2.6, 4.4, 10), flat("#2b2f3d"));
+        ring.position.x = -20;
+        add(ring);
+        break;
+      }
+      case "smokebomb": {
+        // A dark shell with a lit fuse, tumbling.
+        add(new THREE.Mesh(new THREE.CircleGeometry(6.5, 12), flat("#3a3f4a")));
+        const seam = new THREE.Mesh(new THREE.PlaneGeometry(13, 1.6), flat("#20242c"));
+        add(seam, 56);
+        const spark = new THREE.Mesh(new THREE.CircleGeometry(2.6, 8), flat("#ffcf6b"));
+        spark.position.y = 8;
+        add(spark, 57);
+        break;
+      }
       case "cannon": {
         add(new THREE.Mesh(new THREE.CircleGeometry(11, 16), flat("#23262c")));
         const shine = new THREE.Mesh(new THREE.CircleGeometry(3.4, 10), flat("#6b727d"));

@@ -396,11 +396,25 @@ export interface MoveDef {
 // Props (the bits that make a stickman look like a pirate)
 // ---------------------------------------------------------------------------
 
-export type ShapeGeo = "box" | "cyl" | "cone" | "sphere" | "disc" | "blade" | "tri";
+export type ShapeGeo =
+  | "box"
+  | "cyl"
+  | "cone"
+  | "sphere"
+  | "disc"
+  | "blade"
+  | "tri"
+  /** Arbitrary silhouette: `size` is a flat list of x,y pairs. */
+  | "poly"
+  /** Annulus: `size` is [outerRadius, thickness]. */
+  | "ring";
 
 export interface ShapePart {
   geo: ShapeGeo;
-  /** [w, h] for flat shapes, [r] for round ones, [w, h, taper] for blades. */
+  /**
+   * [w, h] for flat shapes, [r] for round ones, [len, w, taper] for blades,
+   * [r, thickness] for rings, and a flat x,y point list for polygons.
+   */
   size: number[];
   pos: [number, number];
   rot?: number;

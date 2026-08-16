@@ -1,10 +1,10 @@
 /**
  * Shape builders for the fighter rig.
  *
- * Limbs are tapered capsules rather than plain rectangles - wider at the joint
- * that carries the weight, narrower at the end - which is most of what makes a
- * stick figure read as a body instead of a diagram. Each one carries a vertex
- * colour gradient across its width so it shades like a tube.
+ * The look is a classic inked stick figure: limbs are thin strokes that taper
+ * slightly towards the far end, the head is an open circle, and the hands and
+ * feet are solid blobs. Everything a fighter wears sits on top of that as a
+ * prop, so the costume carries the colour and the body stays ink.
  */
 
 import * as THREE from "three";
@@ -74,67 +74,55 @@ export function limbGeometry(
 }
 
 /**
- * A hand: a rounded mitt with a thumb, pointing along +x from the wrist.
+ * A hand: a solid blob swelling off the end of the forearm, fatter than the
+ * stroke that feeds it and slightly egg-shaped so a fist reads as a fist.
+ * Points along +x from the wrist.
  */
 export function handGeometry(size: number, grow = 0, shade?: ShadeOptions): THREE.BufferGeometry {
   const s = size + grow;
   const shape = new THREE.Shape();
-  shape.moveTo(-s * 0.2, -s * 0.72);
-  shape.quadraticCurveTo(s * 1.25, -s * 0.9, s * 1.35, -s * 0.1);
-  shape.quadraticCurveTo(s * 1.4, s * 0.75, s * 0.45, s * 0.9);
-  // Thumb.
-  shape.quadraticCurveTo(s * 0.1, s * 1.05, -s * 0.35, s * 0.5);
-  shape.quadraticCurveTo(-s * 0.6, s * 0.05, -s * 0.2, -s * 0.72);
+  shape.moveTo(-s * 0.35, -s * 0.5);
+  shape.quadraticCurveTo(s * 0.85, -s * 1.02, s * 1.12, -s * 0.18);
+  shape.quadraticCurveTo(s * 1.3, s * 0.72, s * 0.35, s * 0.94);
+  shape.quadraticCurveTo(-s * 0.55, s * 1.02, -s * 0.62, s * 0.16);
+  shape.quadraticCurveTo(-s * 0.66, -s * 0.24, -s * 0.35, -s * 0.5);
   shape.closePath();
-  const geo = new THREE.ShapeGeometry(shape, 8);
+  const geo = new THREE.ShapeGeometry(shape, 10);
   if (shade) shadeGeometry(geo, shade);
   return geo;
 }
 
 /**
- * A boot: heel behind the ankle, sole along the floor, toe raised slightly.
- * Runs along +x from the ankle.
+ * A foot: a solid teardrop lying along the floor, blunt at the heel and drawn
+ * out to a rounded toe. Runs along +x from the ankle.
  */
 export function bootGeometry(len: number, height: number, grow = 0, shade?: ShadeOptions): THREE.BufferGeometry {
   const g = grow;
+  const h = height * 0.5 + g;
   const shape = new THREE.Shape();
-  shape.moveTo(-height * 0.75 - g, height * 0.55 + g);
-  shape.quadraticCurveTo(-height * 0.95 - g, -height * 0.5 - g, -height * 0.45, -height * 0.62 - g);
-  shape.lineTo(len * 0.82, -height * 0.62 - g);
-  shape.quadraticCurveTo(len + g, -height * 0.5 - g, len * 0.95 + g, height * 0.05);
-  shape.quadraticCurveTo(len * 0.6, height * 0.42 + g, height * 0.2, height * 0.62 + g);
+  shape.moveTo(-h * 0.9, h * 0.15);
+  shape.quadraticCurveTo(-h * 1.15, -h * 0.95, h * 0.2, -h * 0.98);
+  shape.quadraticCurveTo(len * 0.75, -h * 1.05, len + g, -h * 0.35);
+  shape.quadraticCurveTo(len * 1.06 + g, h * 0.34, len * 0.62, h * 0.5);
+  shape.quadraticCurveTo(h * 0.5, h * 0.72, -h * 0.9, h * 0.15);
   shape.closePath();
-  const geo = new THREE.ShapeGeometry(shape, 8);
+  const geo = new THREE.ShapeGeometry(shape, 10);
   if (shade) shadeGeometry(geo, shade);
   return geo;
 }
 
 /**
- * A head: a rounded skull with a jaw that reads as facing +x.
+ * A head: a plain circle. `grow` inflates it for the ink ring drawn behind.
  */
 export function headGeometry(r: number, grow = 0, shade?: ShadeOptions): THREE.BufferGeometry {
-  const s = r + grow;
-  const shape = new THREE.Shape();
-  shape.absarc(0, 0, s, Math.PI * 0.62, Math.PI * 1.72, false);
-  // Jaw and chin, pushed forward.
-  shape.quadraticCurveTo(s * 1.12, -s * 0.62, s * 0.92, -s * 0.36);
-  shape.quadraticCurveTo(s * 1.16, -s * 0.06, s * 0.86, s * 0.5);
-  shape.closePath();
-  const geo = new THREE.ShapeGeometry(shape, 16);
+  const geo = new THREE.CircleGeometry(r + grow, 26);
   if (shade) shadeGeometry(geo, shade);
   return geo;
 }
 
-/** A simple eye: a short angled slit sitting on the face. */
-export function eyeGeometry(r: number): THREE.BufferGeometry {
-  const shape = new THREE.Shape();
-  const w = r * 0.42;
-  const h = r * 0.2;
-  shape.moveTo(-w, h * 0.4);
-  shape.quadraticCurveTo(0, h * 1.5, w, h * 0.2);
-  shape.quadraticCurveTo(0, -h * 0.9, -w, h * 0.4);
-  shape.closePath();
-  return new THREE.ShapeGeometry(shape, 6);
+/** The ink ring around the head - the open circle of a stick figure. */
+export function headRingGeometry(r: number, thickness: number): THREE.BufferGeometry {
+  return new THREE.RingGeometry(r - thickness * 0.5, r + thickness * 0.5, 30);
 }
 
 /** Reusable flat material. Set `vertexColors` for shaded limb geometry. */
