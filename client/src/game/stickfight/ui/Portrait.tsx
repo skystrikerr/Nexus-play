@@ -20,9 +20,9 @@ const W = {
 } as const;
 
 /** Mirrors PAPER, PROP_LINE and HEAD_LINE in the rig. */
-const PAPER = 1.1;
-const PROP_LINE = 1.5;
-const HEAD_LINE = 3.2;
+const PAPER = 0.85;
+const PROP_LINE = 1.2;
+const HEAD_LINE = 2.8;
 
 /** Blends two hex colours, matching THREE.Color.lerp. */
 function mix(a: string, b: string, t: number): string {
@@ -276,7 +276,8 @@ export function FighterPortrait({
 
   // Same washes the rig uses for the limbs on the far side of the body.
   const backInk = mix(ink, p.cloth, 0.32);
-  const backPaper = mix(p.body, "#000000", 0.3);
+  const paper = mix(p.body, ink, 0.2);
+  const backPaper = mix(paper, "#000000", 0.3);
 
   return (
     <svg viewBox="-70 -125 140 140" className={className} role="img" aria-label={def.name}>
@@ -304,19 +305,19 @@ export function FighterPortrait({
         <Hand at={sk.handB} angle={sk.foreAngleB} color={backInk} />
 
         {/* Torso and head */}
-        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={p.body} grow={PAPER} />
-        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={p.body} grow={PAPER} />
+        <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={paper} grow={PAPER} />
+        <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={paper} grow={PAPER} />
         <Limb a={sk.pelvis} b={sk.neck} r1={W.spine[0]} r2={W.spine[1]} color={ink} />
         <Limb a={sk.neck} b={sk.head} r1={W.neck[0]} r2={W.neck[1]} color={ink} />
         <Head at={sk.head} r={BONES.headR} fill={p.body} ink={ink} />
 
         {/* Front limbs */}
-        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={p.body} grow={PAPER} />
-        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={p.body} grow={PAPER} />
-        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={p.body} grow={PAPER} />
-        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={p.body} grow={PAPER} />
-        <Boot foot={sk.footF} toe={sk.toeF} color={p.body} grow={PAPER} />
-        <Hand at={sk.handF} angle={sk.foreAngleF} color={p.body} grow={PAPER} />
+        <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={paper} grow={PAPER} />
+        <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={paper} grow={PAPER} />
+        <Limb a={sk.neck} b={sk.elbowF} r1={W.upperArm[0]} r2={W.upperArm[1]} color={paper} grow={PAPER} />
+        <Limb a={sk.elbowF} b={sk.handF} r1={W.foreArm[0]} r2={W.foreArm[1]} color={paper} grow={PAPER} />
+        <Boot foot={sk.footF} toe={sk.toeF} color={paper} grow={PAPER} />
+        <Hand at={sk.handF} angle={sk.foreAngleF} color={paper} grow={PAPER} />
 
         <Limb a={sk.pelvis} b={sk.kneeF} r1={W.thigh[0]} r2={W.thigh[1]} color={ink} />
         <Limb a={sk.kneeF} b={sk.footF} r1={W.shin[0]} r2={W.shin[1]} color={ink} />

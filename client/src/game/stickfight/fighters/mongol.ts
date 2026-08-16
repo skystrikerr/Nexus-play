@@ -90,11 +90,11 @@ export const MONGOL: FighterDef = {
       attach: "head",
       // Fur-trimmed cap with the upturned brim split at the front.
       parts: [
-        { geo: "cone", size: [13, 19], pos: [0, 11], color: FELT },
-        { geo: "poly", size: [-8, 5, 8, 4, 6, -5, -6, -5], pos: [0, 9], color: "#4a5b3c" },
-        { geo: "poly", size: [-14, 4, -6, 6, 6, 6, 14, 4, 12, -4, -12, -4], pos: [0, 3], color: "#3c3226" },
-        { geo: "box", size: [26, 2], pos: [0, 6], color: "#544838" },
-        { geo: "disc", size: [3.6], pos: [0, 22], color: TRIM },
+        { geo: "cone", size: [12, 17], pos: [0, 9], color: FELT },
+        { geo: "poly", size: [-8, 5, 8, 4, 6, -5, -6, -5], pos: [0, 7], color: "#4a5b3c" },
+        { geo: "poly", size: [-14, 4, -6, 6, 6, 6, 14, 4, 12, -4, -12, -4], pos: [0, 2], color: "#3c3226" },
+        { geo: "box", size: [26, 2], pos: [0, 5], color: "#6a5c46" },
+        { geo: "disc", size: [3.2], pos: [0, 18], color: TRIM },
         // Ear flaps tied up behind.
         { geo: "poly", size: [-4, 6, 4, 5, 3, -7, -4, -6], pos: [-12, -2], rot: 14, color: "#3c3226", behind: true },
       ],
@@ -108,12 +108,12 @@ export const MONGOL: FighterDef = {
         { geo: "poly", size: [-14, -17, 14, -17, 15, 6, 10, 17, -10, 17, -15, 6], pos: [0, 3], color: DEEL },
         { geo: "poly", size: [-3, 18, 12, 15, 13, -14, -4, -16], pos: [5, 3], rot: -4, color: "#8f6a38" },
         { geo: "poly", size: [-5, 18, 3, 17, 2, -16, -6, -15], pos: [-8, 3], color: "#6a4a26" },
-        // Lamellar scales.
-        { geo: "poly", size: [-10, -6, 10, -6, 11, 4, 6, 8, -6, 8, -11, 4], pos: [-1, 8], color: "#7a6a4a" },
-        { geo: "box", size: [20, 1.6], pos: [-1, 10], color: "#4f4430" },
-        { geo: "box", size: [20, 1.6], pos: [-1, 5], color: "#4f4430" },
-        { geo: "box", size: [1.6, 15], pos: [-6, 8], color: "#4f4430" },
-        { geo: "box", size: [1.6, 15], pos: [3, 8], color: "#4f4430" },
+        // Lamellar scales, laced in a lighter iron so they read against the deel.
+        { geo: "poly", size: [-10, -6, 10, -6, 11, 4, 6, 8, -6, 8, -11, 4], pos: [-1, 8], color: "#9aa2ab" },
+        { geo: "box", size: [20, 1.6], pos: [-1, 10], color: "#5a636d" },
+        { geo: "box", size: [20, 1.6], pos: [-1, 5], color: "#5a636d" },
+        { geo: "box", size: [1.6, 15], pos: [-6, 8], color: "#5a636d" },
+        { geo: "box", size: [1.6, 15], pos: [3, 8], color: "#5a636d" },
         { geo: "poly", size: [-15, 3, 15, 4, 15, -4, -15, -3], pos: [0, -13], color: TRIM },
         { geo: "disc", size: [2.4], pos: [8, -13], color: "#8f6a24", z: 0.3 },
       ],

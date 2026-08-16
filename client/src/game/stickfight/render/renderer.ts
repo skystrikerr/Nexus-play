@@ -224,11 +224,13 @@ export class GameRenderer {
       this.fx.emit(e);
       // Big, bright events wash the screen for a frame or two.
       if (this.post) {
-        if (e.kind === "super") this.post.punch(0.5, e.color ?? "#ffffff");
-        else if (e.kind === "explode") this.post.punch(0.26, "#ffd06b");
-        else if (e.kind === "ko") this.post.punch(0.4, "#ffffff");
-        else if (e.kind === "parry") this.post.punch(0.22, "#ffe9a8");
-        else if (e.kind === "guardBreak") this.post.punch(0.2, "#ff8a8a");
+        // Enough to register as a hit of light, not enough to lose the fight
+        // behind it - a full-strength flash over bloom whites out the frame.
+        if (e.kind === "super") this.post.punch(0.34, e.color ?? "#ffffff");
+        else if (e.kind === "explode") this.post.punch(0.22, "#ffd06b");
+        else if (e.kind === "ko") this.post.punch(0.3, "#ffffff");
+        else if (e.kind === "parry") this.post.punch(0.18, "#ffe9a8");
+        else if (e.kind === "guardBreak") this.post.punch(0.17, "#ff8a8a");
       }
     }
     this.fx.update();

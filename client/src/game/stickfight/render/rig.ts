@@ -38,11 +38,11 @@ const ORDER = {
 
 const DEG = Math.PI / 180;
 /** Thickness of the ink ring around the head. */
-const HEAD_LINE = 3.2;
+const HEAD_LINE = 2.8;
 /** How far the light halo sticks out past the ink stroke. */
-const PAPER = 1.1;
+const PAPER = 0.85;
 /** How far the ink line sticks out past a prop shape. */
-const PROP_LINE = 1.5;
+const PROP_LINE = 1.2;
 
 /**
  * Limb stroke widths: [nominal length, radius at the body end, radius at the
@@ -162,9 +162,10 @@ export class StickRig {
     // version of it so an arm behind the body still separates.
     const ink = p.outline;
     const backInk = "#" + new THREE.Color(ink).lerp(new THREE.Color(p.cloth), 0.32).getHexString();
-    // "Paper": the fighter's own skin tone, so the halo also carries a little
-    // of their identity instead of ringing everyone in the same white.
-    const paper = p.body;
+    // "Paper": the fighter's own skin tone pulled a fifth of the way towards
+    // the ink. Left pure it reads as a chalk outline drawn round the figure;
+    // knocked back it reads as the edge of the stroke itself.
+    const paper = "#" + new THREE.Color(p.body).lerp(new THREE.Color(ink), 0.2).getHexString();
     const backPaper = "#" + new THREE.Color(paper).lerp(new THREE.Color("#000000"), 0.3).getHexString();
 
     // One material for every prop outline in the rig - they are all the same

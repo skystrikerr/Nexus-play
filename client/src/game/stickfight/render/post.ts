@@ -123,7 +123,7 @@ export class PostFx {
   }
 
   render(shake: number) {
-    this.flash *= 0.82;
+    this.flash *= 0.76;
     if (this.flash < 0.002) this.flash = 0;
     this.grade.uniforms.flash.value = this.flash;
     // Shake and aberration are linked so heavy hits smear the edges.

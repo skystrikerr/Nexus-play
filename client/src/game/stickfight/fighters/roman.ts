@@ -82,16 +82,18 @@ export const ROMAN: FighterDef = {
       attach: "head",
       // Galea: bowl, neck guard, hinged cheek pieces and a fore-and-aft crest.
       parts: [
-        { geo: "poly", size: [-11, -2, -10, 6, -5, 11, 5, 11, 10, 6, 11, -2, 8, -4, -8, -4], pos: [0, 1], color: BRONZE },
-        { geo: "box", size: [23, 4], pos: [0, -3], color: "#b8862f" },
+        // Bowl: rounded over the crown, flaring out to the browband.
+        { geo: "poly", size: [-11, -3, -10.5, 3, -8, 8, -4, 11, 4, 11, 8, 8, 10.5, 3, 11, -3, 7, -5, -7, -5], pos: [0, 2], color: BRONZE },
+        { geo: "poly", size: [-12, 2.5, 12, 2, 11, -2.5, -11, -3], pos: [0, -2], color: "#b8862f" },
         // Neck guard sweeping back and down.
         { geo: "poly", size: [0, 0, -3, -9, -11, -12, -12, -3], pos: [-8, -3], color: "#a8762a", behind: true },
         // Cheek piece hinged over the jaw.
         { geo: "poly", size: [0, 4, 5, 2, 6, -6, 2, -10, -2, -8], pos: [6, -6], color: BRONZE, z: 0.9 },
-        // Crest rail and the horsehair plume laid fore and aft along it.
-        { geo: "box", size: [20, 3.5], pos: [-1, 10], color: "#8a6a2f" },
-        { geo: "poly", size: [-13, -1, -14, 5, -6, 9, 4, 9, 11, 4, 12, -1], pos: [-1, 11], color: RED },
-        { geo: "poly", size: [-11, -1, -11, 3, -4, 6, 3, 6, 9, 2, 9, -1], pos: [-1, 12], color: "#e05a48" },
+        // Crest rail and the horsehair plume laid fore and aft along it: a low
+        // ridge that sweeps up over the crown, not a block sitting on top.
+        { geo: "box", size: [19, 3], pos: [-1, 11], color: "#8a6a2f" },
+        { geo: "poly", size: [-14, -1, -13, 3, -8, 6, 0, 7, 7, 5, 11, 1, 12, -2], pos: [-1, 12], color: RED },
+        { geo: "poly", size: [-11, -1, -10, 2, -5, 4, 2, 4, 7, 2, 9, -1], pos: [-1, 13], color: "#e05a48" },
         // Tail of the plume falling down the back of the helmet.
         { geo: "poly", size: [0, 4, -4, -10, -8, -14, -7, 3], pos: [-13, 8], color: "#a52d1f", behind: true },
       ],
