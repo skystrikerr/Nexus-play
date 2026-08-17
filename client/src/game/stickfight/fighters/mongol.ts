@@ -37,15 +37,15 @@ const IDLE_ARMS = { shoulderF: 86, elbowF: 6, weapon: 0 };
 
 export const MONGOL: FighterDef = {
   id: "mongol",
-  name: "Batu Khenbish",
-  title: "The Long Shadow",
-  era: "Karakorum, 1219",
-  bio: "Learned the bow before she learned to walk unaided, and has never seen a reason to let anyone close enough to explain themselves. Fights the whole arena, not the opponent.",
+  name: "Subutai",
+  title: "Orlok of the Right Hand",
+  era: "Kalka River, 1223",
+  bio: "Rose from a blacksmith's son to Genghis Khan's finest field commander. Broke the Rus and the Cumans at the Kalka, then twenty years later broke Hungary at Mohi. Manoeuvres you into a place you chose yourself.",
   archetype: "Zoner / Charge",
   difficulty: 4,
   strengths: ["Controls the full screen", "Charged arrow goes through projectiles", "Caltrops make the floor hers"],
   weaknesses: ["Almost nothing up close", "Six arrows and no more", "Must hold back to threaten"],
-  winQuote: "You spent the whole fight walking. I spent it aiming.",
+  winQuote: "You went where I wanted. You always were going to.",
   palette: {
     body: "#e8d5b4",
     outline: "#161009",

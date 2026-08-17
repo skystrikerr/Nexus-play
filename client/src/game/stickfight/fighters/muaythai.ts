@@ -31,15 +31,15 @@ const STANCE = {
 
 export const MUAYTHAI: FighterDef = {
   id: "muaythai",
-  name: "Kanya Sirichai",
-  title: "Eight Limbs",
-  era: "Lumpinee, 1968",
-  bio: "Fought her first bout at nine and has not lost the habit of walking forward. Reads the exchange a beat ahead of everyone else and takes the trade she wants.",
+  name: "Nai Khanom Tom",
+  title: "The Ten Bouts",
+  era: "Ava, 1774",
+  bio: "Taken prisoner when Ayutthaya fell and made to fight before the Burmese court. Beat the first champion, then nine more in succession without leaving the ring, and was freed for it.",
   archetype: "Rushdown / Clinch",
   difficulty: 3,
   strengths: ["Fastest normals in the roster", "Clinch converts anywhere", "Rhythm rewards pressure"],
   weaknesses: ["Shortest reach", "No projectile at all", "Must earn every inch"],
-  winQuote: "You get eight limbs too. You just never learned to use them.",
+  winQuote: "That was one. Line up the other nine.",
   palette: {
     body: "#f2e5d0",
     outline: "#191310",

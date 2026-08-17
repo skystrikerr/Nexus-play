@@ -32,15 +32,15 @@ const STANCE = {
 
 export const SOLDIER: FighterDef = {
   id: "soldier",
-  name: "Ray Calloway",
-  title: "Sergeant, 1st Cav",
-  era: "Ia Drang, 1965",
-  bio: "Two tours and a habit of counting his magazine out loud. Keeps the fight at the range he chose and makes you walk through the whole magazine to change it.",
+  name: "The Ia Drang Trooper",
+  title: "1st Cavalry Division",
+  era: "Ia Drang Valley, 1965",
+  bio: "Not a name - a composite. The 1st Cavalry troopers who were put down in the Ia Drang in November 1965 and had to hold a clearing the size of a football field. The unit, the valley and every piece of the kit are real; the man is all of them.",
   archetype: "Zoner / Resource",
   difficulty: 4,
   strengths: ["Controls midscreen with rounds", "Grenade beats blocking", "Fast knife pressure"],
   weaknesses: ["Twenty rounds and no more", "Reload is a commitment", "Weak once you are inside"],
-  winQuote: "Twenty rounds. You made me use nine of them.",
+  winQuote: "We held the LZ. That was the whole job.",
   palette: {
     body: "#e6dcc6",
     outline: "#171913",

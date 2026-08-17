@@ -30,15 +30,15 @@ const STANCE = {
 
 export const SPARTAN: FighterDef = {
   id: "spartan",
-  name: "Thessalos",
-  title: "Shield of Sparta",
+  name: "Dienekes",
+  title: "Spartiate of the Three Hundred",
   era: "Thermopylae, 480 BC",
-  bio: "Trained from seven to hold a line and never step back from it. Considers retreating a worse outcome than dying, which makes him exhausting to fight.",
+  bio: "Herodotus records that when a Trachinian warned him the Persian arrows would blot out the sun, he answered that they would fight in the shade. Fights exactly like a man who meant it.",
   archetype: "Grappler / Wall",
   difficulty: 2,
   strengths: ["Heaviest fighter", "Armour on almost everything", "Corner carry for days"],
   weaknesses: ["Slowest walk speed", "No air game", "Aegis runs out"],
-  winQuote: "Come back when you can hold a line.",
+  winQuote: "Good. Now we fight in the shade.",
   palette: {
     body: "#e6e2d8",
     outline: "#191713",

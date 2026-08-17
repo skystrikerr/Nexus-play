@@ -38,15 +38,15 @@ const IDLE_ARMS = { shoulderB: 30, elbowB: 66, weaponBack: 168 };
 
 export const NINJA: FighterDef = {
   id: "ninja",
-  name: "Hyo Kagemori",
-  title: "The Quiet Blade",
-  era: "Iga, 1581",
-  bio: "Sold to a shinobi house before she could walk and never once asked to leave. Does not fight to win exchanges - she fights to make you guess, and you will guess wrong about four times before it matters.",
+  name: "Hattori Hanzō",
+  title: "Captain of the Iga Men",
+  era: "Iga Crossing, 1582",
+  bio: "Iga-born retainer of Tokugawa Ieyasu. When Nobunaga was killed at Honnō-ji he took his lord back across Iga through hostile country on nothing but the goodwill of men he had grown up with.",
   archetype: "Mix-up / Mobility",
   difficulty: 4,
   strengths: ["Teleport crosses up anything", "Fastest walk speed", "Overhead and low off the same startup"],
   weaknesses: ["Lowest health in the roster", "Damage needs three correct guesses", "Kage only refills while idle"],
-  winQuote: "You were watching the wrong hand the whole time.",
+  winQuote: "You never saw the road we took. That was the point of it.",
   palette: {
     body: "#e6d8c0",
     outline: "#0f1220",

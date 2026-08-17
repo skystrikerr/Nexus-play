@@ -28,15 +28,15 @@ const STANCE = {
 
 export const PIRATE: FighterDef = {
   id: "pirate",
-  name: "Blackrock Nell",
-  title: "Terror of the Shoals",
-  era: "Caribbean, 1716",
-  bio: "Sank her own ship to win a bet. Fights like the deck is still pitching - hooks you in, keeps you guessing, never lets you breathe.",
+  name: "Anne Bonny",
+  title: "Of Rackham's Company",
+  era: "Negril Point, 1720",
+  bio: "Sailed with Calico Jack Rackham until the sloop was taken off Negril Point. The court record says that when the boarders came over the rail, she and Mary Read were the only two who fought.",
   archetype: "Rushdown / Mix-up",
   difficulty: 3,
   strengths: ["Fastest walk speed", "Double jump and dive kick", "Rekka pressure"],
   weaknesses: ["Low health", "Short normals", "Needs powder for zoning"],
-  winQuote: "Dead men tell no tales. Try not to take it personally.",
+  winQuote: "The rest of them were below decks with the rum. As usual.",
   palette: {
     body: "#efe7d8",
     outline: "#17181c",

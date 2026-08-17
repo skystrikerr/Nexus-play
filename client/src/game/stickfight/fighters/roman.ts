@@ -31,15 +31,15 @@ const guard = { shoulderB: 58, elbowB: 74 };
 
 export const ROMAN: FighterDef = {
   id: "roman",
-  name: "Marcus Aquila",
-  title: "The Tenth Legion",
-  era: "Rome, 52 BC",
-  bio: "Twenty years on the frontier taught him that reach wins fights. Holds the line with a scutum and punishes everything that steps inside it.",
+  name: "Lucius Vorenus",
+  title: "Centurion, Legio XI",
+  era: "Nervii Country, 54 BC",
+  bio: "Named by Caesar in the Gallic War for the running feud with Titus Pullo that sent them both over the rampart at the Nervii siege. Holds the line with a scutum and punishes everything that steps inside it.",
   archetype: "Zoner / Wall",
   difficulty: 2,
   strengths: ["Longest normals in the roster", "Shield armour", "Strong anti-airs"],
   weaknesses: ["Slow walk speed", "Weak up close", "Long recovery on whiffs"],
-  winQuote: "The line holds. It always holds.",
+  winQuote: "Pullo would have gone first. That is the only thing he ever beat me at.",
   palette: {
     body: "#e8e6e3",
     outline: "#1c1a17",

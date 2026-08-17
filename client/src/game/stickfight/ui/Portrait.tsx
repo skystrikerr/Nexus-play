@@ -223,12 +223,33 @@ function PartShape({ part, fallback, grow = 0, ink }: { part: ShapePart; fallbac
   }
 }
 
-function Prop({ def, sk, fallback, ink }: { def: PropDef; sk: Skeleton; fallback: string; ink: string }) {
+/**
+ * One layer of one prop. The rig sorts *parts* rather than whole props into
+ * the layer behind the body and the layer in front of it - a helmet's neck
+ * guard hangs behind the head while its visor covers the face - so the
+ * portrait has to do the same or the two disagree about which side of a
+ * fighter their own kit is on.
+ */
+function Prop({
+  def,
+  sk,
+  fallback,
+  ink,
+  layer,
+}: {
+  def: PropDef;
+  sk: Skeleton;
+  fallback: string;
+  ink: string;
+  layer: "behind" | "front";
+}) {
   if (def.conditional) return null;
+  const parts = def.parts.filter((part) => !!part.behind === (layer === "behind"));
+  if (parts.length === 0) return null;
   const t = attachTransform(sk, def.attach);
   return (
     <g transform={`translate(${t.x} ${-t.y}) rotate(${-t.rot})`}>
-      {def.parts.map((part, i) => (
+      {parts.map((part, i) => (
         <g key={i}>
           <PartShape part={part} fallback={fallback} grow={PROP_LINE} ink={ink} />
           <PartShape part={part} fallback={fallback} />
@@ -270,8 +291,6 @@ export function FighterPortrait({
   const p = def.palette;
   const ink = p.outline;
 
-  const behind = def.props.filter((pr) => pr.parts.some((part) => part.behind));
-  const front = def.props.filter((pr) => !pr.parts.some((part) => part.behind));
   const capes = def.props.filter((pr) => pr.cloth);
 
   // Same washes the rig uses for the limbs on the far side of the body.
@@ -285,8 +304,8 @@ export function FighterPortrait({
         {capes.map((pr) => (
           <Cape key={`cape-${pr.id}`} def={pr} sk={sk} />
         ))}
-        {behind.map((pr) => (
-          <Prop key={pr.id} def={pr} sk={sk} fallback={p.cloth} ink={ink} />
+        {def.props.map((pr) => (
+          <Prop key={`b-${pr.id}`} def={pr} sk={sk} fallback={p.cloth} ink={ink} layer="behind" />
         ))}
 
         {/* Back limbs: washed ink over dimmed paper, so they sit behind. */}
@@ -326,8 +345,8 @@ export function FighterPortrait({
         <Boot foot={sk.footF} toe={sk.toeF} color={ink} />
         <Hand at={sk.handF} angle={sk.foreAngleF} color={ink} />
 
-        {front.map((pr) => (
-          <Prop key={pr.id} def={pr} sk={sk} fallback={p.metal} ink={ink} />
+        {def.props.map((pr) => (
+          <Prop key={`f-${pr.id}`} def={pr} sk={sk} fallback={p.metal} ink={ink} layer="front" />
         ))}
       </g>
     </svg>

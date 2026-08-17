@@ -32,15 +32,15 @@ const STANCE = {
 
 export const VIKING: FighterDef = {
   id: "viking",
-  name: "Sigrún Bloodmane",
-  title: "The Long Winter",
-  era: "Lindisfarne, 793",
-  bio: "Came ashore with forty and went home with nine. Fights like the boats have already left - forward, loud, and entirely uninterested in your plan.",
+  name: "Freydís Eiríksdóttir",
+  title: "Daughter of Erik the Red",
+  era: "Vinland, c. 1000",
+  bio: "The Vinland sagas have her turning alone on a Skræling attack that had put every man on the beach to flight - pregnant, unarmed, and beating a sword flat against her chest until they ran. She has not softened.",
   archetype: "Berserker / Bruiser",
   difficulty: 3,
   strengths: ["Huge damage on every button", "Fury feeds on taking hits", "Best corner pressure"],
   weaknesses: ["No projectile without Fury", "Slow recovery", "Nothing safe on block"],
-  winQuote: "Skål. You fought. That counts for something.",
+  winQuote: "They ran from me once already. You had your chance.",
   palette: {
     body: "#eee6d6",
     outline: "#17140f",

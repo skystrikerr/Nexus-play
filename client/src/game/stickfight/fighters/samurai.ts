@@ -31,15 +31,15 @@ const STANCE = {
 
 export const SAMURAI: FighterDef = {
   id: "samurai",
-  name: "Kaede Rin",
-  title: "The Drawn Breath",
-  era: "Kyoto, 1603",
-  bio: "Left her clan the night they told her to kneel. Fights the way she left: one decision, made completely, with nothing held back.",
+  name: "Tomoe Gozen",
+  title: "Of Yoshinaka's Household",
+  era: "Awazu, 1184",
+  bio: "The Heike Monogatari calls her a match for a thousand, fit to meet god or demon, and has her taking a head at Awazu before Yoshinaka sent her away so he could die alone.",
   archetype: "Footsies / Counter",
   difficulty: 5,
   strengths: ["Enormous sword reach", "Counter stance beats anything", "Highest single-hit damage"],
   weaknesses: ["Ki-hungry specials", "Punishable whiffs", "No real projectile"],
-  winQuote: "You saw the draw. You just saw it too late.",
+  winQuote: "He told me to go. He did not tell me to stop.",
   palette: {
     body: "#f0ece2",
     outline: "#161a20",

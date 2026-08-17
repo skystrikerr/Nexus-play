@@ -29,15 +29,15 @@ const STANCE = {
 
 export const WESTERN: FighterDef = {
   id: "western",
-  name: "Cole Hargrave",
-  title: "Dust",
-  era: "Arizona, 1881",
-  bio: "Never drew first, never lost a draw. Keeps the fight at gun range and blows up anyone who gets comfortable.",
+  name: "Wyatt Earp",
+  title: "Deputy US Marshal",
+  era: "Tombstone, 1881",
+  bio: "Deputy US Marshal at Tombstone, and the one man to walk out of the lot behind the O.K. Corral without a scratch on him. Not the fastest. Simply the one who does not hurry.",
   archetype: "Zoner / Punisher",
   difficulty: 4,
   strengths: ["Screen-long bullets", "Dynamite controls space", "Huge punish damage"],
   weaknesses: ["Ammo is finite", "Reload leaves him open", "Mediocre normals"],
-  winQuote: "Six shots. Five wasted on you.",
+  winQuote: "Fast is fine. Accurate is final.",
   palette: {
     body: "#e9dfcd",
     outline: "#191512",

@@ -17,16 +17,21 @@
  */
 
 import type { FighterDef } from "../types";
+import { JAGUAR } from "./jaguar";
+import { KNIGHT } from "./knight";
 import { MONGOL } from "./mongol";
+import { NIHANG } from "./nihang";
 import { MUAYTHAI } from "./muaythai";
 import { NINJA } from "./ninja";
 import { PIRATE } from "./pirate";
 import { ROMAN } from "./roman";
 import { SAMURAI } from "./samurai";
+import { SHAOLIN } from "./shaolin";
 import { SOLDIER } from "./soldier";
 import { SPARTAN } from "./spartan";
 import { VIKING } from "./viking";
 import { WESTERN } from "./western";
+import { ZULU } from "./zulu";
 
 export const ROSTER: FighterDef[] = [
   ROMAN,
@@ -39,6 +44,11 @@ export const ROSTER: FighterDef[] = [
   MONGOL,
   WESTERN,
   SOLDIER,
+  KNIGHT,
+  JAGUAR,
+  ZULU,
+  SHAOLIN,
+  NIHANG,
 ];
 
 export const ROSTER_BY_ID: Record<string, FighterDef> = Object.fromEntries(
@@ -49,4 +59,4 @@ export function getFighter(id: string): FighterDef {
   return ROSTER_BY_ID[id] ?? ROSTER[0];
 }
 
-export { ROMAN, SPARTAN, VIKING, PIRATE, SAMURAI, MUAYTHAI, NINJA, MONGOL, WESTERN, SOLDIER };
+export { ROMAN, SPARTAN, VIKING, PIRATE, SAMURAI, MUAYTHAI, NINJA, MONGOL, WESTERN, SOLDIER, KNIGHT, JAGUAR, ZULU, SHAOLIN, NIHANG };

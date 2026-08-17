@@ -857,6 +857,16 @@ export function themeForFighter(id: string): StageTheme {
       return "dojo";
     case "mongol":
       return "tundra";
+    case "knight":
+      return "forge";
+    case "jaguar":
+      return "delta";
+    case "zulu":
+      return "frontier";
+    case "shaolin":
+      return "skyward";
+    case "nihang":
+      return "forge";
     default:
       return "colosseum";
   }
