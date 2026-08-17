@@ -362,6 +362,36 @@ export class Match {
     return true;
   }
 
+  /**
+   * How far this hit shoves the defender, as a multiplier on the move's
+   * authored pushback.
+   *
+   * Three things feed it. The damage on the hit is the bulk of it - a 30-point
+   * jab barely moves them, a 130-point finisher throws them. The weight
+   * difference between the two fighters tilts it, so a knight hitting a monk
+   * carries further than the other way round. Finally it decays over a combo,
+   * because otherwise a long string walks both fighters into the corner and
+   * the juggle ends up off the top of the screen.
+   *
+   * `hit.damage` is used rather than the scaled damage on purpose: it is the
+   * authored weight of the blow, and the combo decay below already accounts
+   * for where in the string it landed.
+   */
+  private knockbackScale(attacker: Fighter, defender: Fighter, hit: HitDef, comboHits: number): number {
+    const fromDamage = COMBAT.knockbackBase + hit.damage * COMBAT.knockbackPerDamage;
+    const clamped = Math.min(COMBAT.knockbackMax, Math.max(COMBAT.knockbackMin, fromDamage));
+
+    const heft = (attacker.def.stats.weight || 1) / (defender.def.stats.weight || 1);
+    const swing = 1 + (heft - 1) * COMBAT.knockbackWeightSwing;
+
+    const decay = Math.max(
+      COMBAT.knockbackComboFloor,
+      Math.pow(COMBAT.knockbackComboDecay, Math.max(0, comboHits)),
+    );
+
+    return clamped * swing * decay;
+  }
+
   private applyHit(
     attacker: Fighter,
     defender: Fighter,
@@ -388,6 +418,13 @@ export class Match {
 
     const dirSign = attacker.x <= defender.x ? 1 : -1;
     const weight = defender.def.stats.weight || 1;
+    // How much of the hit's authored pushback actually gets used. Heavy blows
+    // shove; jabs tap. See `knockbackScale`.
+    const kb = this.knockbackScale(attacker, defender, hit, this.combo[attacker.index]?.hits ?? 0);
+    // Launches and blocked hits only take part of it - launch arcs are tuned
+    // per move, and blockstun pushback is about spacing rather than weight.
+    const kbLaunch = 1 + (kb - 1) * COMBAT.knockbackLaunchMix;
+    const kbBlock = 1 + (kb - 1) * COMBAT.knockbackBlockMix;
 
     if (blocked) {
       const stun = hit.blockstun;
@@ -396,8 +433,8 @@ export class Match {
       defender.guard -= Math.max(4, hit.damage * 0.5);
       const chip = hit.chip ?? 0;
       if (chip > 0) defender.health = Math.max(COMBAT.chipFloor, defender.health - chip);
-      defender.vx = dirSign * (hit.pushX ?? 6) * 0.5;
-      attacker.vx = -dirSign * (hit.selfPushX ?? 2);
+      defender.vx = dirSign * (hit.pushX ?? 6) * 0.5 * kbBlock;
+      attacker.vx = -dirSign * (hit.selfPushX ?? 2) * kbBlock;
       defender.addMeter(COMBAT.meterOnBlock);
       attacker.addMeter(COMBAT.meterOnBlock * 0.6);
       attacker.addResource(attacker.def.resource?.gainOnBlocked ?? 0);
@@ -457,39 +494,43 @@ export class Match {
     if (kd === "wallbounce" || kd === "groundbounce") defender.bouncesLeft = 1;
     if (defender.ragdoll) {
       // Hitting a body that is already down just knocks it further along.
-      defender.ragdollImpulse(dirSign * (hit.pushX ?? 5) * 0.6, -2);
+      defender.ragdollImpulse(dirSign * (hit.pushX ?? 5) * 0.6 * kb, -2);
     }
 
     if (hit.launch || kd === "launch") {
       const [lx, ly] = hit.launch ?? [3, 11];
-      defender.vx = dirSign * lx * (1 / weight);
+      defender.vx = dirSign * lx * kbLaunch * (1 / weight);
       defender.vy = ly * (1 / Math.max(0.75, weight));
       defender.y = Math.max(defender.y, GROUND_Y + 1);
       defender.juggleCount++;
       defender.setState("hitstunAir");
       defender.pendingKnockdown = "soft";
     } else if (airborne) {
-      defender.vx = dirSign * (hit.pushX ?? 5) * 0.6 * (1 / weight);
+      // Already in the air: the shove carries much further with nothing under
+      // their feet, which is what makes an air-to-air heavy feel like one.
+      defender.vx = dirSign * (hit.pushX ?? 5) * 0.6 * kb * (1 / weight);
       defender.vy = Math.max(defender.vy * 0.4, 2.2);
       defender.juggleCount++;
       defender.setState("hitstunAir");
       defender.pendingKnockdown = kd === "none" ? "soft" : kd;
     } else if (kd === "sweep" || kd === "hard" || kd === "soft" || kd === "crumple") {
-      defender.vx = dirSign * (hit.pushX ?? 6) * (1 / weight);
+      defender.vx = dirSign * (hit.pushX ?? 6) * kb * (1 / weight);
       defender.knockDown(kd === "sweep" ? "soft" : kd);
       defender.hitstun = 0;
     } else {
-      defender.vx = dirSign * (hit.pushX ?? 5) * (1 / weight);
+      defender.vx = dirSign * (hit.pushX ?? 5) * kb * (1 / weight);
       defender.lastHitHeight = guard === "low" ? "low" : guard === "overhead" || guard === "high" ? "high" : "mid";
       defender.setState("hitstun");
     }
 
-    // Corner pushback: the attacker gets moved instead.
+    // Corner pushback: the defender has nowhere to go, so the attacker gets
+    // moved instead - and a heavy blow into the corner shoves them right back
+    // out of their own pressure.
     const wall = STAGE_HALF_WIDTH - defender.def.stats.width - 2;
     if (Math.abs(defender.x) >= wall && Math.sign(defender.x) === dirSign) {
-      attacker.vx = -dirSign * (hit.pushX ?? 5) * 0.7;
+      attacker.vx = -dirSign * (hit.pushX ?? 5) * 0.7 * kb;
     } else if (hit.selfPushX) {
-      attacker.vx = -dirSign * hit.selfPushX;
+      attacker.vx = -dirSign * hit.selfPushX * kb;
     }
 
     const banner = this.combo[attacker.index];

@@ -9,6 +9,7 @@ import { COMBAT, FPS, MATCH } from "../constants";
 import { getFighter } from "../fighters";
 import { GameRenderer } from "../render/renderer";
 import { randomTheme, themeForFighter, type StageTheme } from "../render/stage";
+import { applySkin, distinctSkin, getSkin } from "../skins";
 import type { FighterDef } from "../types";
 import { AiController } from "./ai";
 import { Sfx } from "./audio";
@@ -22,6 +23,9 @@ export interface GameOptions {
   p2: string;
   mode: GameMode;
   aiLevel: AiLevel;
+  /** Alternate colour ids from `skins.ts`; both default to "classic". */
+  p1Skin?: string;
+  p2Skin?: string;
   roundsToWin?: number;
   /** A specific stage, or "random" to roll one per match. */
   stage?: StageTheme | "random";
@@ -77,7 +81,15 @@ export class GameSession {
   onHud: ((s: HudState) => void) | null = null;
 
   constructor(private options: GameOptions) {
-    this.defs = [getFighter(options.p1), getFighter(options.p2)];
+    // In a mirror match the second player is nudged onto a different look, so
+    // there is never a round where both fighters are the same drawing in the
+    // same colours.
+    const p1Skin = options.p1Skin ?? "classic";
+    const p2Skin = distinctSkin(options.p1, p1Skin, options.p2, options.p2Skin ?? "classic");
+    this.defs = [
+      applySkin(getFighter(options.p1), getSkin(p1Skin)),
+      applySkin(getFighter(options.p2), getSkin(p2Skin)),
+    ];
     this.match = new Match(this.defs, options.roundsToWin ?? MATCH.roundsToWin);
     this.theme =
       options.stage === "random"

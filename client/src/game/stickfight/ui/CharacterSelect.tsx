@@ -1,11 +1,12 @@
 /** Character select: roster grid, stats panel, mode and difficulty options. */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AI_LEVELS, type AiLevel } from "../constants";
 import { ROSTER } from "../fighters";
 import type { FighterDef } from "../types";
 import type { GameMode } from "../engine/game";
 import { STAGE_LIST, STAGE_THEMES, type StageTheme } from "../render/stage";
+import { applySkin, getSkin, SKINS } from "../skins";
 import { FighterPortrait } from "./Portrait";
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
     aiLevel: AiLevel;
     rounds: number;
     stage: StageTheme | "random";
+    p1Skin: string;
+    p2Skin: string;
   }) => void;
   onShowMoves: (id: string) => void;
 }
@@ -59,6 +62,32 @@ function StageChip({
         {def ? def.name : "Random"}
       </span>
     </button>
+  );
+}
+
+/** A two-tone chip standing in for one of the alternate colour schemes. */
+function SkinChip({
+  skinId,
+  selected,
+  onPick,
+}: {
+  skinId: string;
+  selected: boolean;
+  onPick: () => void;
+}) {
+  const skin = getSkin(skinId);
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      title={`${skin.name} — ${skin.blurb}`}
+      aria-label={skin.name}
+      aria-pressed={selected}
+      className={`h-5 w-5 shrink-0 overflow-hidden rounded-full border-2 transition ${
+        selected ? "border-amber-400 shadow-[0_0_10px_-2px_rgba(251,191,36,0.9)]" : "border-white/20 hover:border-white/60"
+      }`}
+      style={{ background: `linear-gradient(135deg, ${skin.swatch[0]} 50%, ${skin.swatch[1]} 50%)` }}
+    />
   );
 }
 
@@ -137,9 +166,20 @@ export function CharacterSelect({ onStart, onShowMoves }: Props) {
   const [aiLevel, setAiLevel] = useState<AiLevel>("Veteran");
   const [rounds, setRounds] = useState(2);
   const [stage, setStage] = useState<StageTheme | "random">("random");
+  const [skins, setSkins] = useState<[string, string]>(["classic", "twilight"]);
 
   const preview = ROSTER.find((f) => f.id === hover) ?? ROSTER[0];
   const ratings = ratingFor(preview);
+
+  // The two locked-in fighters, wearing their chosen colours.
+  const picked = useMemo(
+    () =>
+      [p1, p2].map((id, i) => {
+        const base = ROSTER.find((f) => f.id === id) ?? ROSTER[0];
+        return applySkin(base, getSkin(skins[i]));
+      }),
+    [p1, p2, skins],
+  );
 
   const pick = (id: string) => {
     if (picking === "p1") {
@@ -285,24 +325,37 @@ export function CharacterSelect({ onStart, onShowMoves }: Props) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 p-3">
-        <div className="flex items-center gap-4">
-          {[p1, p2].map((id, i) => {
-            const def = ROSTER.find((f) => f.id === id)!;
-            return (
-              <div key={i} className="flex items-center gap-2">
-                <FighterPortrait def={def} className="h-14 w-14" facing={i === 0 ? 1 : -1} />
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-white/40">P{i + 1}</div>
-                  <div className="text-sm font-bold text-white">{def.name}</div>
+        <div className="flex flex-wrap items-center gap-5">
+          {picked.map((def, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <FighterPortrait def={def} className="h-14 w-14" facing={i === 0 ? 1 : -1} />
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-white/40">P{i + 1}</div>
+                <div className="text-sm font-bold text-white">{def.name}</div>
+                <div className="mt-1 flex gap-1">
+                  {SKINS.map((s) => (
+                    <SkinChip
+                      key={s.id}
+                      skinId={s.id}
+                      selected={skins[i] === s.id}
+                      onPick={() =>
+                        setSkins((prev) => {
+                          const next: [string, string] = [prev[0], prev[1]];
+                          next[i] = s.id;
+                          return next;
+                        })
+                      }
+                    />
+                  ))}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         <button
           type="button"
-          onClick={() => onStart({ p1, p2, mode, aiLevel, rounds, stage })}
+          onClick={() => onStart({ p1, p2, mode, aiLevel, rounds, stage, p1Skin: skins[0], p2Skin: skins[1] })}
           className="rounded-md bg-amber-400 px-8 py-3 text-lg font-black uppercase italic tracking-wide text-black transition hover:bg-amber-300"
         >
           Fight

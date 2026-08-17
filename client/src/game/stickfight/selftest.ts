@@ -14,6 +14,7 @@ import { AiController } from "./engine/ai";
 import { EMPTY_INPUT, type RawInput } from "./engine/input";
 import { Match } from "./engine/match";
 import { getFighter, ROSTER } from "./fighters";
+import { applySkin, distinctSkin, getSkin } from "./skins";
 import type { FighterDef, MoveDef } from "./types";
 
 const results: { name: string; ok: boolean; detail: string }[] = [];
@@ -263,6 +264,86 @@ function scriptFor(move: MoveDef): RawInput[] {
     check(`${def.id}: super activates`, fired, superMove.notation ?? "");
     check(`${def.id}: super deals damage`, m.fighters[1].health < hp, `lost=${hp - m.fighters[1].health}`);
   }
+}
+
+{
+  // Knockback scales with the weight of the blow: the same fighter hit by a
+  // jab and by a heavy should not end up in the same place.
+  const shoveFrom = (button: "A" | "B") => {
+    const m = newMatch("roman", "roman");
+    m.fighters[0].x = -40;
+    m.fighters[1].x = 20;
+    let peak = 0;
+    for (let i = 0; i < 30; i++) {
+      m.step([inp({ [button]: i < 3 }), inp()]);
+      peak = Math.max(peak, Math.abs(m.fighters[1].vx));
+    }
+    return peak;
+  };
+  const light = shoveFrom("A"); // 34 damage jab
+  const heavy = shoveFrom("B"); // 62 damage thrust
+  check("heavier hits push further", heavy > light * 1.3, `light=${light.toFixed(2)} heavy=${heavy.toFixed(2)}`);
+
+  // ... and a heavyweight shoves a lightweight further than the reverse.
+  const shoveBetween = (a: string, b: string) => {
+    const m = newMatch(a, b);
+    m.fighters[0].x = -40;
+    m.fighters[1].x = 20;
+    let peak = 0;
+    for (let i = 0; i < 30; i++) {
+      m.step([inp({ B: i < 3 }), inp()]);
+      peak = Math.max(peak, Math.abs(m.fighters[1].vx));
+    }
+    return peak;
+  };
+  const heavyOnLight = shoveBetween("roman", "ninja");
+  const lightOnHeavy = shoveBetween("ninja", "roman");
+  check(
+    "weight tilts the shove",
+    heavyOnLight > lightOnHeavy,
+    `${heavyOnLight.toFixed(2)} vs ${lightOnHeavy.toFixed(2)}`,
+  );
+}
+
+{
+  // A skin is paint only: same ids, same frame data, different colours.
+  const base = getFighter("roman");
+  const painted = applySkin(base, getSkin("twilight"));
+  check("a skin keeps the fighter's identity", painted.id === base.id && painted.moves.length === base.moves.length);
+  check("a skin repaints the palette", painted.palette.accent !== base.palette.accent, painted.palette.accent);
+  check("a skin leaves the ink alone", painted.palette.outline === base.palette.outline);
+  check(
+    "a skin repaints the kit",
+    painted.props.some((p, i) => p.parts.some((part, j) => part.color !== base.props[i].parts[j].color)),
+  );
+  check("a skin does not touch the numbers", painted.stats === base.stats && painted.moves[0].duration === base.moves[0].duration);
+  check("classic is the untouched fighter", applySkin(base, getSkin("classic")) === base);
+  check(
+    "a mirror match forces different colours",
+    distinctSkin("roman", "ember", "roman", "ember") !== "ember",
+  );
+  check("different fighters keep their chosen colours", distinctSkin("roman", "ember", "viking", "ember") === "ember");
+
+  // Painting a fighter must not change a single frame of the simulation, so
+  // the same scripted exchange has to land on exactly the same numbers.
+  const script = (f: number): RawInput =>
+    inp({ right: f % 40 < 12, A: f % 40 === 14, B: f % 40 === 22, C: f % 40 === 30, S: f % 40 > 33 });
+  const plain = new Match([getFighter("viking"), getFighter("ninja")]);
+  const skinned = new Match([
+    applySkin(getFighter("viking"), getSkin("gilt")),
+    applySkin(getFighter("ninja"), getSkin("ash")),
+  ]);
+  for (let i = 0; i < 600; i++) {
+    plain.step([script(i), script(i + 17)]);
+    skinned.step([script(i), script(i + 17)]);
+  }
+  check(
+    "a skinned match plays out identically",
+    plain.fighters[0].health === skinned.fighters[0].health &&
+      plain.fighters[1].health === skinned.fighters[1].health &&
+      plain.fighters[0].x === skinned.fighters[0].x,
+    `${plain.fighters[0].health}/${skinned.fighters[0].health}`,
+  );
 }
 
 {

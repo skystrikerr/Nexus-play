@@ -54,6 +54,32 @@ export const COMBAT = {
   maxGuard: 100,
   guardRegen: 0.35,
   guardBreakStun: 60,
+  /**
+   * Knockback scaling. A hit's authored `pushX` is the shove a *mid-weight*
+   * blow gives; the multiplier below reads the damage on top of that, so a jab
+   * nudges and a two-handed overhead sends them across the arena. Without it
+   * every hit moved the opponent about the same distance and the roster's
+   * weight numbers did nothing you could see.
+   */
+  knockbackBase: 0.62,
+  knockbackPerDamage: 0.0052,
+  knockbackMin: 0.6,
+  knockbackMax: 1.9,
+  /** Fraction of the multiplier that reaches a launch (juggles stay framed). */
+  knockbackLaunchMix: 0.4,
+  /** Fraction that reaches a blocked hit. */
+  knockbackBlockMix: 0.55,
+  /**
+   * Knockback decays over a combo so long strings do not walk the pair into
+   * the corner and out of the camera.
+   */
+  knockbackComboDecay: 0.94,
+  knockbackComboFloor: 0.62,
+  /**
+   * How hard the weight difference tilts the shove. 0 = weight only affects
+   * launches, 1 = a heavyweight hitting a featherweight doubles the distance.
+   */
+  knockbackWeightSwing: 0.45,
   /** Pushback applied when two fighters overlap. */
   pushSpeed: 1.4,
   /** Grounded friction per frame while not moving. */

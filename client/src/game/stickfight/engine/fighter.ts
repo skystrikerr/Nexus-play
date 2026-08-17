@@ -680,8 +680,12 @@ export class Fighter {
       victim.flash = 10;
       victim.grabbedBy = null;
       this.holding = null;
-      victim.vx = this.facing * p.launch[0];
-      victim.vy = p.launch[1];
+      // Throws read the weight difference directly: a knight hurls a monk
+      // across the arena, and the monk barely shifts the knight.
+      const heft = (this.def.stats.weight || 1) / (victim.def.stats.weight || 1);
+      const swing = 1 + (heft - 1) * COMBAT.knockbackWeightSwing;
+      victim.vx = this.facing * p.launch[0] * swing;
+      victim.vy = p.launch[1] * (1 + (swing - 1) * 0.4);
       victim.y = Math.max(victim.y, GROUND_Y + 1);
       victim.hitstun = 30;
       victim.setState("hitstunAir");

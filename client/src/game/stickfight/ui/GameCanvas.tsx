@@ -14,6 +14,9 @@ export interface MatchConfig {
   aiLevel: AiLevel;
   rounds: number;
   stage: StageTheme | "random";
+  /** Alternate colour ids; omitted means "classic". */
+  p1Skin?: string;
+  p2Skin?: string;
 }
 
 export function GameCanvas({
@@ -49,6 +52,8 @@ export function GameCanvas({
       aiLevel: config.aiLevel,
       roundsToWin: config.rounds,
       stage: config.stage,
+      p1Skin: config.p1Skin,
+      p2Skin: config.p2Skin,
     });
     sessionRef.current = session;
     session.onHud = setHud;
