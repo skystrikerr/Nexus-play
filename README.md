@@ -1,56 +1,61 @@
 # NexusPlay
 
-NexusPlay is a full-stack activity tracker: games, study sessions, work, exercise, reading, and hobbies in one library, with built-in session timers, tasks, statistics, a calendar view, and community features (posts, reviews, public profiles). Game data and cover art come from the RAWG database, and Steam/Xbox accounts can be linked for library sync.
+So this is nexus play just a personal full-stack activity tracker I hacked together to keep track of literally everything in one spot. Games, study sessions, work grind, workouts, reading lists, and random hobbies. It's got built-in timers, task lists, stats, a calendar view, and even some community stuff like posts, reviews, and profiles if you're into that.
 
-## Tech Stack
+Game details and covers pull straight from the RAWG database, and you can link your Steam or Xbox accounts to pull your library in automatically.
 
-- **Frontend:** React 18 + TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, wouter
-- **Backend:** Express + TypeScript, Passport (local + Google OAuth), express-session with a PostgreSQL session store
-- **Database:** PostgreSQL (Neon) via Drizzle ORM
-- **Mobile/Desktop:** Capacitor (Android) and Electron builds
+⚠️ **Just a quick warning:** It's still super early in development and definitely needs a ton of work, but it's totally solid enough for personal daily use.
 
-## Getting Started
+## Stack breakdown
 
-1. Install Node.js 18+ and run `npm install`
-2. Create a `.env` file:
+* **Frontend:** React 18 + TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, wouter
+* **Backend:** Express + TypeScript, Passport (local + Google OAuth), express-session with a PostgreSQL session store
+* **Database:** PostgreSQL (Neon) using Drizzle ORM
+* **Apps:** Capacitor for Android and Electron for desktop
 
-   ```
-   DATABASE_URL=postgresql://...          # required
-   SESSION_SECRET=<long random string>    # required
-   RAWG_API_KEY=<your key>                # game search (free at rawg.io/apidocs)
-   GOOGLE_CLIENT_ID=...                   # optional, Google sign-in
-   GOOGLE_CLIENT_SECRET=...               # optional, Google sign-in
-   BREVO_API_KEY=...                      # email provider (any recipient, free)
-   RESEND_API_KEY=...                     # alt email provider (owner-only until domain verified)
-   EMAIL_FROM="NexusPlay <you@domain>"    # sender shown on reset emails
-   APP_URL=https://yourdomain.com         # used in password reset links
-   ```
+## How to get it running
 
-3. Push the schema: `npm run db:push`
-4. Start the dev server: `npm run dev` → http://localhost:5000
+1. Grab Node.js 18+ if you haven't already, then run `npm install`.
+2. Drop a `.env` file in the root folder looking something like this:
+```env
+DATABASE_URL=postgresql://...         # pretty mandatory
+SESSION_SECRET=<long random string>     # also mandatory
+RAWG_API_KEY=<your key>                 # for game search (get a free one at rawg.io/apidocs)
+GOOGLE_CLIENT_ID=...                    # optional (Google login)
+GOOGLE_CLIENT_SECRET=...                # optional (Google login)
+BREVO_API_KEY=...                       # email stuff (free, works for anyone)
+RESEND_API_KEY=...                      # backup email (owner only until your domain is verified)
+EMAIL_FROM="NexusPlay <you@domain>"     # sender address on reset emails
+APP_URL=https://yourdomain.com          # where password resets point
 
-Without `RESEND_API_KEY`, password reset links are printed to the server console instead of emailed (development fallback).
+```
 
-## Scripts
 
-| Command | Purpose |
+3. Push the database schema: `npm run db:push`
+4. Fire it up: `npm run dev` (runs at http://localhost:5000)
+
+*(Pro tip: If you don't bother setting up `RESEND_API_KEY`, password reset links just spit out into your server console instead. Way easier for local testing anyway.)*
+
+## Useful Scripts
+
+| Command | What it actually does |
 | --- | --- |
-| `npm run dev` | Development server (API + client on port 5000) |
-| `npm run build` | Production build to `dist/` |
-| `npm run start` | Run the production build |
-| `npm run check` | TypeScript type check |
-| `npm run db:push` | Apply schema changes to the database |
-| `npm run electron:build` | Windows desktop build |
+| `npm run dev` | Boots up the dev server (API + client together on port 5000) |
+| `npm run build` | Bundles the whole thing for production into `dist/` |
+| `npm run start` | Runs the production build |
+| `npm run check` | Runs a quick TypeScript check so nothing's broken |
+| `npm run db:push` | Pushes any schema updates to the DB |
+| `npm run electron:build` | Packages up the Windows desktop app |
 
-## Deploying (free)
+## Deploying it for free
 
-The repo includes a [render.yaml](render.yaml) blueprint for Render's free tier:
+There's a `render.yaml` file in the repo if you want to throw it up on Render's free tier without headaches:
 
-1. Push this repo to GitHub
-2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repo
-3. Fill in the environment variables it asks for (`DATABASE_URL` from Neon, `RAWG_API_KEY`, and optionally the Resend/Google ones)
-4. After the first deploy, set `APP_URL` to your Render URL (e.g. `https://nexusplay.onrender.com`) so password reset links point to the right place
+1. Push the code up to GitHub.
+2. Go to [render.com](https://render.com), hit **New → Blueprint**, and pick your repo.
+3. Plug in the environment variables it asks for (`DATABASE_URL`, `RAWG_API_KEY`, plus whatever optional ones you want).
+4. Once it finishes its first deploy, make sure you update `APP_URL` to match your actual Render URL so password reset links don't break.
 
-The free tier sleeps after 15 minutes of inactivity; the first request afterwards takes up to a minute while it wakes.
+Keep in mind Render's free tier falls asleep after 15 minutes of nothing happening, so the first time you hit it after a break, it'll take like a minute to wake back up.
 
-See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for a full tour of the codebase and [MOBILE_SETUP.md](MOBILE_SETUP.md) for the Android build.
+Take a peek at [PROJECT_STRUCTURE.md](https://www.google.com/search?q=PROJECT_STRUCTURE.md) if you want to poke around the codebase, or [MOBILE_SETUP.md](https://www.google.com/search?q=MOBILE_SETUP.md) if you're trying to get the Android version built.
